@@ -101,3 +101,4 @@ lazy val akkaHttpAggregator = (project in file("akka-http-aggregator"))
   )
 
 scalafmtOnCompile in ThisBuild := true
+skip in publish := true
