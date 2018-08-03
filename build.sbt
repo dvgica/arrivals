@@ -13,7 +13,11 @@ lazy val sharedSettings = Seq(
     "https://www.apache.org/licenses/LICENSE-2.0.html")),
   bintrayOrganization := Some("pagerduty"),
   bintrayRepository := "oss-maven",
-  publishMavenStyle := true
+  publishMavenStyle := true,
+  resolvers := Seq(
+    "bintray-pagerduty-oss-maven" at "https://dl.bintray.com/pagerduty/oss-maven",
+    Resolver.defaultLocal
+  )
 )
 
 lazy val akkaHttpRequestAuthentication =
