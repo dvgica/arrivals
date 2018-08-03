@@ -1,0 +1,16 @@
+target
+/log/*.log
+
+/.idea/
+/*.sublime*
+.project
+# Emacs backup files
+*~
+# Emacs file locks
+.#*
+# Vim swap files
+.*.swp
+# Ensime project file
+.ensime
+.DS_Store
+.bundle

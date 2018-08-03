@@ -1,4 +1,4 @@
-# akka-api-gateway
+# akka-http-api-gateway
 
 This open-source project is a collection of small libraries that can be used to build an API gateway (or perhaps a few [BFFs](https://samnewman.io/patterns/architectural/bff/), [as PagerDuty has done](https://www.youtube.com/watch?v=DRxLFWmvJ8A)). Currently, the project is focused on proxying authenticated requests to upstream services. All sub-projects depend on [Akka HTTP](https://doc.akka.io/docs/akka-http/current/).
 
@@ -14,40 +14,40 @@ Add the PD Bintray to your resolvers with the following:
 resolvers += "bintray-pagerduty-oss-maven" at "https://dl.bintray.com/pagerduty/oss-maven"
 ```
 
-### http-proxy
+### akka-http-proxy
 
 A `ProxyController` (a `trait` providing a `Route`) for proxying un-authenticated requests to an `Upstream` via an `HttpProxy`.
 
 _Depends On_: `akka-http` and PD's [`scala-akka-support`](https://github.com/PagerDuty/scala-akka-support), [`metrics-api`](https://github.com/PagerDuty/scala-metrics)\
-_Artifact ID_: `http-proxy`
+_Artifact ID_: `akka-http-proxy`
 
-### request-authentication
+### akka-http-request-authentication
 
 `RequestAuthentication` and `RequireAuthentication`, traits that authenticate HTTP requests based on a library-user-supplied `AuthenticationConfig`.
 
 _Depends On_: `akka-http` and PD's [`scala-akka-support`](https://github.com/PagerDuty/scala-akka-support), [`metrics-api`](https://github.com/PagerDuty/scala-metrics)\
-_Artifact ID_: `request-authentication`
+_Artifact ID_: `akka-http-request-authentication`
 
-### header-authentication
+### akka-http-header-authentication
 
 A `HeaderAuthenticator` trait which adds a library-user-supplied HTTP header (via `HeaderAuthConfig`) to authenticated requests. For example, this header might be a cryptographically signed header with data about the authenticated user, trusted by an upstream service.
 
-_Depends On_: `request-authentication`\
-_Artifact ID_: `header-authentication`
+_Depends On_: `akka-http-request-authentication`\
+_Artifact ID_: `akka-http-header-authentication`
 
-### auth-http-proxy
+### akka-http-auth-proxy
 
 An `AuthProxyController` `trait` providing a `Route` which authenticates and proxies requests to an `Upstream`, adding a library-user-supplied HTTP header if authentication was successful.
 
-_Depends On_: `header-authentication`, `http-proxy`\
-_Artifact ID_: `auth-http-proxy`
+_Depends On_: `akka-http-header-authentication`, `akka-http-proxy`\
+_Artifact ID_: `akka-http-auth-proxy`
 
-### http-aggregator
+### akka-http-aggregator
 
 An `AggregatorController` trait providing a `Route` which authenticates a request and, if successful, makes various HTTP requests to different `AggregatorUpstream`s to assemble an HTTP response. Aggregation behaviour is library-user-specified by providing an `Aggregator` or one of its various subclasses.
 
-_Depends On_: `header-authentication`, `http-proxy`\
-_Artifact ID_: `http-aggregator`
+_Depends On_: `akka-http-header-authentication`, `akka-http-proxy`\
+_Artifact ID_: `akka-http-aggregator`
 
 ## License
 

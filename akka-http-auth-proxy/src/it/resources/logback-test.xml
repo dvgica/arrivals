@@ -1,0 +1,12 @@
+<configuration>
+    <appender name="test-log" class="ch.qos.logback.core.FileAppender">
+        <file>log/it-test.log</file>
+        <encoder>
+            <pattern>%d %-5level [%thread] %logger{0}: %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="debug">
+        <appender-ref ref="test-log" />
+    </root>
+</configuration>
