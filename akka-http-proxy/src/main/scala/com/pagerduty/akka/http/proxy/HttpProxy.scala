@@ -14,17 +14,18 @@ object HttpProxy {
   val KeepAliveHeaderValue = "keep-alive"
 }
 
-class HttpProxy(
-    localHostname: String,
+class HttpProxy[AddressingConfig](
+    addressingConfig: AddressingConfig,
     httpClient: HttpRequest => Future[HttpResponse],
     proxyRequestModifier: Option[HttpRequest => HttpRequest] = None
 )(implicit ec: ExecutionContext, materializer: Materializer, metrics: Metrics)
     extends MetadataLogging {
   import HttpProxy._
 
-  def request(request: HttpRequest, upstream: Upstream): Future[HttpResponse] = {
+  def request(request: HttpRequest,
+              upstream: Upstream[AddressingConfig]): Future[HttpResponse] = {
     val targetedRequest =
-      upstream.addressRequestWithOverrides(request, localHostname)
+      upstream.addressRequestWithOverrides(request, addressingConfig)
 
     val proxyRequest =
       targetedRequest

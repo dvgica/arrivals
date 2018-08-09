@@ -1,7 +1,7 @@
 package com.pagerduty.akka.http.aggregator.aggregator
 
-trait TwoStepAggregator[RequestKey, AccumulatedState]
-    extends Aggregator[RequestKey, AccumulatedState] {
+trait TwoStepAggregator[RequestKey, AccumulatedState, AddressingConfig]
+    extends Aggregator[RequestKey, AccumulatedState, AddressingConfig] {
 
   def handleUpstreamResponses(
       initialState: AccumulatedState,

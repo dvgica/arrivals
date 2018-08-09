@@ -13,16 +13,16 @@ import com.pagerduty.akka.http.support.RequestMetadata
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait AggregatorController[AuthConfig <: HeaderAuthConfig] {
+trait AggregatorController[AuthConfig <: HeaderAuthConfig, AddressingConfig] {
   val authConfig: AuthConfig
-  def httpProxy: HttpProxy
+  def httpProxy: HttpProxy[AddressingConfig]
   def headerAuthenticator: HeaderAuthenticator
   implicit def executionContext: ExecutionContext
   implicit def materializer: Materializer
 
   def prefixAggregatorRoute[RequestKey, AccumulatedState](
       pathMatcher: PathMatcher[Unit],
-      aggregator: Aggregator[RequestKey, AccumulatedState],
+      aggregator: Aggregator[RequestKey, AccumulatedState, AddressingConfig],
       requiredPermission: Option[AuthConfig#Permission] = None
   ): Route = {
     pathPrefix(pathMatcher) {
@@ -31,7 +31,7 @@ trait AggregatorController[AuthConfig <: HeaderAuthConfig] {
   }
 
   def aggregatorRoute[RequestKey, AccumulatedState](
-      aggregator: Aggregator[RequestKey, AccumulatedState],
+      aggregator: Aggregator[RequestKey, AccumulatedState, AddressingConfig],
       requiredPermission: Option[AuthConfig#Permission] = None
   ): Route = {
     extractRequest { incomingRequest =>
@@ -85,7 +85,8 @@ trait AggregatorController[AuthConfig <: HeaderAuthConfig] {
   private def executeRequests[RequestKey, AccumulatedState](
       authConfig: HeaderAuthConfig,
       state: AccumulatedState,
-      requests: Map[RequestKey, (AggregatorUpstream, HttpRequest)],
+      requests: Map[RequestKey,
+                    (AggregatorUpstream[AddressingConfig], HttpRequest)],
       authedRequest: HttpRequest
   ): Future[(AccumulatedState, Map[RequestKey, (HttpResponse, String)])] = {
     val preparedRequests = requests.map {

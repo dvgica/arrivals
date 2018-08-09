@@ -4,7 +4,7 @@ import akka.http.scaladsl.model.HttpRequest
 import com.pagerduty.akka.http.headerauthentication.model.HeaderAuthConfig
 import com.pagerduty.akka.http.proxy.Upstream
 
-trait AggregatorUpstream extends Upstream {
+trait AggregatorUpstream[AddressingConfig] extends Upstream[AddressingConfig] {
   def prepareAggregatorRequestForDelivery(
       authConfig: HeaderAuthConfig,
       request: HttpRequest,
