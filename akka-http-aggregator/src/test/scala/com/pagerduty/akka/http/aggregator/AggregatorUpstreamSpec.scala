@@ -39,7 +39,7 @@ class AggregatorUpstreamSpec extends FreeSpecLike with Matchers {
 
   "AggregatorUpstream" - {
 
-    val u = new AggregatorUpstream {
+    val u = new AggregatorUpstream[String] {
       val metricsTag = "test"
       def addressRequest(request: HttpRequest,
                          localHostname: String): HttpRequest = ???

@@ -3,7 +3,7 @@ package com.pagerduty.akka.http.proxy
 import akka.http.scaladsl.model.{HttpRequest, Uri}
 import akka.http.scaladsl.model.Uri.Authority
 
-trait Upstream {
+trait Upstream[AddressingConfig] {
   def metricsTag: String
   def overrideEnvName: String = metricsTag.toUpperCase
 
@@ -19,9 +19,11 @@ trait Upstream {
     }
   }
 
-  def addressRequestWithOverrides(request: HttpRequest,
-                                  localHostname: String): HttpRequest = {
-    addressRequest(request).getOrElse(addressRequest(request, localHostname))
+  def addressRequestWithOverrides(
+      request: HttpRequest,
+      addressingConfig: AddressingConfig): HttpRequest = {
+    addressRequest(request).getOrElse(
+      addressRequest(request, addressingConfig))
   }
 
   private def addressRequest(request: HttpRequest): Option[HttpRequest] = {
@@ -31,7 +33,8 @@ trait Upstream {
     }
   }
 
-  def addressRequest(request: HttpRequest, localHostname: String): HttpRequest
+  def addressRequest(request: HttpRequest,
+                     addressingConfig: AddressingConfig): HttpRequest
 
   def addressRequestWithHostPort(request: HttpRequest,
                                  host: String,
@@ -43,11 +46,11 @@ trait Upstream {
   }
 }
 
-trait LocalPortUpstream extends Upstream {
-  def localPort: Int
+trait CommonHostnameUpstream extends Upstream[String] {
+  def port: Int
 
   def addressRequest(request: HttpRequest,
-                     localHostname: String): HttpRequest = {
-    addressRequestWithHostPort(request, localHostname, localPort)
+                     commonHostname: String): HttpRequest = {
+    addressRequestWithHostPort(request, commonHostname, port)
   }
 }

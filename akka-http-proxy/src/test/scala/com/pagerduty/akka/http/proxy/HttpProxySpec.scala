@@ -12,8 +12,8 @@ import scala.concurrent.Future
 
 class HttpProxySpec extends FreeSpecLike with Matchers {
   "An HttpProxy" - {
-    val upstream = new LocalPortUpstream {
-      val localPort = 1234
+    val upstream = new CommonHostnameUpstream {
+      val port = 1234
       val metricsTag = "test"
     }
 

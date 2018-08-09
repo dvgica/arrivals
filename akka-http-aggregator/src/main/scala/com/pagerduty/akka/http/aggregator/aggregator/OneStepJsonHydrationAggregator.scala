@@ -22,13 +22,14 @@ import ujson.Js
   * If any of these assumptions are untrue, look at using a supertype of this trait instead. Also, tell #core about your
   * use case!
   */
-trait OneStepJsonHydrationAggregator extends OneStepAggregator[String] {
+trait OneStepJsonHydrationAggregator[AddressingConfig]
+    extends OneStepAggregator[String, AddressingConfig] {
 
   // implement these two methods
   def handleIncomingRequestStateless(
       authConfig: AuthenticationConfig
   )(incomingRequest: HttpRequest, authData: authConfig.AuthData)
-    : Map[String, (AggregatorUpstream, HttpRequest)]
+    : Map[String, (AggregatorUpstream[AddressingConfig], HttpRequest)]
 
   def buildOutgoingJsonResponseStateless(
       upstreamJsonResponses: Map[String, (HttpResponse, Js.Value)])

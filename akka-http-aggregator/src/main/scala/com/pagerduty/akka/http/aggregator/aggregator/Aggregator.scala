@@ -4,8 +4,9 @@ import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import com.pagerduty.akka.http.aggregator.AggregatorUpstream
 import com.pagerduty.akka.http.requestauthentication.model.AuthenticationConfig
 
-trait Aggregator[RequestKey, AccumulatedState] {
-  type RequestMap = Map[RequestKey, (AggregatorUpstream, HttpRequest)]
+trait Aggregator[RequestKey, AccumulatedState, AddressingConfig] {
+  type RequestMap =
+    Map[RequestKey, (AggregatorUpstream[AddressingConfig], HttpRequest)]
   type ResponseMap = Map[RequestKey, (HttpResponse, String)]
   type ResponseHandler =
     (AccumulatedState, ResponseMap) => (AccumulatedState, RequestMap)

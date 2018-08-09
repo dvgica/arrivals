@@ -6,7 +6,11 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import com.pagerduty.akka.http.headerauthentication.HeaderAuthenticator
 import com.pagerduty.akka.http.headerauthentication.model.HeaderAuthConfig
-import com.pagerduty.akka.http.proxy.{HttpProxy, LocalPortUpstream}
+import com.pagerduty.akka.http.proxy.{
+  CommonHostnameUpstream,
+  HttpProxy,
+  Upstream
+}
 import com.pagerduty.akka.http.requestauthentication.model.AuthenticationData.AuthFailedReason
 import com.pagerduty.akka.http.support.RequestMetadata
 import org.scalamock.scalatest.MockFactory
@@ -45,8 +49,13 @@ class AuthProxyControllerSpec
   }
 
   "AuthProxyController" - {
-    val proxyStub = stub[HttpProxy]
+    val expectedResponse = HttpResponse(201)
 
+    val proxyStub = new HttpProxy[String](null, null)(null, null, null) {
+      override def request(request: HttpRequest,
+                           upstream: Upstream[String]): Future[HttpResponse] =
+        Future.successful(expectedResponse)
+    }
     val authedRequest = HttpRequest(uri = "i-am-authed")
 
     val headerAuthStub = new HeaderAuthenticator {
@@ -63,24 +72,17 @@ class AuthProxyControllerSpec
       override def requestAuthenticator = ???
     }
 
-    val c = new AuthProxyController[TestAuthConfig] {
+    val c = new AuthProxyController[TestAuthConfig, String] {
       val authConfig = new TestAuthConfig
       def httpProxy = proxyStub
-      def localHostname = "localhost"
       def headerAuthenticator = headerAuthStub
     }
-    val upstream = new LocalPortUpstream {
-      val localPort = 1234
+    val upstream = new CommonHostnameUpstream {
+      val port = 1234
       val metricsTag = "test"
     }
 
     "authenticates and proxies requests" in {
-      val expectedResponse = HttpResponse(201)
-
-      (proxyStub.request _)
-        .when(authedRequest, *)
-        .returns(Future.successful(expectedResponse))
-
       Seq(Get(_: String),
           Post(_: String),
           Put(_: String),
@@ -94,12 +96,6 @@ class AuthProxyControllerSpec
     }
 
     "transforms, authenticates and proxies requests" in {
-      val expectedResponse = HttpResponse(201)
-
-      (proxyStub.request _)
-        .when(authedRequest, *)
-        .returns(Future.successful(expectedResponse))
-
       val transformer = (request: HttpRequest) => {
         val uriWithQueryParam =
           request.uri.withQuery(Query("filter_for_manual_run" -> "true"))
@@ -123,12 +119,6 @@ class AuthProxyControllerSpec
     }
 
     "authenticates and proxies prefixed requests" in {
-      val expectedResponse = HttpResponse(204)
-
-      (proxyStub.request _)
-        .when(authedRequest, *)
-        .returns(Future.successful(expectedResponse))
-
       Seq(
         "/api/v2/blabla",
         "/api/v2/incidents?foo=bar&baz=foo",

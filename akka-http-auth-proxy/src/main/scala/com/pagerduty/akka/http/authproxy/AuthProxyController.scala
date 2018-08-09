@@ -8,28 +8,27 @@ import com.pagerduty.akka.http.headerauthentication.model.HeaderAuthConfig
 import com.pagerduty.akka.http.proxy.{HttpProxy, Upstream}
 import com.pagerduty.akka.http.support.RequestMetadata
 
-trait AuthProxyController[AuthConfig <: HeaderAuthConfig] {
+trait AuthProxyController[AuthConfig <: HeaderAuthConfig, AddressingConfig] {
 
   val authConfig: AuthConfig
-  def httpProxy: HttpProxy
+  def httpProxy: HttpProxy[AddressingConfig]
   def headerAuthenticator: HeaderAuthenticator
-  def localHostname: String
 
   def prefixProxyRoute(
       path: PathMatcher[Unit],
-      upstream: Upstream,
+      upstream: Upstream[AddressingConfig],
       requestTransformer: HttpRequest => HttpRequest
   ): Route =
     prefixProxyRoute(path, upstream, None, Some(requestTransformer))
 
   def prefixProxyRoute(path: PathMatcher[Unit],
-                       upstream: Upstream,
+                       upstream: Upstream[AddressingConfig],
                        requiredPermission: AuthConfig#Permission): Route =
     prefixProxyRoute(path, upstream, Some(requiredPermission))
 
   def prefixProxyRoute(
       path: PathMatcher[Unit],
-      upstream: Upstream,
+      upstream: Upstream[AddressingConfig],
       requiredPermission: AuthConfig#Permission,
       requestTransformer: HttpRequest => HttpRequest
   ): Route =
@@ -40,7 +39,7 @@ trait AuthProxyController[AuthConfig <: HeaderAuthConfig] {
 
   def prefixProxyRoute(
       path: PathMatcher[Unit],
-      upstream: Upstream,
+      upstream: Upstream[AddressingConfig],
       requiredPermission: Option[AuthConfig#Permission] = None,
       requestTransformer: Option[HttpRequest => HttpRequest] = None,
       stripAuthorizationHeader: Boolean = true
@@ -52,23 +51,23 @@ trait AuthProxyController[AuthConfig <: HeaderAuthConfig] {
                  stripAuthorizationHeader)
     }
 
-  def proxyRoute(upstream: Upstream,
+  def proxyRoute(upstream: Upstream[AddressingConfig],
                  requiredPermission: AuthConfig#Permission): Route =
     proxyRoute(upstream, Some(requiredPermission))
 
-  def proxyRoute(upstream: Upstream,
+  def proxyRoute(upstream: Upstream[AddressingConfig],
                  requestTransformer: HttpRequest => HttpRequest): Route =
     proxyRoute(upstream, None, Some(requestTransformer))
 
   def proxyRoute(
-      upstream: Upstream,
+      upstream: Upstream[AddressingConfig],
       requiredPermission: AuthConfig#Permission,
       requestTransformer: HttpRequest => HttpRequest
   ): Route =
     proxyRoute(upstream, Some(requiredPermission), Some(requestTransformer))
 
   def proxyRoute(
-      upstream: Upstream,
+      upstream: Upstream[AddressingConfig],
       requiredPermission: Option[AuthConfig#Permission] = None,
       requestTransformer: Option[HttpRequest => HttpRequest] = None,
       stripAuthorizationHeader: Boolean = true
@@ -90,7 +89,7 @@ trait AuthProxyController[AuthConfig <: HeaderAuthConfig] {
     }
 
   private def proxyAuthenticatedRequest(
-      upstream: Upstream,
+      upstream: Upstream[AddressingConfig],
       request: HttpRequest,
       requiredPermission: Option[AuthConfig#Permission],
       stripAuthorizationHeader: Boolean

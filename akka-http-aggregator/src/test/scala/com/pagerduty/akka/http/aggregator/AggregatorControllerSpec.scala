@@ -12,7 +12,11 @@ import com.pagerduty.akka.http.aggregator.aggregator.{
   OneStepJsonHydrationAggregator,
   TwoStepJsonHydrationAggregator
 }
-import com.pagerduty.akka.http.proxy.{HttpProxy, LocalPortUpstream}
+import com.pagerduty.akka.http.proxy.{
+  CommonHostnameUpstream,
+  HttpProxy,
+  Upstream
+}
 import com.pagerduty.akka.http.requestauthentication.RequestAuthenticator
 import com.pagerduty.akka.http.requestauthentication.model.AuthenticationConfig
 import com.pagerduty.akka.http.requestauthentication.model.AuthenticationData.AuthFailedReason
@@ -53,9 +57,9 @@ class AggregatorControllerSpec
     def authHeaderName: String = ???
   }
 
-  case class TestUpstream(localPort: Int, metricsTag: String)
-      extends LocalPortUpstream
-      with AggregatorUpstream {
+  case class TestUpstream(port: Int, metricsTag: String)
+      extends CommonHostnameUpstream
+      with AggregatorUpstream[String] {
     override def prepareAggregatorRequestForDelivery(
         authConfig: HeaderAuthConfig,
         request: HttpRequest,
@@ -73,10 +77,9 @@ class AggregatorControllerSpec
 
     val authToken = "auth-token"
 
-    def buildController(): AggregatorController[TestAuthConfig] = {
-      val stubHttpProxy = stub[HttpProxy]
-
-      val c = new AggregatorController[TestAuthConfig] {
+    def buildController(stubHttpProxy: HttpProxy[String] = null)
+      : AggregatorController[TestAuthConfig, String] = {
+      val c = new AggregatorController[TestAuthConfig, String] {
         val authConfig = ac
         val httpProxy = stubHttpProxy
         val headerAuthenticator = new HeaderAuthenticator {
@@ -122,7 +125,8 @@ class AggregatorControllerSpec
       val reqKey1 = "req1"
       val reqKey2 = "req2"
 
-      val expectedRequests: Map[String, (AggregatorUpstream, HttpRequest)] =
+      val expectedRequests
+        : Map[String, (AggregatorUpstream[String], HttpRequest)] =
         Map(reqKey1 -> (upstream1, request1), reqKey2 -> (upstream2, request2))
       val expectedResponse = HttpResponse(entity = "aggregated data")
 
@@ -130,11 +134,11 @@ class AggregatorControllerSpec
                                   reqKey2 -> (response2, entityJson2))
 
       class TestOneStepJsonHydrationAggregator
-          extends OneStepJsonHydrationAggregator {
+          extends OneStepJsonHydrationAggregator[String] {
         def handleIncomingRequestStateless(
             authConfig: AuthenticationConfig
         )(incomingRequest: HttpRequest, authData: authConfig.AuthData)
-          : Map[String, (AggregatorUpstream, HttpRequest)] = {
+          : Map[String, (AggregatorUpstream[String], HttpRequest)] = {
           authData should equal(expectedAuthData)
           expectedRequests
         }
@@ -150,15 +154,17 @@ class AggregatorControllerSpec
       val aggregator = new TestOneStepJsonHydrationAggregator
 
       "sends requests to upstreams and aggregates the responses when auth succeeds" in {
-        val c = buildController()
-
-        (c.httpProxy.request _)
-          .when(*, upstream1)
-          .returns(Future.successful(response1))
-
-        (c.httpProxy.request _)
-          .when(*, upstream2)
-          .returns(Future.successful(response2))
+        val stubProxy = new HttpProxy[String](null, null)(null, null, null) {
+          override def request(
+              request: HttpRequest,
+              upstream: Upstream[String]): Future[HttpResponse] = {
+            upstream match {
+              case `upstream1` => Future.successful(response1)
+              case `upstream2` => Future.successful(response2)
+            }
+          }
+        }
+        val c = buildController(stubProxy)
 
         Get("/") ~> c.prefixAggregatorRoute("", aggregator) ~> check {
           handled shouldBe true
@@ -183,15 +189,18 @@ class AggregatorControllerSpec
       }
 
       "fails whole request when one request fails" in {
-        val c = buildController()
-
-        (c.httpProxy.request _)
-          .when(request1, upstream1)
-          .returns(Future.successful(response1))
-
-        (c.httpProxy.request _)
-          .when(request2, upstream2)
-          .returns(Future.failed(new RuntimeException("simulated exception")))
+        val stubProxy = new HttpProxy[String](null, null)(null, null, null) {
+          override def request(
+              request: HttpRequest,
+              upstream: Upstream[String]): Future[HttpResponse] = {
+            upstream match {
+              case `upstream1` => Future.successful(response1)
+              case `upstream2` =>
+                Future.failed(new RuntimeException("simulated exception"))
+            }
+          }
+        }
+        val c = buildController(stubProxy)
 
         Get("/fail-path") ~> c.prefixAggregatorRoute("fail-path", aggregator) ~> check {
           handled shouldBe true
@@ -226,9 +235,9 @@ class AggregatorControllerSpec
       val initialState = "initial"
       val intermediateState = "intermediate"
 
-      class TestAggregator extends TwoStepJsonHydrationAggregator {
-        def handleIncomingRequest(
-            incomingRequest: HttpRequest): (AggregatorUpstream, HttpRequest) =
+      class TestAggregator extends TwoStepJsonHydrationAggregator[String] {
+        def handleIncomingRequest(incomingRequest: HttpRequest)
+          : (AggregatorUpstream[String], HttpRequest) =
           (upstream1, request1)
 
         def handleJsonUpstreamResponse(upstreamResponse: HttpResponse,
@@ -255,15 +264,17 @@ class AggregatorControllerSpec
       val aggregator = new TestAggregator
 
       "sends requests to upstreams and aggregates responses in multiple steps when auth succeeds" in {
-        val c = buildController()
-
-        (c.httpProxy.request _)
-          .when(*, upstream1)
-          .returns(Future.successful(response1))
-
-        (c.httpProxy.request _)
-          .when(*, upstream2)
-          .returns(Future.successful(response2))
+        val stubProxy = new HttpProxy[String](null, null)(null, null, null) {
+          override def request(
+              request: HttpRequest,
+              upstream: Upstream[String]): Future[HttpResponse] = {
+            upstream match {
+              case `upstream1` => Future.successful(response1)
+              case `upstream2` => Future.successful(response2)
+            }
+          }
+        }
+        val c = buildController(stubProxy)
 
         Get("/") ~> c.prefixAggregatorRoute("", aggregator) ~> check {
           handled shouldBe true
@@ -295,7 +306,7 @@ class AggregatorControllerSpec
       val initialState = "initial"
       val intermediateState = "intermediate"
 
-      class TestAggregator extends Aggregator[String, String] {
+      class TestAggregator extends Aggregator[String, String, String] {
         def handleIncomingRequest(
             authConfig: AuthenticationConfig
         )(incomingRequest: HttpRequest,
@@ -329,15 +340,17 @@ class AggregatorControllerSpec
       val aggregator = new TestAggregator
 
       "sends requests to upstreams and aggregates responses in multiple steps when auth succeeds" in {
-        val c = buildController()
-
-        (c.httpProxy.request _)
-          .when(*, upstream1)
-          .returns(Future.successful(response1))
-
-        (c.httpProxy.request _)
-          .when(*, upstream2)
-          .returns(Future.successful(response2))
+        val stubProxy = new HttpProxy[String](null, null)(null, null, null) {
+          override def request(
+              request: HttpRequest,
+              upstream: Upstream[String]): Future[HttpResponse] = {
+            upstream match {
+              case `upstream1` => Future.successful(response1)
+              case `upstream2` => Future.successful(response2)
+            }
+          }
+        }
+        val c = buildController(stubProxy)
 
         Get("/") ~> c.prefixAggregatorRoute("", aggregator) ~> check {
           handled shouldBe true

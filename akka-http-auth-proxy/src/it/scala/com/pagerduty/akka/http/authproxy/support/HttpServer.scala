@@ -11,7 +11,7 @@ import com.pagerduty.akka.http.headerauthentication.HeaderAuthenticator
 import com.pagerduty.akka.http.proxy.{
   ErrorHandling,
   HttpProxy,
-  LocalPortUpstream
+  CommonHostnameUpstream
 }
 import com.pagerduty.akka.http.requestauthentication.RequestAuthenticator
 
@@ -25,11 +25,11 @@ class HttpServer(
     val httpInterface: String,
     val port: Int,
     val servicePort: Int,
-    val httpProxy: HttpProxy
+    val httpProxy: HttpProxy[String]
 )(implicit actorSystem: ActorSystem,
   materializer: ActorMaterializer,
   val metrics: Metrics)
-    extends AuthProxyController[TestAuthConfig]
+    extends AuthProxyController[TestAuthConfig, String]
     with ErrorHandling { outer =>
 
   val log = LoggerFactory.getLogger(getClass)
@@ -47,11 +47,10 @@ class HttpServer(
     val requestAuthenticator = outer.requestAuthenticator
   }
 
-  val incidentUpstream = new LocalPortUpstream {
-    val localPort = servicePort
+  val incidentUpstream = new CommonHostnameUpstream {
+    val port = servicePort
     val metricsTag = "test"
   }
-  val localHostname = "localhost"
   val httpRoutes = {
 
     (handleExceptions(proxyExceptionHandler)) {

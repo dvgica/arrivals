@@ -24,12 +24,14 @@ import ujson.Js
   * If any of these assumptions are untrue, look at using a supertype of this trait instead. Also, tell #core about your
   * use case!
   */
-trait TwoStepJsonHydrationAggregator
-    extends TwoStepAggregator[String, Either[HttpResponse, Js.Value]] {
+trait TwoStepJsonHydrationAggregator[AddressingConfig]
+    extends TwoStepAggregator[String,
+                              Either[HttpResponse, Js.Value],
+                              AddressingConfig] {
 
   // implement these three methods
-  def handleIncomingRequest(
-      incomingRequest: HttpRequest): (AggregatorUpstream, HttpRequest)
+  def handleIncomingRequest(incomingRequest: HttpRequest)
+    : (AggregatorUpstream[AddressingConfig], HttpRequest)
 
   def handleJsonUpstreamResponse(upstreamResponse: HttpResponse,
                                  upstreamJson: Js.Value): RequestMap
