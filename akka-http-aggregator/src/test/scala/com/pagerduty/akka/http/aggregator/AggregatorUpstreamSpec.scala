@@ -4,7 +4,7 @@ import akka.http.scaladsl.model.{HttpHeader, HttpRequest}
 import akka.http.scaladsl.model.headers._
 import com.pagerduty.akka.http.headerauthentication.model.HeaderAuthConfig
 import com.pagerduty.akka.http.requestauthentication.model.AuthenticationData.AuthFailedReason
-import com.pagerduty.akka.http.support.RequestMetadata
+import com.pagerduty.akka.http.support.{RequestIdHeader, RequestMetadata}
 import org.scalatest.{FreeSpecLike, Matchers}
 
 import scala.concurrent.Future
@@ -47,7 +47,10 @@ class AggregatorUpstreamSpec extends FreeSpecLike with Matchers {
 
     "prepares an aggregator request for delivery" in {
       val request = HttpRequest()
-      val modelRequest = HttpRequest().addHeader(authHeader)
+      val requestId = "some-request-id"
+      val modelRequest = HttpRequest()
+        .addHeader(authHeader)
+        .addHeader(RequestIdHeader(requestId))
 
       val preparedReq =
         u.prepareAggregatorRequestForDelivery(ac, request, modelRequest)
@@ -55,6 +58,8 @@ class AggregatorUpstreamSpec extends FreeSpecLike with Matchers {
       preparedReq.headers
         .find(_.is(authHeader.lowercaseName))
         .get should equal(authHeader)
+
+      preparedReq.header[RequestIdHeader].get.value should equal(requestId)
     }
   }
 }
