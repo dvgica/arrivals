@@ -3,6 +3,7 @@ package com.pagerduty.akka.http.aggregator.aggregator
 import akka.NotUsed
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import com.pagerduty.akka.http.aggregator.AggregatorUpstream
+import com.pagerduty.akka.http.headerauthentication.model.HeaderAuthConfig
 import com.pagerduty.akka.http.requestauthentication.model.AuthenticationConfig
 import ujson.Js
 
@@ -27,25 +28,26 @@ trait OneStepJsonHydrationAggregator[AddressingConfig]
 
   // implement these two methods
   def handleIncomingRequestStateless(
-      authConfig: AuthenticationConfig
-  )(incomingRequest: HttpRequest, authData: authConfig.AuthData)
-    : Map[String, (AggregatorUpstream[AddressingConfig], HttpRequest)]
+      authConfig: HeaderAuthConfig
+  )(incomingRequest: HttpRequest,
+    authData: authConfig.AuthData): Either[HttpResponse, RequestMap]
 
   def buildOutgoingJsonResponseStateless(
       upstreamJsonResponses: Map[String, (HttpResponse, Js.Value)])
     : HttpResponse
 
   // the rest is internal implementation
-  def handleIncomingRequest(
-      authConfig: AuthenticationConfig
+  override def handleIncomingRequest(
+      authConfig: HeaderAuthConfig
   )(incomingRequest: HttpRequest,
-    authData: authConfig.AuthData): (NotUsed, RequestMap) = {
-    val requests =
-      handleIncomingRequestStateless(authConfig)(incomingRequest, authData)
-    (NotUsed, requests)
+    authData: authConfig.AuthData): HandlerResult = {
+    handleIncomingRequestStateless(authConfig)(incomingRequest, authData) match {
+      case Right(requests) => Right(NotUsed, requests)
+      case Left(response) => Left(response)
+    }
   }
 
-  def buildOutgoingResponseStateless(
+  override def buildOutgoingResponseStateless(
       upstreamResponses: ResponseMap): HttpResponse = {
     val upstreamJsonResponses = upstreamResponses.map {
       case (requestKey, (response, entity)) =>
