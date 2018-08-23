@@ -18,9 +18,9 @@ trait AggregatorController[AuthConfig <: HeaderAuthConfig, AddressingConfig] {
   implicit def executionContext: ExecutionContext
   implicit def materializer: Materializer
 
-  def prefixAggregatorRoute[RequestKey, AccumulatedState](
+  def prefixAggregatorRoute(
       pathMatcher: PathMatcher[Unit],
-      aggregator: Aggregator[RequestKey, AccumulatedState, AddressingConfig],
+      aggregator: Aggregator[AddressingConfig],
       requiredPermission: Option[AuthConfig#Permission] = None
   ): Route = {
     pathPrefix(pathMatcher) {
@@ -28,8 +28,8 @@ trait AggregatorController[AuthConfig <: HeaderAuthConfig, AddressingConfig] {
     }
   }
 
-  def aggregatorRoute[RequestKey, AccumulatedState](
-      aggregator: Aggregator[RequestKey, AccumulatedState, AddressingConfig],
+  def aggregatorRoute(
+      aggregator: Aggregator[AddressingConfig],
       requiredPermission: Option[AuthConfig#Permission] = None
   ): Route = {
     extractRequest { incomingRequest =>
