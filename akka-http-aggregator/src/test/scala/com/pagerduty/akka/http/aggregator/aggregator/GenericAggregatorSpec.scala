@@ -1,7 +1,12 @@
 package com.pagerduty.akka.http.aggregator.aggregator
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
+import akka.http.scaladsl.model.{
+  HttpMethods,
+  HttpRequest,
+  HttpResponse,
+  StatusCodes
+}
 import akka.stream.ActorMaterializer
 import akka.testkit.TestKit
 import com.pagerduty.akka.http.aggregator.support.{
@@ -48,6 +53,7 @@ class GenericAggregatorSpec
 
     val response1 = HttpResponse(entity = entity1)
     val response2 = HttpResponse(entity = entity2)
+    val failureResponse1 = HttpResponse(StatusCodes.InternalServerError)
 
     val expectedRequests1 = Map(request1Key -> (upstream1, request1))
     val expectedResponseMap1 = Map(request1Key -> (response1, entity1))
@@ -60,21 +66,34 @@ class GenericAggregatorSpec
     val initialState = "initial"
     val intermediateState = "intermediate"
 
+    val initialFailureResponse = HttpResponse(StatusCodes.MethodNotAllowed)
+    val intermediateFailureResponse = HttpResponse(StatusCodes.BadGateway)
+
     class TestAggregator extends GenericAggregator[String, String, String] {
       override def handleIncomingRequest(
           authConfig: HeaderAuthConfig
       )(incomingRequest: HttpRequest,
         authData: authConfig.AuthData): HandlerResult = {
         authData should equal(testAuthData)
-        Right((initialState, expectedRequests1))
+
+        if (incomingRequest.method == HttpMethods.GET) {
+          Right((initialState, expectedRequests1))
+        } else {
+          Left(initialFailureResponse)
+        }
       }
 
       def handleIntermediateResponse(state: String,
                                      responses: ResponseMap): HandlerResult = {
         state should equal(initialState)
-        responses should equal(expectedResponseMap1)
 
-        Right((intermediateState, expectedRequests2))
+        if (responses == expectedResponseMap1) {
+          println("here")
+          Right((intermediateState, expectedRequests2))
+        } else {
+          println("there")
+          Left(intermediateFailureResponse)
+        }
       }
 
       def intermediateResponseHandlers: Seq[ResponseHandler] =
@@ -110,6 +129,37 @@ class GenericAggregatorSpec
       val response =
         Await.result(aggregator.execute(ac)(request, testAuthData), 10.seconds)
       response should equal(expectedResponse)
+    }
+
+    "short-circuits if the initial handler returns a response" in {
+      implicit val stubProxy =
+        new HttpProxy[String](null, null)(null, null, null)
+
+      val request = HttpRequest(HttpMethods.POST)
+
+      val response =
+        Await.result(aggregator.execute(ac)(request, testAuthData), 10.seconds)
+      response should equal(initialFailureResponse)
+    }
+
+    "short-circuits if one of the intermediate handlers returns a response" in {
+      implicit val stubProxy =
+        new HttpProxy[String](null, null)(null, null, null) {
+          override def request(
+              request: HttpRequest,
+              upstream: Upstream[String]): Future[HttpResponse] = {
+            upstream match {
+              case `upstream1` => Future.successful(failureResponse1)
+              case `upstream2` => Future.successful(response2)
+            }
+          }
+        }
+
+      val request = HttpRequest()
+
+      val response =
+        Await.result(aggregator.execute(ac)(request, testAuthData), 10.seconds)
+      response should equal(intermediateFailureResponse)
     }
   }
 }
