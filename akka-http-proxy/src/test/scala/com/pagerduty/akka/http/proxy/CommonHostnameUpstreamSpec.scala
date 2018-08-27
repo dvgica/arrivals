@@ -5,7 +5,7 @@ import akka.http.scaladsl.model.Uri.Authority
 import org.scalatest.{FreeSpecLike, Matchers}
 
 class CommonHostnameUpstreamSpec extends FreeSpecLike with Matchers {
-  "LocalPortUpstream" - {
+  "CommonHostnameUpstream" - {
     "targets a request to the upstreams local port" in {
       val request = HttpRequest()
       val localHostname = "some-local-host"
