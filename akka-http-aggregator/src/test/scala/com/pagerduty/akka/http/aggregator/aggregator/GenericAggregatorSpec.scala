@@ -88,10 +88,8 @@ class GenericAggregatorSpec
         state should equal(initialState)
 
         if (responses == expectedResponseMap1) {
-          println("here")
           Right((intermediateState, expectedRequests2))
         } else {
-          println("there")
           Left(intermediateFailureResponse)
         }
       }
