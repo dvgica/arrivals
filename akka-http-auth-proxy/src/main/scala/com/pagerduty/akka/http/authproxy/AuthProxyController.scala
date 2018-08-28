@@ -8,7 +8,11 @@ import com.pagerduty.akka.http.headerauthentication.model.HeaderAuthConfig
 import com.pagerduty.akka.http.proxy.{HttpProxy, Upstream}
 import com.pagerduty.akka.http.support.RequestMetadata
 
+import scala.concurrent.{ExecutionContext, Future}
+
 trait AuthProxyController[AuthConfig <: HeaderAuthConfig, AddressingConfig] {
+
+  implicit def executionContext: ExecutionContext
 
   val authConfig: AuthConfig
   def httpProxy: HttpProxy[AddressingConfig]
@@ -17,9 +21,16 @@ trait AuthProxyController[AuthConfig <: HeaderAuthConfig, AddressingConfig] {
   def prefixProxyRoute(
       path: PathMatcher[Unit],
       upstream: Upstream[AddressingConfig],
-      requestTransformer: HttpRequest => HttpRequest
+      requestTransformer: RequestTransformer[AuthConfig#AuthData]
   ): Route =
     prefixProxyRoute(path, upstream, None, Some(requestTransformer))
+
+  def prefixProxyRoute(
+      path: PathMatcher[Unit],
+      upstream: Upstream[AddressingConfig],
+      responseTransformer: ResponseTransformer[AuthConfig#AuthData]
+  ): Route =
+    prefixProxyRoute(path, upstream, None, None, Some(responseTransformer))
 
   def prefixProxyRoute(path: PathMatcher[Unit],
                        upstream: Upstream[AddressingConfig],
@@ -30,7 +41,7 @@ trait AuthProxyController[AuthConfig <: HeaderAuthConfig, AddressingConfig] {
       path: PathMatcher[Unit],
       upstream: Upstream[AddressingConfig],
       requiredPermission: AuthConfig#Permission,
-      requestTransformer: HttpRequest => HttpRequest
+      requestTransformer: RequestTransformer[AuthConfig#AuthData]
   ): Route =
     prefixProxyRoute(path,
                      upstream,
@@ -40,14 +51,43 @@ trait AuthProxyController[AuthConfig <: HeaderAuthConfig, AddressingConfig] {
   def prefixProxyRoute(
       path: PathMatcher[Unit],
       upstream: Upstream[AddressingConfig],
+      requiredPermission: AuthConfig#Permission,
+      responseTransformer: ResponseTransformer[AuthConfig#AuthData]
+  ): Route =
+    prefixProxyRoute(path,
+                     upstream,
+                     Some(requiredPermission),
+                     None,
+                     Some(responseTransformer))
+
+  def prefixProxyRoute(
+      path: PathMatcher[Unit],
+      upstream: Upstream[AddressingConfig],
+      requiredPermission: AuthConfig#Permission,
+      requestTransformer: RequestTransformer[AuthConfig#AuthData],
+      responseTransformer: ResponseTransformer[AuthConfig#AuthData]
+  ): Route =
+    prefixProxyRoute(path,
+                     upstream,
+                     Some(requiredPermission),
+                     Some(requestTransformer),
+                     Some(responseTransformer))
+
+  def prefixProxyRoute(
+      path: PathMatcher[Unit],
+      upstream: Upstream[AddressingConfig],
       requiredPermission: Option[AuthConfig#Permission] = None,
-      requestTransformer: Option[HttpRequest => HttpRequest] = None,
+      requestTransformer: Option[RequestTransformer[AuthConfig#AuthData]] =
+        None,
+      responseTransformer: Option[ResponseTransformer[AuthConfig#AuthData]] =
+        None,
       stripAuthorizationHeader: Boolean = true
   ): Route =
     pathPrefix(path) {
       proxyRoute(upstream,
                  requiredPermission,
                  requestTransformer,
+                 responseTransformer,
                  stripAuthorizationHeader)
     }
 
@@ -55,35 +95,70 @@ trait AuthProxyController[AuthConfig <: HeaderAuthConfig, AddressingConfig] {
                  requiredPermission: AuthConfig#Permission): Route =
     proxyRoute(upstream, Some(requiredPermission))
 
-  def proxyRoute(upstream: Upstream[AddressingConfig],
-                 requestTransformer: HttpRequest => HttpRequest): Route =
+  def proxyRoute(
+      upstream: Upstream[AddressingConfig],
+      requestTransformer: RequestTransformer[AuthConfig#AuthData]): Route =
     proxyRoute(upstream, None, Some(requestTransformer))
 
   def proxyRoute(
       upstream: Upstream[AddressingConfig],
+      responseTransformer: ResponseTransformer[AuthConfig#AuthData]): Route =
+    proxyRoute(upstream, None, None, Some(responseTransformer))
+
+  def proxyRoute(
+      upstream: Upstream[AddressingConfig],
       requiredPermission: AuthConfig#Permission,
-      requestTransformer: HttpRequest => HttpRequest
-  ): Route =
+      requestTransformer: RequestTransformer[AuthConfig#AuthData]): Route =
     proxyRoute(upstream, Some(requiredPermission), Some(requestTransformer))
 
   def proxyRoute(
       upstream: Upstream[AddressingConfig],
+      requiredPermission: AuthConfig#Permission,
+      responseTransformer: ResponseTransformer[AuthConfig#AuthData]): Route =
+    proxyRoute(upstream,
+               Some(requiredPermission),
+               None,
+               Some(responseTransformer))
+
+  def proxyRoute(
+      upstream: Upstream[AddressingConfig],
+      requestTransformer: RequestTransformer[AuthConfig#AuthData],
+      responseTransformer: ResponseTransformer[AuthConfig#AuthData]
+  ): Route =
+    proxyRoute(upstream,
+               None,
+               Some(requestTransformer),
+               Some(responseTransformer))
+
+  def proxyRoute(
+      upstream: Upstream[AddressingConfig],
+      requiredPermission: AuthConfig#Permission,
+      requestTransformer: RequestTransformer[AuthConfig#AuthData],
+      responseTransformer: ResponseTransformer[AuthConfig#AuthData]
+  ): Route =
+    proxyRoute(upstream,
+               Some(requiredPermission),
+               Some(requestTransformer),
+               Some(responseTransformer))
+
+  def proxyRoute(
+      upstream: Upstream[AddressingConfig],
       requiredPermission: Option[AuthConfig#Permission] = None,
-      requestTransformer: Option[HttpRequest => HttpRequest] = None,
+      requestTransformer: Option[RequestTransformer[AuthConfig#AuthData]] =
+        None,
+      responseTransformer: Option[ResponseTransformer[AuthConfig#AuthData]] =
+        None,
       stripAuthorizationHeader: Boolean = true
   ): Route =
     extractRequest { request =>
       implicit val reqMeta = RequestMetadata.fromRequest(request)
 
-      val proxyRequest = requestTransformer match {
-        case Some(transformer) => transformer(request)
-        case None => request
-      }
-
       proxyAuthenticatedRequest(
         upstream,
-        proxyRequest,
+        request,
         requiredPermission,
+        requestTransformer,
+        responseTransformer,
         stripAuthorizationHeader
       )
     }
@@ -92,6 +167,8 @@ trait AuthProxyController[AuthConfig <: HeaderAuthConfig, AddressingConfig] {
       upstream: Upstream[AddressingConfig],
       request: HttpRequest,
       requiredPermission: Option[AuthConfig#Permission],
+      requestTransformer: Option[RequestTransformer[AuthConfig#AuthData]],
+      responseTransformer: Option[ResponseTransformer[AuthConfig#AuthData]],
       stripAuthorizationHeader: Boolean
   )(implicit reqMeta: RequestMetadata): Route = {
     complete {
@@ -99,8 +176,24 @@ trait AuthProxyController[AuthConfig <: HeaderAuthConfig, AddressingConfig] {
         request,
         stripAuthorizationHeader,
         requiredPermission.asInstanceOf[Option[authConfig.Permission]]
-      ) { authedRequest =>
-        httpProxy.request(authedRequest, upstream)
+      ) {
+        case (authedRequest, optAuthData) =>
+          val proxyRequest = requestTransformer match {
+            case Some(transformer) =>
+              transformer.transformRequest(authedRequest, optAuthData)
+            case None => Future.successful(authedRequest)
+          }
+
+          val upstreamResponse =
+            proxyRequest.flatMap(httpProxy.request(_, upstream))
+
+          responseTransformer match {
+            case Some(transformer) =>
+              upstreamResponse.flatMap(
+                transformer.transformResponse(_, optAuthData))
+            case None =>
+              upstreamResponse
+          }
       }
     }
   }

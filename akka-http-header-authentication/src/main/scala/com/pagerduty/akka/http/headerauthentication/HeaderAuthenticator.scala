@@ -16,7 +16,8 @@ trait HeaderAuthenticator extends MetadataLogging {
   )(request: HttpRequest,
     stripAuthorizationHeader: Boolean = true,
     requiredPermission: Option[authConfig.Permission] = None)(
-      handler: HttpRequest => Future[HttpResponse])(
+      handler: (HttpRequest,
+                Option[authConfig.AuthData]) => Future[HttpResponse])(
       implicit reqMeta: RequestMetadata): Future[HttpResponse] = {
     requestAuthenticator.authenticate(authConfig)(request,
                                                   stripAuthorizationHeader,
@@ -28,7 +29,7 @@ trait HeaderAuthenticator extends MetadataLogging {
             log.debug("Authentication failed, not adding auth header!")
             request
         }
-        handler(possiblyAuthedRequest)
+        handler(possiblyAuthedRequest, optAuthData)
     }
   }
 
