@@ -1,7 +1,13 @@
 package com.pagerduty.akka.http.authproxy
 
 import akka.http.scaladsl.model.Uri.Query
-import akka.http.scaladsl.model.{HttpHeader, HttpRequest, HttpResponse}
+import akka.http.scaladsl.model.headers.Host
+import akka.http.scaladsl.model.{
+  HttpHeader,
+  HttpRequest,
+  HttpResponse,
+  StatusCodes
+}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import com.pagerduty.akka.http.headerauthentication.HeaderAuthenticator
@@ -13,6 +19,9 @@ import com.pagerduty.akka.http.proxy.{
 }
 import com.pagerduty.akka.http.requestauthentication.model.AuthenticationData.AuthFailedReason
 import com.pagerduty.akka.http.support.RequestMetadata
+import com.pagerduty.akka.http.authproxy.{
+  RequestTransformer => OurRequestTransformer
+}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FreeSpecLike, Matchers}
 
@@ -49,12 +58,18 @@ class AuthProxyControllerSpec
   }
 
   "AuthProxyController" - {
+    val testAuthData = "auth-data"
     val expectedResponse = HttpResponse(201)
+    val expectedTransformedResponse = HttpResponse(302)
 
     val proxyStub = new HttpProxy[String](null, null)(null, null, null) {
       override def request(request: HttpRequest,
                            upstream: Upstream[String]): Future[HttpResponse] =
-        Future.successful(expectedResponse)
+        if (request.uri.toString.contains("transformed")) {
+          Future.successful(expectedTransformedResponse)
+        } else {
+          Future.successful(expectedResponse)
+        }
     }
     val authedRequest = HttpRequest(uri = "i-am-authed")
 
@@ -64,15 +79,19 @@ class AuthProxyControllerSpec
       )(request: HttpRequest,
         stripAuthorizationHeader: Boolean = true,
         requiredPermission: Option[authConfig.Permission] = None)(
-          handler: HttpRequest => Future[HttpResponse])(
+          handler: (HttpRequest,
+                    Option[authConfig.AuthData]) => Future[HttpResponse])(
           implicit reqMeta: RequestMetadata): Future[HttpResponse] = {
-        handler(authedRequest)
+        handler(authedRequest,
+                Some(testAuthData).asInstanceOf[Option[authConfig.AuthData]])
       }
 
       override def requestAuthenticator = ???
     }
 
     val c = new AuthProxyController[TestAuthConfig, String] {
+      implicit val executionContext =
+        scala.concurrent.ExecutionContext.Implicits.global
       val authConfig = new TestAuthConfig
       def httpProxy = proxyStub
       def headerAuthenticator = headerAuthStub
@@ -96,10 +115,27 @@ class AuthProxyControllerSpec
     }
 
     "transforms, authenticates and proxies requests" in {
-      val transformer = (request: HttpRequest) => {
-        val uriWithQueryParam =
-          request.uri.withQuery(Query("filter_for_manual_run" -> "true"))
-        request.withUri(uriWithQueryParam)
+      val requestTransformer = new OurRequestTransformer[String] {
+        def transformRequest(
+            request: HttpRequest,
+            optAuthData: Option[String]): Future[HttpRequest] = {
+          optAuthData should equal(Some(testAuthData))
+
+          Future.successful(request.withUri("transformed"))
+        }
+      }
+
+      val transformedResponse = HttpResponse(StatusCodes.MethodNotAllowed)
+
+      val responseTransformer = new ResponseTransformer[String] {
+        def transformResponse(
+            response: HttpResponse,
+            optAuthData: Option[String]): Future[HttpResponse] = {
+          optAuthData should equal(Some(testAuthData))
+          response should equal(expectedTransformedResponse)
+
+          Future.successful(transformedResponse)
+        }
       }
 
       Seq(Get(_: String),
@@ -109,11 +145,11 @@ class AuthProxyControllerSpec
           Patch(_: String)).foreach { verb =>
         verb("/") ~> c.proxyRoute(
           upstream,
-          requestTransformer = Some(transformer),
-          requiredPermission = Some("permission")
+          requestTransformer = Some(requestTransformer),
+          responseTransformer = Some(responseTransformer)
         ) ~> check {
           handled shouldBe true
-          response should equal(expectedResponse)
+          response should equal(transformedResponse)
         }
       }
     }

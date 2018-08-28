@@ -80,7 +80,7 @@ class HeaderAuthenticatorSpec
       val headerAuth = buildHeaderAuthenticator(data)
       val request = HttpRequest()
 
-      val handler = (req: HttpRequest) => {
+      val handler = (req: HttpRequest, optAuthData: Option[String]) => {
         authHeader(req) should equal(Some(authHeader))
         Future.successful(HttpResponse())
       }
@@ -93,7 +93,7 @@ class HeaderAuthenticatorSpec
     "does not add auth header when authentication fails" in {
       val headerAuth = buildHeaderAuthenticator(None)
       val request = HttpRequest()
-      val handler = (req: HttpRequest) => {
+      val handler = (req: HttpRequest, optAuthData: Option[String]) => {
         authHeader(req) should equal(None)
         Future.successful(HttpResponse())
       }
