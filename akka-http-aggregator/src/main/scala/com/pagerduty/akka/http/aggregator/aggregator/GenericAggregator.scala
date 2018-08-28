@@ -64,21 +64,20 @@ trait GenericAggregator[RequestKey, AccumulatedState, AddressingConfig]
 
   private def executeIntermediateHandlers(authConfig: HeaderAuthConfig)(
       authedRequest: HttpRequest,
-      fInitialStateAndResponses: Future[(AccumulatedState, ResponseMap)])(
+      initialStateAndResponses: Future[(AccumulatedState, ResponseMap)])(
       implicit httpProxy: HttpProxy[AddressingConfig],
       executionContext: ExecutionContext,
       materializer: Materializer)
     : Future[Either[HttpResponse, (AccumulatedState, ResponseMap)]] = {
-    val fFirstIntermediateHandlerInput
+
+    val firstIntermediateHandlerInput
       : Future[Either[HttpResponse, (AccumulatedState, ResponseMap)]] =
-      fInitialStateAndResponses.map { initialStateAndResponses =>
-        Right(initialStateAndResponses)
-      }
+      initialStateAndResponses.map(Right(_))
 
     // we have the initial handler input; pass it into the first handler, and iterate through the subsequent handlers
-    intermediateResponseHandlers.foldLeft(fFirstIntermediateHandlerInput) {
-      (fRespOrStateAndResponses, handler) =>
-        fRespOrStateAndResponses.flatMap {
+    intermediateResponseHandlers.foldLeft(firstIntermediateHandlerInput) {
+      (respOrStateAndResponses, handler) =>
+        respOrStateAndResponses.flatMap {
           case Right((previousState, responseMap)) =>
             // we have state and responses, so we pass them to this handler
             val respOrNewRequestMap = handler(previousState, responseMap)
