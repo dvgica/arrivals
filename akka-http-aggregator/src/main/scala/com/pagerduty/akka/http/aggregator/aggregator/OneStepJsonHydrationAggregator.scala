@@ -2,9 +2,6 @@ package com.pagerduty.akka.http.aggregator.aggregator
 
 import akka.NotUsed
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
-import com.pagerduty.akka.http.aggregator.AggregatorUpstream
-import com.pagerduty.akka.http.headerauthentication.model.HeaderAuthConfig
-import com.pagerduty.akka.http.requestauthentication.model.AuthenticationConfig
 import ujson.Js
 
 /**
@@ -23,25 +20,22 @@ import ujson.Js
   * If any of these assumptions are untrue, look at using a supertype of this trait instead. Also, tell #core about your
   * use case!
   */
-trait OneStepJsonHydrationAggregator[AddressingConfig]
-    extends OneStepAggregator[String, AddressingConfig] {
+trait OneStepJsonHydrationAggregator[AuthData, AddressingConfig]
+    extends OneStepAggregator[AuthData, String, AddressingConfig] {
 
   // implement these two methods
   def handleIncomingRequestStateless(
-      authConfig: HeaderAuthConfig
-  )(incomingRequest: HttpRequest,
-    authData: authConfig.AuthData): Either[HttpResponse, RequestMap]
+      incomingRequest: HttpRequest,
+      authData: AuthData): Either[HttpResponse, RequestMap]
 
   def buildOutgoingJsonResponseStateless(
       upstreamJsonResponses: Map[String, (HttpResponse, Js.Value)])
     : HttpResponse
 
   // the rest is internal implementation
-  override def handleIncomingRequest(
-      authConfig: HeaderAuthConfig
-  )(incomingRequest: HttpRequest,
-    authData: authConfig.AuthData): HandlerResult = {
-    handleIncomingRequestStateless(authConfig)(incomingRequest, authData) match {
+  override def handleIncomingRequest(incomingRequest: HttpRequest,
+                                     authData: AuthData): HandlerResult = {
+    handleIncomingRequestStateless(incomingRequest, authData) match {
       case Right(requests) => Right(NotUsed, requests)
       case Left(response) => Left(response)
     }

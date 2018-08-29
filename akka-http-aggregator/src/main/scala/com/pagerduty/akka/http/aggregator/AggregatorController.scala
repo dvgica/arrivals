@@ -20,7 +20,7 @@ trait AggregatorController[AuthConfig <: HeaderAuthConfig, AddressingConfig] {
 
   def prefixAggregatorRoute(
       pathMatcher: PathMatcher[Unit],
-      aggregator: Aggregator[AddressingConfig],
+      aggregator: Aggregator[AuthConfig#AuthData, AddressingConfig],
       requiredPermission: Option[AuthConfig#Permission] = None
   ): Route = {
     pathPrefix(pathMatcher) {
@@ -29,7 +29,7 @@ trait AggregatorController[AuthConfig <: HeaderAuthConfig, AddressingConfig] {
   }
 
   def aggregatorRoute(
-      aggregator: Aggregator[AddressingConfig],
+      aggregator: Aggregator[AuthConfig#AuthData, AddressingConfig],
       requiredPermission: Option[AuthConfig#Permission] = None
   ): Route = {
     extractRequest { incomingRequest =>

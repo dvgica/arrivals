@@ -7,11 +7,10 @@ import com.pagerduty.akka.http.proxy.HttpProxy
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait Aggregator[AddressingConfig] {
+trait Aggregator[AuthData, AddressingConfig] {
   def execute(authConfig: HeaderAuthConfig)(authedRequest: HttpRequest,
-                                            authData: authConfig.AuthData)(
+                                            authData: AuthData)(
       implicit httpProxy: HttpProxy[AddressingConfig],
       executionContext: ExecutionContext,
       materializer: Materializer): Future[HttpResponse]
-
 }

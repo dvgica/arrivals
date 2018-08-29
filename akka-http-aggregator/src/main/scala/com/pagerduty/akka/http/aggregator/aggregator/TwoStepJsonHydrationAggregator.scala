@@ -24,8 +24,8 @@ import ujson.Js
   * If any of these assumptions are untrue, look at using a supertype of this trait instead. Also, tell #core about your
   * use case!
   */
-trait TwoStepJsonHydrationAggregator[AddressingConfig]
-    extends TwoStepAggregator[String, Js.Value, AddressingConfig] {
+trait TwoStepJsonHydrationAggregator[AuthData, AddressingConfig]
+    extends TwoStepAggregator[AuthData, String, Js.Value, AddressingConfig] {
 
   // implement these three methods
   def handleIncomingRequest(incomingRequest: HttpRequest)
@@ -43,10 +43,8 @@ trait TwoStepJsonHydrationAggregator[AddressingConfig]
   private val emptyState = ujson.read("{}")
   private val initialRequestKey = "initial"
 
-  override def handleIncomingRequest(
-      authConfig: HeaderAuthConfig
-  )(incomingRequest: HttpRequest,
-    authData: authConfig.AuthData): HandlerResult = {
+  override def handleIncomingRequest(incomingRequest: HttpRequest,
+                                     authData: AuthData): HandlerResult = {
     handleIncomingRequest(incomingRequest) match {
       case Right(initialRequest) =>
         Right((emptyState, Map(initialRequestKey -> initialRequest)))

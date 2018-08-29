@@ -9,8 +9,9 @@ import com.pagerduty.akka.http.proxy.HttpProxy
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait GenericAggregator[RequestKey, AccumulatedState, AddressingConfig]
-    extends Aggregator[AddressingConfig] {
+trait GenericAggregator[
+    AuthData, RequestKey, AccumulatedState, AddressingConfig]
+    extends Aggregator[AuthData, AddressingConfig] {
   type RequestMap =
     Map[RequestKey, (AggregatorUpstream[AddressingConfig], HttpRequest)]
   type ResponseMap = Map[RequestKey, (HttpResponse, String)]
@@ -19,9 +20,8 @@ trait GenericAggregator[RequestKey, AccumulatedState, AddressingConfig]
   type ResponseHandler = (AccumulatedState, ResponseMap) => HandlerResult
 
   // implement these methods
-  def handleIncomingRequest(
-      authConfig: HeaderAuthConfig
-  )(incomingRequest: HttpRequest, authData: authConfig.AuthData): HandlerResult
+  def handleIncomingRequest(incomingRequest: HttpRequest,
+                            authData: AuthData): HandlerResult
 
   def intermediateResponseHandlers: Seq[ResponseHandler]
 
@@ -30,12 +30,12 @@ trait GenericAggregator[RequestKey, AccumulatedState, AddressingConfig]
 
   // implementation
   def execute(authConfig: HeaderAuthConfig)(authedRequest: HttpRequest,
-                                            authData: authConfig.AuthData)(
+                                            authData: AuthData)(
       implicit httpProxy: HttpProxy[AddressingConfig],
       executionContext: ExecutionContext,
       materializer: Materializer): Future[HttpResponse] = {
     val initialHandlerResult =
-      handleIncomingRequest(authConfig)(authedRequest, authData)
+      handleIncomingRequest(authedRequest, authData)
 
     initialHandlerResult match {
       case Right((initialState, initialRequests)) =>
