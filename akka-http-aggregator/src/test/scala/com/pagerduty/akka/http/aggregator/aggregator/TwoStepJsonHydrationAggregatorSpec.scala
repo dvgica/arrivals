@@ -64,7 +64,8 @@ class TwoStepJsonHydrationAggregatorSpec
     val initialState = "initial"
     val intermediateState = "intermediate"
 
-    class TestAggregator extends TwoStepJsonHydrationAggregator[String] {
+    class TestAggregator
+        extends TwoStepJsonHydrationAggregator[String, String] {
       override def handleIncomingRequest(incomingRequest: HttpRequest)
         : Either[HttpResponse, (AggregatorUpstream[String], HttpRequest)] =
         Right((upstream1, request1))

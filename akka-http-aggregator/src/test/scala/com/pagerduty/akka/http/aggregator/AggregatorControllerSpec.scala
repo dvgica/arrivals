@@ -60,10 +60,9 @@ class AggregatorControllerSpec
 
     "with a simple test Aggregator" - {
 
-      class TestAggregator extends Aggregator[String] {
-        def execute(authConfig: HeaderAuthConfig)(
-            authedRequest: HttpRequest,
-            authData: authConfig.AuthData)(
+      class TestAggregator extends Aggregator[String, String] {
+        def execute(authConfig: HeaderAuthConfig)(authedRequest: HttpRequest,
+                                                  authData: String)(
             implicit httpProxy: HttpProxy[String],
             executionContext: ExecutionContext,
             materializer: Materializer): Future[HttpResponse] = {

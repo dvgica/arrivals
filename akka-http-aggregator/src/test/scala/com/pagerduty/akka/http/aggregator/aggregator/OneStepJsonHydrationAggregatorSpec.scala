@@ -66,11 +66,10 @@ class OneStepJsonHydrationAggregatorSpec
                                 reqKey2 -> (response2, entityJson2))
 
     class TestOneStepJsonHydrationAggregator
-        extends OneStepJsonHydrationAggregator[String] {
+        extends OneStepJsonHydrationAggregator[String, String] {
       override def handleIncomingRequestStateless(
-          authConfig: HeaderAuthConfig
-      )(incomingRequest: HttpRequest,
-        authData: authConfig.AuthData): Either[HttpResponse, RequestMap] = {
+          incomingRequest: HttpRequest,
+          authData: String): Either[HttpResponse, RequestMap] = {
         authData should equal(authData)
         Right(expectedRequests)
       }

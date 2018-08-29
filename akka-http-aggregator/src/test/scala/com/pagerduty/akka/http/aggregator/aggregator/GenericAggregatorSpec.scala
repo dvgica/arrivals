@@ -69,11 +69,10 @@ class GenericAggregatorSpec
     val initialFailureResponse = HttpResponse(StatusCodes.MethodNotAllowed)
     val intermediateFailureResponse = HttpResponse(StatusCodes.BadGateway)
 
-    class TestAggregator extends GenericAggregator[String, String, String] {
-      override def handleIncomingRequest(
-          authConfig: HeaderAuthConfig
-      )(incomingRequest: HttpRequest,
-        authData: authConfig.AuthData): HandlerResult = {
+    class TestAggregator
+        extends GenericAggregator[String, String, String, String] {
+      override def handleIncomingRequest(incomingRequest: HttpRequest,
+                                         authData: String): HandlerResult = {
         authData should equal(testAuthData)
 
         if (incomingRequest.method == HttpMethods.GET) {
