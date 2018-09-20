@@ -27,7 +27,8 @@ class HttpProxy[AddressingConfig](
         .addressRequestWithOverrides(request, addressingConfig)
         .removeHeader(TimeoutAccessHeaderName) // Akka HTTP server adds the Timeout-Access for internal reasons, but it should not be proxied
 
-    val preparedProxyRequest = upstream.prepareRequestForDelivery(addressedRequest)
+    val preparedProxyRequest =
+      upstream.prepareRequestForDelivery(addressedRequest)
 
     val stopwatch = Stopwatch.start()
     val response = httpClient(preparedProxyRequest)
