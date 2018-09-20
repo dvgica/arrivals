@@ -12,9 +12,16 @@ import scala.concurrent.Future
 
 class HttpProxySpec extends FreeSpecLike with Matchers {
   "An HttpProxy" - {
+    val headerKey = "x-test-header"
+    val headerValue = "test"
+    val additionalHeader = RawHeader(headerKey, headerValue)
+
     val upstream = new CommonHostnameUpstream {
       val port = 1234
       val metricsTag = "test"
+      override def prepareRequestForDelivery(
+          request: HttpRequest): HttpRequest =
+        request.addHeader(additionalHeader)
     }
 
     import scala.concurrent.ExecutionContext.Implicits.global
@@ -39,48 +46,7 @@ class HttpProxySpec extends FreeSpecLike with Matchers {
                 upstream)
     }
 
-    "sets the Connection header to keep-alive before proxying, if it already is set to close" in {
-      val httpClient = (req: HttpRequest) => {
-        req.headers.find(_.is("connection")) match {
-          case Some(h) if h.value() == "keep-alive" => // it works!
-          case _ =>
-            throw new Exception(
-              "The Connection header is not being set to keep-alive as we expect")
-        }
-
-        Future.successful(response)
-      }
-
-      val p = new HttpProxy("localhost", httpClient)
-
-      p.request(HttpRequest().withHeaders(RawHeader("Connection", "close")),
-                upstream)
-    }
-
-    "sets the Connection header to keep-alive before proxying, if it didn't already exist" in {
-      val httpClient = (req: HttpRequest) => {
-        req.headers.find(_.is("connection")) match {
-          case Some(h) if h.value() == "keep-alive" => // it works!
-          case _ =>
-            throw new Exception(
-              "The Connection header is not being set to keep-alive as we expect")
-        }
-
-        Future.successful(response)
-      }
-
-      val p = new HttpProxy("localhost", httpClient)
-
-      p.request(HttpRequest(), upstream)
-    }
-
-    "transforms the request before proxying" in {
-      val headerKey = "x-test-header"
-      val headerValue = "test"
-      val additionalHeader = RawHeader(headerKey, headerValue)
-      val proxyRequestModifier =
-        (req: HttpRequest) => req.addHeader(additionalHeader)
-
+    "prepares the request before proxying" in {
       val httpClient = (req: HttpRequest) => {
         req.headers.find(_.is(headerKey)) match {
           case Some(h) if h.value() == headerValue => // it works!
@@ -92,8 +58,7 @@ class HttpProxySpec extends FreeSpecLike with Matchers {
         Future.successful(response)
       }
 
-      val p =
-        new HttpProxy("localhost", httpClient, Some(proxyRequestModifier))
+      val p = new HttpProxy("localhost", httpClient)
 
       p.request(HttpRequest(), upstream)
     }

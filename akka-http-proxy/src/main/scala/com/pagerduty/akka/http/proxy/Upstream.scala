@@ -44,6 +44,8 @@ trait Upstream[AddressingConfig] {
 
     request.withUri(targetedUri)
   }
+
+  def prepareRequestForDelivery(request: HttpRequest): HttpRequest = request
 }
 
 trait CommonHostnameUpstream extends Upstream[String] {

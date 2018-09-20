@@ -1,6 +1,5 @@
 package com.pagerduty.akka.http.proxy
 
-import akka.http.scaladsl.model.headers.Connection
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.stream.Materializer
 import com.pagerduty.akka.http.support.MetadataLogging
@@ -16,8 +15,7 @@ object HttpProxy {
 
 class HttpProxy[AddressingConfig](
     addressingConfig: AddressingConfig,
-    httpClient: HttpRequest => Future[HttpResponse],
-    proxyRequestModifier: Option[HttpRequest => HttpRequest] = None
+    httpClient: HttpRequest => Future[HttpResponse]
 )(implicit ec: ExecutionContext, materializer: Materializer, metrics: Metrics)
     extends MetadataLogging {
   import HttpProxy._
@@ -28,18 +26,12 @@ class HttpProxy[AddressingConfig](
       upstream.addressRequestWithOverrides(request, addressingConfig)
 
     val proxyRequest =
-      targetedRequest
-        .removeHeader(TimeoutAccessHeaderName) // Akka HTTP server adds the Timeout-Access for internal reasons, but it should not be proxied
-        .removeHeader(Connection.name) // remove any existing Connection header
-        .addHeader(Connection(KeepAliveHeaderValue)) // add a Connection: keep-alive header
+      targetedRequest.removeHeader(TimeoutAccessHeaderName) // Akka HTTP server adds the Timeout-Access for internal reasons, but it should not be proxied
 
-    val modifiedProxyRequest = proxyRequestModifier match {
-      case Some(modifier) => modifier(proxyRequest)
-      case None => proxyRequest
-    }
+    val preparedProxyRequest = upstream.prepareRequestForDelivery(proxyRequest)
 
     val stopwatch = Stopwatch.start()
-    val response = httpClient(modifiedProxyRequest)
+    val response = httpClient(preparedProxyRequest)
 
     response.flatMap { r =>
       val elapsed = stopwatch.elapsed().toMicros.toInt
