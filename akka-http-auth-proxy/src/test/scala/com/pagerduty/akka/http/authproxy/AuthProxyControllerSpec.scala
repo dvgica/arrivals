@@ -129,6 +129,7 @@ class AuthProxyControllerSpec
 
       val responseTransformer = new ResponseTransformer[String] {
         def transformResponse(
+            request: HttpRequest,
             response: HttpResponse,
             optAuthData: Option[String]): Future[HttpResponse] = {
           optAuthData should equal(Some(testAuthData))
