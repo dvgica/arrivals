@@ -6,6 +6,7 @@ import akka.stream.Materializer
 import com.pagerduty.akka.http.aggregator.AggregatorUpstream
 import com.pagerduty.akka.http.headerauthentication.model.HeaderAuthConfig
 import com.pagerduty.akka.http.proxy.HttpProxy
+import com.pagerduty.akka.http.support.RequestMetadata
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -29,11 +30,12 @@ trait GenericAggregator[
                             upstreamResponses: ResponseMap): HttpResponse
 
   // implementation
-  def execute(authConfig: HeaderAuthConfig)(authedRequest: HttpRequest,
-                                            authData: AuthData)(
-      implicit httpProxy: HttpProxy[AddressingConfig],
-      executionContext: ExecutionContext,
-      materializer: Materializer): Future[HttpResponse] = {
+  override def execute(authConfig: HeaderAuthConfig)(
+      authedRequest: HttpRequest,
+      authData: AuthData)(implicit httpProxy: HttpProxy[AddressingConfig],
+                          executionContext: ExecutionContext,
+                          materializer: Materializer,
+                          reqMeta: RequestMetadata): Future[HttpResponse] = {
     val initialHandlerResult =
       handleIncomingRequest(authedRequest, authData)
 
@@ -67,7 +69,8 @@ trait GenericAggregator[
       initialStateAndResponses: Future[(AccumulatedState, ResponseMap)])(
       implicit httpProxy: HttpProxy[AddressingConfig],
       executionContext: ExecutionContext,
-      materializer: Materializer)
+      materializer: Materializer,
+      reqMeta: RequestMetadata)
     : Future[Either[HttpResponse, (AccumulatedState, ResponseMap)]] = {
 
     val firstIntermediateHandlerInput
@@ -105,7 +108,8 @@ trait GenericAggregator[
       authedRequest: HttpRequest
   )(implicit httpProxy: HttpProxy[AddressingConfig],
     executionContext: ExecutionContext,
-    materializer: Materializer): Future[(AccumulatedState, ResponseMap)] = {
+    materializer: Materializer,
+    reqMeta: RequestMetadata): Future[(AccumulatedState, ResponseMap)] = {
     val preparedRequests = requests.map {
       case (key, (upstream, req)) =>
         val preppedReq =

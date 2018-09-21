@@ -11,6 +11,7 @@ import com.pagerduty.akka.http.aggregator.support.{
 }
 import com.pagerduty.akka.http.headerauthentication.model.HeaderAuthConfig
 import com.pagerduty.akka.http.proxy.{HttpProxy, Upstream}
+import com.pagerduty.akka.http.support.RequestMetadata
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{BeforeAndAfterAll, FreeSpecLike, Matchers}
@@ -33,6 +34,7 @@ class OneStepJsonHydrationAggregatorSpec
 
   implicit val executionContext = ExecutionContext.global
   implicit val materializer = ActorMaterializer()
+  implicit val reqMeta = RequestMetadata.fromRequest(HttpRequest())
 
   val ac = new TestAuthConfig
 
@@ -87,9 +89,9 @@ class OneStepJsonHydrationAggregatorSpec
     "sends requests to upstreams and aggregates the responses" in {
       implicit val stubProxy =
         new HttpProxy[String](null, null)(null, null, null) {
-          override def request(
-              request: HttpRequest,
-              upstream: Upstream[String]): Future[HttpResponse] = {
+          override def request(request: HttpRequest,
+                               upstream: Upstream[String])(
+              implicit reqMeta: RequestMetadata): Future[HttpResponse] = {
             upstream match {
               case `upstream1` => Future.successful(response1)
               case `upstream2` => Future.successful(response2)
@@ -106,9 +108,9 @@ class OneStepJsonHydrationAggregatorSpec
     "fails whole request when one request fails" in {
       implicit val stubProxy =
         new HttpProxy[String](null, null)(null, null, null) {
-          override def request(
-              request: HttpRequest,
-              upstream: Upstream[String]): Future[HttpResponse] = {
+          override def request(request: HttpRequest,
+                               upstream: Upstream[String])(
+              implicit reqMeta: RequestMetadata): Future[HttpResponse] = {
             upstream match {
               case `upstream1` => Future.successful(response1)
               case `upstream2` =>

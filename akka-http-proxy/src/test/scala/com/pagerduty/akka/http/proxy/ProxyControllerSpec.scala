@@ -2,6 +2,7 @@ package com.pagerduty.akka.http.proxy
 
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import com.pagerduty.akka.http.support.RequestMetadata
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FreeSpecLike, Matchers}
 
@@ -17,8 +18,8 @@ class ProxyControllerSpec
     val expectedResponse = HttpResponse(201)
 
     val httpStub = new HttpProxy[String](null, null)(null, null, null) {
-      override def request(request: HttpRequest,
-                           upstream: Upstream[String]): Future[HttpResponse] =
+      override def request(request: HttpRequest, upstream: Upstream[String])(
+          implicit reqMeta: RequestMetadata): Future[HttpResponse] =
         Future.successful(expectedResponse)
     }
     val c = new ProxyController[String] {

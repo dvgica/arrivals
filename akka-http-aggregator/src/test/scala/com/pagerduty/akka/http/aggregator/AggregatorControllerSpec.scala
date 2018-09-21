@@ -65,7 +65,8 @@ class AggregatorControllerSpec
                                                   authData: String)(
             implicit httpProxy: HttpProxy[String],
             executionContext: ExecutionContext,
-            materializer: Materializer): Future[HttpResponse] = {
+            materializer: Materializer,
+            reqMeta: RequestMetadata): Future[HttpResponse] = {
           authData should equal(testAuthData)
           Future.successful(expectedResponse)
         }

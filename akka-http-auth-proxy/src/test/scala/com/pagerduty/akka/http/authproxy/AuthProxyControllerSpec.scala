@@ -63,8 +63,8 @@ class AuthProxyControllerSpec
     val expectedTransformedResponse = HttpResponse(302)
 
     val proxyStub = new HttpProxy[String](null, null)(null, null, null) {
-      override def request(request: HttpRequest,
-                           upstream: Upstream[String]): Future[HttpResponse] =
+      override def request(request: HttpRequest, upstream: Upstream[String])(
+          implicit reqMeta: RequestMetadata): Future[HttpResponse] =
         if (request.uri.toString.contains("transformed")) {
           Future.successful(expectedTransformedResponse)
         } else {

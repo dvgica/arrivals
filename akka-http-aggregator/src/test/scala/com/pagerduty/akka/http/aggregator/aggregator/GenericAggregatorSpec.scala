@@ -15,6 +15,7 @@ import com.pagerduty.akka.http.aggregator.support.{
 }
 import com.pagerduty.akka.http.headerauthentication.model.HeaderAuthConfig
 import com.pagerduty.akka.http.proxy.{HttpProxy, Upstream}
+import com.pagerduty.akka.http.support.RequestMetadata
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{BeforeAndAfterAll, FreeSpecLike, Matchers}
 
@@ -34,6 +35,7 @@ class GenericAggregatorSpec
 
   implicit val executionContext = ExecutionContext.global
   implicit val materializer = ActorMaterializer()
+  implicit val reqMeta = RequestMetadata.fromRequest(HttpRequest())
 
   val ac = new TestAuthConfig
 
@@ -111,9 +113,9 @@ class GenericAggregatorSpec
     "sends requests to upstreams and aggregates responses in multiple steps" in {
       implicit val stubProxy =
         new HttpProxy[String](null, null)(null, null, null) {
-          override def request(
-              request: HttpRequest,
-              upstream: Upstream[String]): Future[HttpResponse] = {
+          override def request(request: HttpRequest,
+                               upstream: Upstream[String])(
+              implicit reqMeta: RequestMetadata): Future[HttpResponse] = {
             upstream match {
               case `upstream1` => Future.successful(response1)
               case `upstream2` => Future.successful(response2)
@@ -142,9 +144,9 @@ class GenericAggregatorSpec
     "short-circuits if one of the intermediate handlers returns a response" in {
       implicit val stubProxy =
         new HttpProxy[String](null, null)(null, null, null) {
-          override def request(
-              request: HttpRequest,
-              upstream: Upstream[String]): Future[HttpResponse] = {
+          override def request(request: HttpRequest,
+                               upstream: Upstream[String])(
+              implicit reqMeta: RequestMetadata): Future[HttpResponse] = {
             upstream match {
               case `upstream1` => Future.successful(failureResponse1)
               case `upstream2` => Future.successful(response2)
