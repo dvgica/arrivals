@@ -10,12 +10,12 @@ import scala.concurrent.{ExecutionContext, Future}
 
 object HttpProxy {
   val TimeoutAccessHeaderName = "Timeout-Access"
-  val KeepAliveHeaderValue = "keep-alive"
 }
 
 class HttpProxy[AddressingConfig](
     addressingConfig: AddressingConfig,
-    httpClient: HttpRequest => Future[HttpResponse]
+    httpClient: HttpRequest => Future[HttpResponse],
+    entityConsumptionTimeout: FiniteDuration = 20.seconds
 )(implicit ec: ExecutionContext, materializer: Materializer, metrics: Metrics)
     extends MetadataLogging {
   import HttpProxy._
@@ -39,7 +39,7 @@ class HttpProxy[AddressingConfig](
                         elapsed,
                         "upstream" -> upstream.metricsTag)
 
-      r.entity.withoutSizeLimit().toStrict(20.seconds).map { e =>
+      r.entity.withoutSizeLimit().toStrict(entityConsumptionTimeout).map { e =>
         r.withEntity(e)
       }
     }
