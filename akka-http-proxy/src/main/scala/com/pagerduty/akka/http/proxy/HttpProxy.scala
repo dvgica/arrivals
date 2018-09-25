@@ -20,7 +20,8 @@ object HttpProxy {
     "Sec-WebSocket-Key",
     "Sec-WebSocket-Extensions",
     "UpgradeToWebSocket",
-    "Upgrade"
+    "Upgrade",
+    "Connection"
   ).map(_.toLowerCase)
 }
 
@@ -52,10 +53,7 @@ class HttpProxy[AddressingConfig](
     }
 
     response.map { r =>
-      val elapsed = stopwatch.elapsed().toMicros.toInt
-      metrics.histogram("upstream_response_time",
-                        elapsed,
-                        "upstream" -> upstream.metricsTag)
+      emitUpstreamResponseMetrics(r, stopwatch, upstream)
       r
     }
   }
@@ -107,5 +105,28 @@ class HttpProxy[AddressingConfig](
       headers: immutable.Seq[HttpHeader]): immutable.Seq[HttpHeader] = {
     headers.filterNot(header =>
       WebSocketHeadersToFilter.contains(header.lowercaseName()))
+  }
+
+  private def emitUpstreamResponseMetrics(
+      response: HttpResponse,
+      stopwatch: Stopwatch,
+      upstream: Upstream[AddressingConfig]): Unit = {
+    val statusCode = response.status.intValue
+    val responseErrorType = statusCode match {
+      case i if i >= 400 && i <= 499 => "client"
+      case i if i >= 500 && i <= 599 => "server"
+      case _ => "none"
+    }
+
+    val upstreamTag = "upstream" -> upstream.metricsTag
+    val errorTags = Seq(
+      ("response_code", statusCode.toString),
+      ("response_error_type", responseErrorType)
+    )
+
+    val elapsed = stopwatch.elapsed().toMicros.toInt
+    metrics.increment("upstream_response_count",
+                      (errorTags :+ upstreamTag): _*)
+    metrics.histogram("upstream_response_time", elapsed, upstreamTag)
   }
 }
