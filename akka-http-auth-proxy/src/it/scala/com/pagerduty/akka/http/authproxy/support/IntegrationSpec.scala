@@ -48,7 +48,7 @@ trait IntegrationSpec
   var mockAs: WireMockServer = _
 
   override def beforeAll(): Unit = {
-    as = ActorSystem("bff-public-api-test")
+    as = ActorSystem("test-system")
     ec = as.dispatcher
     m = ActorMaterializer()
     implicit val metrics = NullMetrics
@@ -66,7 +66,7 @@ trait IntegrationSpec
     }
 
     val httpProxy = new HttpProxy("localhost", httpClient)
-    s = new HttpServer(host, port, servicePort, httpProxy)
+    s = new HttpServer(host, port, servicePort, 10100, httpProxy)
 
     mockService = new WireMockServer(options().port(servicePort))
     mockService.start()

@@ -25,6 +25,7 @@ class HttpServer(
     val httpInterface: String,
     val port: Int,
     val servicePort: Int,
+    val wsPort: Int,
     val httpProxy: HttpProxy[String]
 )(implicit actorSystem: ActorSystem,
   materializer: ActorMaterializer,
@@ -51,6 +52,13 @@ class HttpServer(
     val port = servicePort
     val metricsTag = "test"
   }
+
+  val wsUpstream = new CommonHostnameUpstream {
+    override def port = wsPort
+
+    override def metricsTag = "test"
+  }
+
   val httpRoutes = {
 
     (handleExceptions(proxyExceptionHandler)) {
@@ -60,7 +68,9 @@ class HttpServer(
                          IncidentsPermission) ~
         prefixProxyRoute("api" / "v2" / "schedules",
                          incidentUpstream,
-                         SchedulesPermission)
+                         SchedulesPermission) ~
+        prefixProxyRoute("ws", wsUpstream)
+
     }
   }
 
