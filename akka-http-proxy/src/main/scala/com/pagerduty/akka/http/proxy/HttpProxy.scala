@@ -39,10 +39,8 @@ class HttpProxy[AddressingConfig](
                         elapsed,
                         "upstream" -> upstream.metricsTag)
 
-      upstream.transformResponse(request, r)
-
       r.entity.withoutSizeLimit().toStrict(entityConsumptionTimeout).map { e =>
-        r.withEntity(e)
+        upstream.transformResponse(preparedProxyRequest, r.withEntity(e))
       }
     }
   }
