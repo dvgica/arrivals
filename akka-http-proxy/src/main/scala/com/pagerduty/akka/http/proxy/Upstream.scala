@@ -47,7 +47,8 @@ trait Upstream[AddressingConfig] {
 
   def prepareRequestForDelivery(request: HttpRequest): HttpRequest = request
 
-  def transformResponse(request: HttpRequest, response: HttpResponse): HttpResponse = response
+  def transformResponse(request: HttpRequest,
+                        response: HttpResponse): HttpResponse = response
 }
 
 trait CommonHostnameUpstream extends Upstream[String] {

@@ -6,11 +6,12 @@ import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse, Uri}
 import akka.stream.ActorMaterializer
 import com.pagerduty.metrics.NullMetrics
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FreeSpecLike, Matchers}
 
 import scala.concurrent.Future
 
-class HttpProxySpec extends FreeSpecLike with Matchers {
+class HttpProxySpec extends FreeSpecLike with Matchers with ScalaFutures {
   "An HttpProxy" - {
     val headerKey = "x-test-header"
     val headerValue = "test"
@@ -22,6 +23,11 @@ class HttpProxySpec extends FreeSpecLike with Matchers {
       override def prepareRequestForDelivery(
           request: HttpRequest): HttpRequest =
         request.addHeader(additionalHeader)
+
+      override def transformResponse(request: HttpRequest,
+                                     response: HttpResponse): HttpResponse = {
+        response.addHeader(request.getHeader(headerKey).get)
+      }
     }
 
     import scala.concurrent.ExecutionContext.Implicits.global
@@ -76,6 +82,18 @@ class HttpProxySpec extends FreeSpecLike with Matchers {
       val p = new HttpProxy("localhost", httpClient)
 
       p.request(HttpRequest(), upstream)
+    }
+
+    "can write headers from the request to the response" in {
+      val httpClient = (req: HttpRequest) => {
+        Future.successful(response)
+      }
+
+      val p = new HttpProxy("localhost", httpClient)
+
+      whenReady(p.request(HttpRequest(), upstream)) { response =>
+        response.getHeader(headerKey).get.value shouldBe headerValue
+      }
     }
   }
 }
