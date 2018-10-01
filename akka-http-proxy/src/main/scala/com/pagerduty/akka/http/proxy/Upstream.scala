@@ -1,6 +1,6 @@
 package com.pagerduty.akka.http.proxy
 
-import akka.http.scaladsl.model.{HttpRequest, Uri}
+import akka.http.scaladsl.model.{HttpRequest, HttpResponse, Uri}
 import akka.http.scaladsl.model.Uri.Authority
 
 trait Upstream[AddressingConfig] {
@@ -46,6 +46,9 @@ trait Upstream[AddressingConfig] {
   }
 
   def prepareRequestForDelivery(request: HttpRequest): HttpRequest = request
+
+  def transformResponse(request: HttpRequest,
+                        response: HttpResponse): HttpResponse = response
 }
 
 trait CommonHostnameUpstream extends Upstream[String] {
