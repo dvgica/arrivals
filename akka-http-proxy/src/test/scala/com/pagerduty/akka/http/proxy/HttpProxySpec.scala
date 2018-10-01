@@ -84,7 +84,7 @@ class HttpProxySpec extends FreeSpecLike with Matchers with ScalaFutures {
       p.request(HttpRequest(), upstream)
     }
 
-    "can write headers from the request to the response" in {
+    "transforms responses for an upstream" in {
       val httpClient = (req: HttpRequest) => {
         Future.successful(response)
       }
