@@ -38,7 +38,6 @@ class AggregatorControllerSpec
           override def addAndRequireAuthHeader(
               authConfig: HeaderAuthConfig
           )(request: HttpRequest,
-            stripAuthorizationHeader: Boolean = true,
             requiredPermission: Option[authConfig.Permission] = None)(
               handler: (HttpRequest,
                         authConfig.AuthData) => Future[HttpResponse])(

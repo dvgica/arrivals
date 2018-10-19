@@ -26,36 +26,27 @@ trait RequestAuthenticator extends MetadataLogging {
 
   def authenticate(
       authConfig: AuthenticationConfig
-  )(request: HttpRequest,
-    stripAuthorizationHeader: Boolean,
-    requiredPermission: Option[authConfig.Permission])(
+  )(request: HttpRequest, requiredPermission: Option[authConfig.Permission])(
       handler: (HttpRequest,
                 Option[authConfig.AuthData]) => Future[HttpResponse])(
       implicit reqMeta: RequestMetadata): Future[HttpResponse] = {
 
     val extractedCredentials = authConfig.extractCredentials(request)
 
-    val (authDataFuture, hasToken) = extractedCredentials match {
+    val authDataFuture = extractedCredentials match {
       case cred :: Nil =>
         // one credential was provided
-        (attemptAuthentication(authConfig)(cred, request, requiredPermission),
-         true)
+        attemptAuthentication(authConfig)(cred, request, requiredPermission)
       case _ :: _ =>
         // multiple creds were provided, we won't attempt authentication
-        (Future.successful(None), true)
+        Future.successful(None)
       case _ =>
         // no credentials were provided
-        (Future.successful(None), false)
+        Future.successful(None)
     }
 
-    val strippedRequest =
-      if (stripAuthorizationHeader && hasToken)
-        request.mapHeaders(_.filterNot(_.is("authorization")))
-      else
-        request
-
     authDataFuture flatMap { optAuthData =>
-      handler(strippedRequest, optAuthData)
+      handler(request, optAuthData)
     }
   }
 

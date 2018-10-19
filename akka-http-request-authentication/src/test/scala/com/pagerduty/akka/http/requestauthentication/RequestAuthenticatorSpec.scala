@@ -72,21 +72,18 @@ class RequestAuthenticatorSpec
       def metrics = NullMetrics
     }
 
-    "calls handler with AuthenticationData when good token provided, and doesn't strip Authorization header" in {
+    "calls handler with AuthenticationData when good token provided" in {
       val request =
         HttpRequest().addHeader(Authorization(OAuth2BearerToken("GOODTOKEN")))
       val handler = (req: HttpRequest, optAuthData: Option[TestAuthData]) => {
         optAuthData should equal(Some(authData))
-        authorizationHeader(req) should be(defined)
         Future.successful(HttpResponse())
       }
 
       val response =
         Await.result(
           requestAuthenticator
-            .authenticate(ac)(request,
-                              stripAuthorizationHeader = false,
-                              requiredPermission = None)(
+            .authenticate(ac)(request, requiredPermission = None)(
               handler
             ),
           1.seconds
@@ -106,9 +103,7 @@ class RequestAuthenticatorSpec
       val response =
         Await.result(
           requestAuthenticator
-            .authenticate(ac)(request,
-                              stripAuthorizationHeader = false,
-                              requiredPermission = None)(
+            .authenticate(ac)(request, requiredPermission = None)(
               handler
             ),
           1.seconds
@@ -116,27 +111,23 @@ class RequestAuthenticatorSpec
       response.status should be(OK)
     }
 
-    "calls handler without AuthenticationData when bad token provided, and doesn't strip authorization header" in {
+    "calls handler without AuthenticationData when bad token provided" in {
       val request =
         HttpRequest().addHeader(Authorization(OAuth2BearerToken("BADTOKEN")))
       val handler = (req: HttpRequest, optAuthData: Option[TestAuthData]) => {
         optAuthData should equal(None)
-        authorizationHeader(req) should be(defined)
         Future.successful(HttpResponse())
       }
 
       val response =
         Await.result(
-          requestAuthenticator.authenticate(ac)(request,
-                                                stripAuthorizationHeader =
-                                                  false,
-                                                None)(handler),
+          requestAuthenticator.authenticate(ac)(request, None)(handler),
           1.seconds
         )
       response.status should be(OK)
     }
 
-    "calls handler without AuthenticationData when no token provided, and doesn't strip authorization header" in {
+    "calls handler without AuthenticationData when no token provided" in {
       val request = HttpRequest()
       val handler = (req: HttpRequest, optAuthData: Option[TestAuthData]) => {
         optAuthData should equal(None)
@@ -146,65 +137,59 @@ class RequestAuthenticatorSpec
 
       val response =
         Await.result(
-          requestAuthenticator.authenticate(ac)(request,
-                                                stripAuthorizationHeader =
-                                                  false,
-                                                None)(handler),
+          requestAuthenticator.authenticate(ac)(request, None)(handler),
           1.seconds
         )
       response.status should be(OK)
     }
 
-    "calls handler without AuthenticationData when auth service call fails because of unexpected response, and strips Authorization header" in {
+    "calls handler without AuthenticationData when auth service call fails because of unexpected response" in {
       val request =
         HttpRequest().addHeader(
           Authorization(OAuth2BearerToken("PARSEFAILTOKEN")))
       val handler = (req: HttpRequest, optAuthData: Option[TestAuthData]) => {
         optAuthData should equal(None)
-        authorizationHeader(req) should equal(None)
         Future.successful(HttpResponse())
       }
 
       val response =
         Await.result(
-          requestAuthenticator.authenticate(ac)(request, true, None)(handler),
+          requestAuthenticator.authenticate(ac)(request, None)(handler),
           1.seconds
         )
       response.status should be(OK)
     }
 
-    "calls handler without AuthenticationData when auth service call fails totally, and strips Authorization header" in {
+    "calls handler without AuthenticationData when auth service call fails totally" in {
       val request =
         HttpRequest().addHeader(
           Authorization(OAuth2BearerToken("COMMSFAILTOKEN")))
       val handler = (req: HttpRequest, optAuthData: Option[TestAuthData]) => {
         optAuthData should equal(None)
-        authorizationHeader(req) should equal(None)
         Future.successful(HttpResponse())
       }
 
       val response =
         Await.result(
-          requestAuthenticator.authenticate(ac)(request, true, None)(handler),
+          requestAuthenticator.authenticate(ac)(request, None)(handler),
           1.seconds
         )
       response.status should be(OK)
     }
 
-    "calls handler without AuthenticationData when credentials are extracted, and strips Authorization header" in {
+    "calls handler without AuthenticationData when credentials are extracted" in {
       val request =
         HttpRequest()
           .addHeader(Authorization(OAuth2BearerToken("GOODTOKEN")))
           .addHeader(Authorization(OAuth2BearerToken("OTHERTOKEN")))
       val handler = (req: HttpRequest, optAuthData: Option[TestAuthData]) => {
         optAuthData should equal(None)
-        authorizationHeader(req) should equal(None)
         Future.successful(HttpResponse())
       }
 
       val response =
         Await.result(
-          requestAuthenticator.authenticate(ac)(request, true, None)(handler),
+          requestAuthenticator.authenticate(ac)(request, None)(handler),
           1.seconds
         )
       response.status should be(OK)

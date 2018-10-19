@@ -40,7 +40,6 @@ class RequireAuthenticationSpec extends FreeSpecLike with Matchers {
       override def authenticate(
           authConfig: AuthenticationConfig
       )(request: HttpRequest,
-        stripAuthorizationHeader: Boolean,
         requiredPermission: Option[authConfig.Permission])(
           handler: (HttpRequest,
                     Option[authConfig.AuthData]) => Future[HttpResponse])(
@@ -68,7 +67,7 @@ class RequireAuthenticationSpec extends FreeSpecLike with Matchers {
         Future.successful(HttpResponse())
 
       val response =
-        Await.result(requireAuthentication(ac)(request, true, None)(handler),
+        Await.result(requireAuthentication(ac)(request, None)(handler),
                      1.seconds)
       response.status should be(Unauthorized)
     }
@@ -80,7 +79,7 @@ class RequireAuthenticationSpec extends FreeSpecLike with Matchers {
         Future.successful(expectedResponse)
 
       val response =
-        Await.result(requireAuthentication(ac)(request, true, None)(handler),
+        Await.result(requireAuthentication(ac)(request, None)(handler),
                      1.seconds)
       response should equal(expectedResponse)
     }

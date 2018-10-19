@@ -38,7 +38,6 @@ trait AggregatorController[AuthConfig <: HeaderAuthConfig, AddressingConfig] {
 
         headerAuthenticator.addAndRequireAuthHeader(authConfig)(
           incomingRequest,
-          false,
           requiredPermission.asInstanceOf[Option[authConfig.Permission]]
         ) { (authedRequest, authData) =>
           aggregator.execute(authConfig)(authedRequest, authData)
