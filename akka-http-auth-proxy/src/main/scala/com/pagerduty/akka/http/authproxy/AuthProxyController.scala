@@ -80,15 +80,13 @@ trait AuthProxyController[AuthConfig <: HeaderAuthConfig, AddressingConfig] {
       requestTransformer: Option[RequestTransformer[AuthConfig#AuthData]] =
         None,
       responseTransformer: Option[ResponseTransformer[AuthConfig#AuthData]] =
-        None,
-      stripAuthorizationHeader: Boolean = true
+        None
   ): Route =
     pathPrefix(path) {
       proxyRoute(upstream,
                  requiredPermission,
                  requestTransformer,
-                 responseTransformer,
-                 stripAuthorizationHeader)
+                 responseTransformer)
     }
 
   def proxyRoute(upstream: Upstream[AddressingConfig],
@@ -147,8 +145,7 @@ trait AuthProxyController[AuthConfig <: HeaderAuthConfig, AddressingConfig] {
       requestTransformer: Option[RequestTransformer[AuthConfig#AuthData]] =
         None,
       responseTransformer: Option[ResponseTransformer[AuthConfig#AuthData]] =
-        None,
-      stripAuthorizationHeader: Boolean = true
+        None
   ): Route =
     extractRequest { request =>
       implicit val reqMeta = RequestMetadata.fromRequest(request)
@@ -158,8 +155,7 @@ trait AuthProxyController[AuthConfig <: HeaderAuthConfig, AddressingConfig] {
         request,
         requiredPermission,
         requestTransformer,
-        responseTransformer,
-        stripAuthorizationHeader
+        responseTransformer
       )
     }
 
@@ -168,13 +164,11 @@ trait AuthProxyController[AuthConfig <: HeaderAuthConfig, AddressingConfig] {
       request: HttpRequest,
       requiredPermission: Option[AuthConfig#Permission],
       requestTransformer: Option[RequestTransformer[AuthConfig#AuthData]],
-      responseTransformer: Option[ResponseTransformer[AuthConfig#AuthData]],
-      stripAuthorizationHeader: Boolean
+      responseTransformer: Option[ResponseTransformer[AuthConfig#AuthData]]
   )(implicit reqMeta: RequestMetadata): Route = {
     complete {
       headerAuthenticator.addAuthHeader(authConfig)(
         request,
-        stripAuthorizationHeader,
         requiredPermission.asInstanceOf[Option[authConfig.Permission]]
       ) {
         case (authedRequest, optAuthData) =>

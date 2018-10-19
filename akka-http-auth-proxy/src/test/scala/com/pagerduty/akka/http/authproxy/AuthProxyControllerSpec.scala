@@ -77,7 +77,6 @@ class AuthProxyControllerSpec
       override def addAuthHeader(
           authConfig: HeaderAuthConfig
       )(request: HttpRequest,
-        stripAuthorizationHeader: Boolean = true,
         requiredPermission: Option[authConfig.Permission] = None)(
           handler: (HttpRequest,
                     Option[authConfig.AuthData]) => Future[HttpResponse])(

@@ -14,14 +14,11 @@ trait HeaderAuthenticator extends MetadataLogging {
   def addAuthHeader(
       authConfig: HeaderAuthConfig
   )(request: HttpRequest,
-    stripAuthorizationHeader: Boolean = true,
     requiredPermission: Option[authConfig.Permission] = None)(
       handler: (HttpRequest,
                 Option[authConfig.AuthData]) => Future[HttpResponse])(
       implicit reqMeta: RequestMetadata): Future[HttpResponse] = {
-    requestAuthenticator.authenticate(authConfig)(request,
-                                                  stripAuthorizationHeader,
-                                                  requiredPermission) {
+    requestAuthenticator.authenticate(authConfig)(request, requiredPermission) {
       (request, optAuthData) =>
         val possiblyAuthedRequest = optAuthData match {
           case Some(data) => addAuthenticationHeader(authConfig)(request, data)
@@ -36,13 +33,10 @@ trait HeaderAuthenticator extends MetadataLogging {
   def addAndRequireAuthHeader(
       authConfig: HeaderAuthConfig
   )(request: HttpRequest,
-    stripAuthorizationHeader: Boolean = true,
     requiredPermission: Option[authConfig.Permission] = None)(
       handler: (HttpRequest, authConfig.AuthData) => Future[HttpResponse])(
       implicit reqMeta: RequestMetadata): Future[HttpResponse] = {
-    requestAuthenticator.authenticate(authConfig)(request,
-                                                  stripAuthorizationHeader,
-                                                  requiredPermission) {
+    requestAuthenticator.authenticate(authConfig)(request, requiredPermission) {
       (request, optAuthData) =>
         optAuthData match {
           case Some(data) =>

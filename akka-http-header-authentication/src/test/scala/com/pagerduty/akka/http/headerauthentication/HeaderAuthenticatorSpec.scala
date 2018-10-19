@@ -58,7 +58,6 @@ class HeaderAuthenticatorSpec
           override def authenticate(
               authConfig: AuthenticationConfig
           )(request: HttpRequest,
-            stripAuthorizationHeader: Boolean,
             requiredPermission: Option[authConfig.Permission])(
               handler: (HttpRequest,
                         Option[authConfig.AuthData]) => Future[HttpResponse])(
