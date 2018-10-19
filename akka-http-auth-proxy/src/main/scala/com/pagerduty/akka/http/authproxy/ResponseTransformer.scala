@@ -6,6 +6,7 @@ import com.pagerduty.akka.http.headerauthentication.model.HeaderAuthConfig
 import scala.concurrent.Future
 
 trait ResponseTransformer[AuthData] {
-  def transformResponse(response: HttpResponse,
+  def transformResponse(request: HttpRequest,
+                        response: HttpResponse,
                         optAuthData: Option[AuthData]): Future[HttpResponse]
 }

@@ -184,7 +184,7 @@ trait AuthProxyController[AuthConfig <: HeaderAuthConfig, AddressingConfig] {
           responseTransformer match {
             case Some(transformer) =>
               upstreamResponse.flatMap(
-                transformer.transformResponse(_, optAuthData))
+                transformer.transformResponse(authedRequest, _, optAuthData))
             case None =>
               upstreamResponse
           }
