@@ -5,14 +5,13 @@ import com.pagerduty.akka.http.headerauthentication.model.HeaderAuthConfig
 
 import scala.concurrent.Future
 
-trait StartLineAndHeadersTransformer[AuthData]
-    extends RequestTransformer[AuthData] {
+trait SyncRequestTransformer[AuthData] extends RequestTransformer[AuthData] {
   override def transformRequest(
       request: HttpRequest,
       optAuthData: Option[AuthData]): Future[HttpRequest] = {
-    Future.successful(transformStartLineAndHeaders(request, optAuthData))
+    Future.successful(transformRequestSync(request, optAuthData))
   }
 
-  def transformStartLineAndHeaders(request: HttpRequest,
-                                   optAuthData: Option[AuthData]): HttpRequest
+  def transformRequestSync(request: HttpRequest,
+                           optAuthData: Option[AuthData]): HttpRequest
 }
