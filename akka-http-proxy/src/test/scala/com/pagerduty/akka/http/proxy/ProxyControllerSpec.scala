@@ -35,7 +35,7 @@ class ProxyControllerSpec
           Put(_: String),
           Delete(_: String),
           Patch(_: String)).foreach { verb =>
-        verb("/") ~> c.proxyRouteUnauthenticated(upstream) ~> check {
+        verb("/") ~> c.proxyRoute(upstream) ~> check {
           handled shouldBe true
           response should equal(expectedResponse)
         }

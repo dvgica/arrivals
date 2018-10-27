@@ -2,6 +2,7 @@ package com.pagerduty.akka.http.proxy
 
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.stream.Materializer
+import com.pagerduty.akka.http.proxy.responder.RequestResponder
 import com.pagerduty.akka.http.support.MetadataLogging
 import com.pagerduty.metrics.{Metrics, Stopwatch}
 
@@ -17,11 +18,13 @@ class HttpProxy[AddressingConfig](
     httpClient: HttpRequest => Future[HttpResponse],
     entityConsumptionTimeout: FiniteDuration = 20.seconds
 )(implicit ec: ExecutionContext, materializer: Materializer, metrics: Metrics)
-    extends MetadataLogging {
+    extends RequestResponder[Upstream[AddressingConfig], Any]
+    with MetadataLogging {
   import HttpProxy._
 
-  def request(request: HttpRequest,
-              upstream: Upstream[AddressingConfig]): Future[HttpResponse] = {
+  def apply(request: HttpRequest,
+            upstream: Upstream[AddressingConfig],
+            data: Option[Any]): Future[HttpResponse] = {
     val addressedRequest =
       upstream
         .addressRequestWithOverrides(request, addressingConfig)

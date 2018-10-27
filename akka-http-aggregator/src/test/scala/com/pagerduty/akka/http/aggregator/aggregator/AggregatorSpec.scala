@@ -21,7 +21,7 @@ import org.scalatest.{BeforeAndAfterAll, FreeSpecLike, Matchers}
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
 
-class GenericAggregatorSpec
+class AggregatorSpec
     extends TestKit(ActorSystem("AggregatorSpec"))
     with FreeSpecLike
     with Matchers
@@ -70,7 +70,7 @@ class GenericAggregatorSpec
     val intermediateFailureResponse = HttpResponse(StatusCodes.BadGateway)
 
     class TestAggregator
-        extends GenericAggregator[String, String, String, String] {
+        extends Aggregator[String, String, String, String] {
       override def handleIncomingRequest(incomingRequest: HttpRequest,
                                          authData: String): HandlerResult = {
         authData should equal(testAuthData)
