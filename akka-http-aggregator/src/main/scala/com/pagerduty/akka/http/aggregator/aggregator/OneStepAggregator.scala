@@ -5,7 +5,7 @@ import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import com.pagerduty.akka.http.requestauthentication.model.AuthenticationConfig
 
 trait OneStepAggregator[AuthData, RequestKey, AddressingConfig]
-    extends GenericAggregator[AuthData, RequestKey, NotUsed, AddressingConfig] {
+    extends Aggregator[AuthData, RequestKey, NotUsed, AddressingConfig] {
 
   def intermediateResponseHandlers: Seq[ResponseHandler] = Seq()
 

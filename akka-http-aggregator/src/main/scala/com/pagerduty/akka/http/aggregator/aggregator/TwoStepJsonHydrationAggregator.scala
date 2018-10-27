@@ -21,8 +21,7 @@ import ujson.Js
   * - Those responses are also JSON
   * - It's OK if any failure to parse JSON will result in a 500 to the client
   *
-  * If any of these assumptions are untrue, look at using a supertype of this trait instead. Also, tell #core about your
-  * use case!
+  * If any of these assumptions are untrue, look at using a supertype of this trait instead.
   */
 trait TwoStepJsonHydrationAggregator[AuthData, AddressingConfig]
     extends TwoStepAggregator[AuthData, String, Js.Value, AddressingConfig] {

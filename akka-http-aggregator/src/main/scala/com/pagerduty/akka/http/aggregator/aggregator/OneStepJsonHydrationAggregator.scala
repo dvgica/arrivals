@@ -17,8 +17,7 @@ import ujson.Js
   * - No part of the incoming request or auth data needs to be saved in order to build the outgoing response
   * - It's OK if an error parsing upstream responses into JSON results in a 500 (no partial degradation)
   *
-  * If any of these assumptions are untrue, look at using a supertype of this trait instead. Also, tell #core about your
-  * use case!
+  * If any of these assumptions are untrue, look at using a supertype of this trait instead.
   */
 trait OneStepJsonHydrationAggregator[AuthData, AddressingConfig]
     extends OneStepAggregator[AuthData, String, AddressingConfig] {

@@ -2,26 +2,16 @@ package com.pagerduty.akka.http.authproxy
 
 import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.model.headers.Host
-import akka.http.scaladsl.model.{
-  HttpHeader,
-  HttpRequest,
-  HttpResponse,
-  StatusCodes
-}
+import akka.http.scaladsl.model.{HttpHeader, HttpRequest, HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import com.pagerduty.akka.http.authproxy.filter.{AuthedRequestFilter, AuthedResponseFilter}
 import com.pagerduty.akka.http.headerauthentication.HeaderAuthenticator
 import com.pagerduty.akka.http.headerauthentication.model.HeaderAuthConfig
-import com.pagerduty.akka.http.proxy.{
-  CommonHostnameUpstream,
-  HttpProxy,
-  Upstream
-}
+import com.pagerduty.akka.http.proxy.{CommonHostnameUpstream, HttpProxy, Upstream}
 import com.pagerduty.akka.http.requestauthentication.model.AuthenticationData.AuthFailedReason
 import com.pagerduty.akka.http.support.RequestMetadata
-import com.pagerduty.akka.http.authproxy.{
-  RequestTransformer => OurRequestTransformer
-}
+import com.pagerduty.akka.http.authproxy.{AuthedRequestFilter => OurRequestTransformer}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FreeSpecLike, Matchers}
 
@@ -106,7 +96,7 @@ class AuthProxyControllerSpec
           Put(_: String),
           Delete(_: String),
           Patch(_: String)).foreach { verb =>
-        verb("/") ~> c.proxyRoute(upstream, Some("permission")) ~> check {
+        verb("/") ~> c.authProxyRoute(upstream, Some("permission")) ~> check {
           handled shouldBe true
           response should equal(expectedResponse)
         }
@@ -114,7 +104,7 @@ class AuthProxyControllerSpec
     }
 
     "transforms, authenticates and proxies requests" in {
-      val requestTransformer = new OurRequestTransformer[String] {
+      val requestTransformer = new AuthedRequestFilter[String] {
         def transformRequest(
             request: HttpRequest,
             optAuthData: Option[String]): Future[HttpRequest] = {
@@ -126,8 +116,8 @@ class AuthProxyControllerSpec
 
       val transformedResponse = HttpResponse(StatusCodes.MethodNotAllowed)
 
-      val responseTransformer = new ResponseTransformer[String] {
-        def transformResponse(
+      val responseTransformer = new AuthedResponseFilter[String] {
+        def apply(
             request: HttpRequest,
             response: HttpResponse,
             optAuthData: Option[String]): Future[HttpResponse] = {
@@ -143,7 +133,7 @@ class AuthProxyControllerSpec
           Put(_: String),
           Delete(_: String),
           Patch(_: String)).foreach { verb =>
-        verb("/") ~> c.proxyRoute(
+        verb("/") ~> c.authProxyRoute(
           upstream,
           requestTransformer = Some(requestTransformer),
           responseTransformer = Some(responseTransformer)
