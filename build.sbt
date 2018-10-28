@@ -20,85 +20,40 @@ lazy val sharedSettings = Seq(
   )
 )
 
-lazy val akkaHttpRequestAuthentication =
-  (project in file("akka-http-request-authentication"))
+lazy val arrivalsApi =
+  (project in file("arrivals-api"))
     .settings(sharedSettings: _*)
     .settings(
-      name := "akka-http-request-authentication",
+      name := "arrivals-api",
       libraryDependencies ++= Seq(
         "com.typesafe.akka" %% "akka-actor" % akkaVersion,
         "com.typesafe.akka" %% "akka-stream" % akkaVersion,
         "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
-        "com.pagerduty" %% "metrics-api" % scalaMetricsVersion,
-        "com.pagerduty" %% "akka-support-http" % akkaSupportHttpVersion,
-        "org.scalatest" %% "scalatest" % scalaTestVersion % "test",
-        "org.scalamock" %% "scalamock" % scalaMockVersion % "test",
-        "ch.qos.logback" % "logback-classic" % logbackVersion % "test"
+        "com.pagerduty" %% "akka-support-http" % akkaSupportHttpVersion
       )
     )
 
-lazy val akkaHttpHeaderAuthentication =
-  (project in file("akka-http-header-authentication"))
-    .dependsOn(akkaHttpRequestAuthentication)
+lazy val arrivals =
+  (project in file("arrivals"))
+    .dependsOn(arrivalsApi)
+    .configs(IntegrationTest)
+    .settings(Defaults.itSettings: _*)
+    .settings(inConfig(IntegrationTest)(scalafmtSettings))
     .settings(sharedSettings: _*)
     .settings(
-      name := "akka-http-header-authentication",
+      name := "arrivals",
       libraryDependencies ++= Seq(
-        "org.scalatest" %% "scalatest" % scalaTestVersion % "test",
+        "com.lihaoyi" %% "ujson" % "0.6.6",
+        "com.pagerduty" %% "metrics-api" % scalaMetricsVersion,
+        "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion % "test",
         "org.scalamock" %% "scalamock" % scalaMockVersion % "test",
-        "ch.qos.logback" % "logback-classic" % logbackVersion % "test"
+        "org.scalatest" %% "scalatest" % scalaTestVersion % "test,it",
+        "ch.qos.logback" % "logback-classic" % logbackVersion % "test,it",
+        "org.scalaj" %% "scalaj-http" % "2.3.0" % "it",
+        "com.github.tomakehurst" % "wiremock" % "2.8.0" % "it",
+        "com.typesafe.akka" %% "akka-slf4j" % "2.4.20" % "it"
       )
     )
-
-lazy val akkaHttpProxy = (project in file("akka-http-proxy"))
-  .settings(sharedSettings: _*)
-  .settings(
-    name := "akka-http-proxy",
-    libraryDependencies ++= Seq(
-      "com.typesafe.akka" %% "akka-actor" % akkaVersion,
-      "com.typesafe.akka" %% "akka-stream" % akkaVersion,
-      "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
-      "com.pagerduty" %% "metrics-api" % scalaMetricsVersion,
-      "com.pagerduty" %% "akka-support-http" % akkaSupportHttpVersion,
-      "org.scalatest" %% "scalatest" % scalaTestVersion % "test",
-      "org.scalamock" %% "scalamock" % scalaMockVersion % "test",
-      "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion % "test",
-      "ch.qos.logback" % "logback-classic" % logbackVersion % "test"
-    )
-  )
-
-lazy val akkaHttpAuthProxy = (project in file("akka-http-auth-proxy"))
-  .dependsOn(akkaHttpProxy, akkaHttpHeaderAuthentication)
-  .configs(IntegrationTest)
-  .settings(Defaults.itSettings: _*)
-  .settings(inConfig(IntegrationTest)(scalafmtSettings))
-  .settings(sharedSettings: _*)
-  .settings(
-    name := "akka-http-auth-proxy",
-    libraryDependencies ++= Seq(
-      "org.scalamock" %% "scalamock" % scalaMockVersion % "test",
-      "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion % "test",
-      "org.scalatest" %% "scalatest" % scalaTestVersion % "it,test",
-      "ch.qos.logback" % "logback-classic" % logbackVersion % "test,it",
-      "org.scalaj" %% "scalaj-http" % "2.3.0" % "it",
-      "com.github.tomakehurst" % "wiremock" % "2.8.0" % "it",
-      "com.typesafe.akka" %% "akka-slf4j" % "2.4.20" % "it"
-    )
-  )
-
-lazy val akkaHttpAggregator = (project in file("akka-http-aggregator"))
-  .dependsOn(akkaHttpProxy, akkaHttpHeaderAuthentication)
-  .settings(sharedSettings: _*)
-  .settings(
-    name := "akka-http-aggregator",
-    libraryDependencies ++= Seq(
-      "com.lihaoyi" %% "ujson" % "0.6.6",
-      "org.scalamock" %% "scalamock" % scalaMockVersion % "test",
-      "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion % "test",
-      "org.scalatest" %% "scalatest" % scalaTestVersion % "test",
-      "ch.qos.logback" % "logback-classic" % logbackVersion % "test"
-    )
-  )
 
 scalafmtOnCompile in ThisBuild := true
 skip in publish := true
