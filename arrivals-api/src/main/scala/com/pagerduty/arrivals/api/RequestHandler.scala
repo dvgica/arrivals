@@ -8,10 +8,9 @@ import com.pagerduty.arrivals.api.filter.{
   ResponseFilter
 }
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 trait RequestHandler[ResponderInput, RequestData] {
-  implicit def executionContext: ExecutionContext
 
   def apply(request: HttpRequest,
             responderInput: ResponderInput,
@@ -19,16 +18,5 @@ trait RequestHandler[ResponderInput, RequestData] {
             requestResponder: RequestResponder[ResponderInput, RequestData],
             requestFilter: RequestFilter[RequestData] = NoOpRequestFilter,
             responseFilter: ResponseFilter[RequestData] = NoOpResponseFilter)
-    : Future[HttpResponse] = {
-    requestFilter(request, requestData).flatMap {
-      case Right(transformedRequest) =>
-        requestResponder(transformedRequest, responderInput, requestData)
-          .flatMap { response =>
-            responseFilter(request, response, requestData)
-          }
-      case Left(response) =>
-        Future.successful(response)
-    }
-  }
-
+    : Future[HttpResponse]
 }
