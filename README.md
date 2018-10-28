@@ -26,14 +26,14 @@ resolvers += "bintray-pagerduty-oss-maven" at "https://dl.bintray.com/pagerduty/
 
 This is the implementation artifact on which applications should depend.
 
-_Depends On_: `arrivals-api`, `akka-http`, and PD's [`scala-akka-support`](https://github.com/PagerDuty/scala-akka-support), [`metrics-api`](https://github.com/PagerDuty/scala-metrics)\
+_Depends On_: `arrivals-api`, `akka-http`, and PD's [`metrics-api`](https://github.com/PagerDuty/scala-metrics)\
 _Artifact ID_: `arrivals`
 
 ### arrivals-api
 
 Authors of custom implementations (e.g. `Filter`s, `Upstream`s, `Aggregator`s, and `RequestResponder`s) should depend on this artifact, which will hopefully change less frequently.
 
-_Depends On_: `akka-http`\
+_Depends On_: `akka-http`, and PD's [`scala-akka-support`](https://github.com/PagerDuty/scala-akka-support)\
 _Artifact ID_: `arrivals-api`
 
 ## License
@@ -61,3 +61,13 @@ We ask that your changes are consistently formatted as the rest of the code in t
 ## Contact
 
 This library is maintained by the Core team at PagerDuty. Opening a GitHub issue is the best way to get in touch with us.
+
+## TODO
+
+- Docs and examples
+- Don't require user to put all the blocks together, optional simple interface e.g. `class ArrivalsServer(routes: Route)(implicit actorSystem: ActorSystem, materializer: Materializer)`
+- Just use Request/Response Filters for `Upstream#prepareReqeustForDelivery` and `Upstream#transformResponse`
+- Filter composition, e.g. `val f1ThenF2: RequestFilter = Filter1 -> Filter2`
+- Add `scalafmt`
+- `RequestAuthenticator` and `HeaderAuthenticator` could likely be Akka HTTP directives for better composability
+- Metadata logging is inconsistently used because it's a PITA - would be nice to do something less ugly and not include `akka-http-support` in `arrivals-api`
