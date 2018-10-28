@@ -1,10 +1,18 @@
-# akka-http-api-gateway [![CircleCI](https://circleci.com/gh/PagerDuty/akka-http-api-gateway.svg?style=svg)](https://circleci.com/gh/PagerDuty/akka-http-api-gateway)
+# Arrivals [![CircleCI](https://circleci.com/gh/PagerDuty/akka-http-api-gateway.svg?style=svg)](https://circleci.com/gh/PagerDuty/akka-http-api-gateway)
 
-This open-source project is a collection of small libraries that can be used to build an API gateway (or perhaps a few [BFFs](https://samnewman.io/patterns/architectural/bff/), [as PagerDuty has done](https://www.youtube.com/watch?v=DRxLFWmvJ8A)). Currently, the project is focused on proxying authenticated requests to upstream services. All sub-projects depend on [Akka HTTP](https://doc.akka.io/docs/akka-http/current/).
+This open-source project provides building blocks for constructing an API Gateway using Akka HTTP. [PagerDuty](https://www.pagerduty.com) has [used it](https://www.youtube.com/watch?v=DRxLFWmvJ8A) in production to build a few [BFFs](https://samnewman.io/patterns/architectural/bff/). Currently, the project is focused on the following areas:
 
-The philosophy of this project is to keep the sub-projects small, modular, and independently testable. Therefore, some wiring-together is required. Think of the sub-projects as LEGO blocks.
+ - Proxying HTTP requests to upstream services
+ - Authenticating those requests
+ - Adding a header to prove authentication to upstream services
+ - Filtering and transforming requests and responses
+ - Turning a single request into multiple upstream requests, and aggregating the responses into a single response
+  
+Arrivals is meant to be used by developers without deep knowledge of Akka HTTP, so there is an emphasis on simple Scala APIs rather than the more flexible, but also more complex, APIs provided by Akka HTTP. 
 
-## Sub-Projects
+At this time, some manual composition of the building blocks is required. Better docs and examples are on the way.
+
+## Artifacts
 
 All artifacts are published with the `com.pagerduty` `groupId` and are available at the PagerDuty Bintray OSS repository.
 
@@ -14,40 +22,19 @@ Add the PD Bintray to your resolvers with the following:
 resolvers += "bintray-pagerduty-oss-maven" at "https://dl.bintray.com/pagerduty/oss-maven"
 ```
 
-### akka-http-proxy
+### arrivals
 
-A `ProxyController` (a `trait` providing a `Route`) for proxying un-authenticated requests to an `Upstream` via an `HttpProxy`.
+This is the implementation artifact on which applications should depend.
 
-_Depends On_: `akka-http` and PD's [`scala-akka-support`](https://github.com/PagerDuty/scala-akka-support), [`metrics-api`](https://github.com/PagerDuty/scala-metrics)\
-_Artifact ID_: `akka-http-proxy`
+_Depends On_: `arrivals-api`, `akka-http`, and PD's [`scala-akka-support`](https://github.com/PagerDuty/scala-akka-support), [`metrics-api`](https://github.com/PagerDuty/scala-metrics)\
+_Artifact ID_: `arrivals`
 
-### akka-http-request-authentication
+### arrivals-api
 
-`RequestAuthentication` and `RequireAuthentication`, traits that authenticate HTTP requests based on a library-user-supplied `AuthenticationConfig`.
+Authors of custom implementations (e.g. `Filter`s, `Upstream`s, `Aggregator`s, and `RequestResponder`s) should depend on this artifact, which will hopefully change less frequently.
 
-_Depends On_: `akka-http` and PD's [`scala-akka-support`](https://github.com/PagerDuty/scala-akka-support), [`metrics-api`](https://github.com/PagerDuty/scala-metrics)\
-_Artifact ID_: `akka-http-request-authentication`
-
-### akka-http-header-authentication
-
-A `HeaderAuthenticator` trait which adds a library-user-supplied HTTP header (via `HeaderAuthConfig`) to authenticated requests. For example, this header might be a cryptographically signed header with data about the authenticated user, trusted by an upstream service.
-
-_Depends On_: `akka-http-request-authentication`\
-_Artifact ID_: `akka-http-header-authentication`
-
-### akka-http-auth-proxy 
-
-An `AuthProxyController` `trait` providing a `Route` which authenticates and proxies requests to an `Upstream`, adding a library-user-supplied HTTP header if authentication was successful.
-
-_Depends On_: `akka-http-header-authentication`, `akka-http-proxy`\
-_Artifact ID_: `akka-http-auth-proxy`
-
-### akka-http-aggregator
-
-An `AggregatorController` trait providing a `Route` which authenticates a request and, if successful, makes various HTTP requests to different `AggregatorUpstream`s to assemble an HTTP response. Aggregation behaviour is library-user-specified by providing an `Aggregator` or one of its various subclasses.
-
-_Depends On_: `akka-http-header-authentication`, `akka-http-proxy`\
-_Artifact ID_: `akka-http-aggregator`
+_Depends On_: `akka-http`\
+_Artifact ID_: `arrivals-api`
 
 ## License
 
