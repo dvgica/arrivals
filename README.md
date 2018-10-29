@@ -10,7 +10,13 @@ This open-source project provides building blocks for constructing an API Gatewa
   
 Arrivals is meant to be used by developers without deep knowledge of Akka HTTP, so there is an emphasis on simple Scala APIs rather than the more flexible, but also more complex, APIs provided by Akka HTTP. 
 
-At this time, some manual composition of the building blocks is required. Better docs and examples are on the way.
+## Usage
+
+A basic example of using Arrivals via `ArrivalsServer` is available in [arrivals-example](https://github.com/PagerDuty/arrivals/arrivals-example/src/main/scala/com/pagerduty/arrivals/example). The example can be run by cloning this repository and running `sbt arrivalsExample/run`.
+
+Note that `ArrivalsServer` makes some decisions for you and throws in everything but the kitchen sink. You can be more selective if desired, and that example should be a good place to start.
+
+More docs to come.
 
 ## Artifacts
 
