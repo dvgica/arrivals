@@ -2,6 +2,7 @@ package com.pagerduty.arrivals.impl.proxy
 
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
+import com.pagerduty.arrivals.api
 import com.pagerduty.arrivals.api.filter.{
   NoOpRequestFilter,
   NoOpResponseFilter,
@@ -12,7 +13,7 @@ import com.pagerduty.arrivals.api.proxy.Upstream
 
 trait ProxyController[AddressingConfig] {
 
-  def httpProxy: HttpProxy[AddressingConfig]
+  def httpProxy: api.proxy.HttpProxy[AddressingConfig]
   def proxyRequestHandler: ProxyRequestHandler[AddressingConfig]
 
   def proxyRoute(upstream: Upstream[AddressingConfig],
