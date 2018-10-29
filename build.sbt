@@ -55,5 +55,16 @@ lazy val arrivals =
       )
     )
 
+lazy val arrivalsExample =
+  (project in file("arrivals-example"))
+    .dependsOn(arrivals)
+    .settings(sharedSettings: _*)
+    .settings(
+      name := "arrivals-example",
+      libraryDependencies ++= Seq(
+        "ch.qos.logback" % "logback-classic" % logbackVersion
+      )
+    )
+
 scalafmtOnCompile in ThisBuild := true
 skip in publish := true
