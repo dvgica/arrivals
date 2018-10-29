@@ -13,7 +13,7 @@ import com.pagerduty.akka.http.support.RequestMetadata
 import com.pagerduty.arrivals.api.aggregator.AggregatorDependencies
 import com.pagerduty.arrivals.api.headerauth.HeaderAuthConfig
 import com.pagerduty.arrivals.impl.headerauth.HeaderAuthenticator
-import com.pagerduty.arrivals.impl.proxy.HttpProxy
+import com.pagerduty.arrivals.api.proxy.HttpProxy
 
 import scala.concurrent.ExecutionContext
 
