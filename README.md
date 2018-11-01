@@ -76,7 +76,6 @@ This library is maintained by the Core team at PagerDuty. Opening a GitHub issue
 ## TODO
 
 - Docs and examples
-- Don't require user to put all the blocks together, optional simple interface e.g. `class ArrivalsServer(routes: Route)(implicit actorSystem: ActorSystem, materializer: Materializer)`
 - Just use Request/Response Filters for `Upstream#prepareReqeustForDelivery` and `Upstream#transformResponse`
 - Filter composition, e.g. `val f1ThenF2: RequestFilter = Filter1 -> Filter2`
 - Add `scalafmt`
