@@ -1,4 +1,4 @@
-# Arrivals [![CircleCI](https://circleci.com/gh/PagerDuty/akka-http-api-gateway.svg?style=svg)](https://circleci.com/gh/PagerDuty/akka-http-api-gateway)
+# Arrivals [![CircleCI](https://circleci.com/gh/PagerDuty/arrivals.svg?style=svg)](https://circleci.com/gh/PagerDuty/arrivals)
 
 This open-source project provides building blocks for constructing an API Gateway using Akka HTTP. [PagerDuty](https://www.pagerduty.com) has [used it](https://www.youtube.com/watch?v=DRxLFWmvJ8A) in production to build a few [BFFs](https://samnewman.io/patterns/architectural/bff/). Currently, the project is focused on the following areas:
 
