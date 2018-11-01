@@ -11,7 +11,7 @@ import scala.util.{Success, Try}
 
 class ExampleAuthConfig extends HeaderAuthConfig {
   type Cred = String
-  type AuthData = Int
+  type AuthData = UserId
   type Permission = Nothing
 
   def extractCredentials(request: HttpRequest)(
