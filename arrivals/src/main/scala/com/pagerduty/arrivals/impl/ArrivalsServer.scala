@@ -93,8 +93,7 @@ abstract class ArrivalsServer[AddressingConfig, AuthConfig <: HeaderAuthConfig](
 
   private val binding = tryBinding match {
     case Success(b) =>
-      logger.info(
-        s"Successfully bound to ${b.localAddress}")
+      logger.info(s"Successfully bound to ${b.localAddress}")
       logger.info("ArrivalsServer started")
       b
     case Failure(e) =>
