@@ -12,7 +12,12 @@ Arrivals is meant to be used by developers without deep knowledge of Akka HTTP, 
 
 ## Usage
 
-A basic example of using Arrivals via `ArrivalsServer` is available in [arrivals-example](https://github.com/PagerDuty/arrivals/arrivals-example/src/main/scala/com/pagerduty/arrivals/example). The example can be run by cloning this repository and running `sbt arrivalsExample/run`.
+A basic example of using Arrivals via `ArrivalsServer` is available in [arrivals-example](https://github.com/PagerDuty/arrivals/arrivals-example/src/main/scala/com/pagerduty/arrivals/example). The example can be run by cloning this repository and running `sbt arrivalsExample/run`. Try the following URLs:
+
+- http://localhost:8080/api/cats
+- http://localhost:8080/api/dogs
+- http://localhost:8080/api/dogs?username=rex
+- http://localhost:8080/api/all?username=rex
 
 Note that `ArrivalsServer` makes some decisions for you and throws in everything but the kitchen sink. You can be more selective if desired, and that example should be a good place to start.
 
