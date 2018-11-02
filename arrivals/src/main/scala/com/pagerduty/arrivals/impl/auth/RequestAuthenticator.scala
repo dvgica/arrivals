@@ -9,12 +9,9 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 object RequestAuthenticator {
-  case object AuthenticationFutureFailed
-      extends AuthFailedReason("authentication_future_exception")
-  case object UnexpectedFailureWhileAuthenticating
-      extends AuthFailedReason("unexpected_failure_while_authenticating")
-  case object InvalidCredentialReason
-      extends AuthFailedReason("invalid_credential")
+  case object AuthenticationFutureFailed extends AuthFailedReason("authentication_future_exception")
+  case object UnexpectedFailureWhileAuthenticating extends AuthFailedReason("unexpected_failure_while_authenticating")
+  case object InvalidCredentialReason extends AuthFailedReason("invalid_credential")
 }
 
 trait RequestAuthenticator extends MetadataLogging {
@@ -25,10 +22,11 @@ trait RequestAuthenticator extends MetadataLogging {
 
   def authenticate(
       authConfig: AuthenticationConfig
-  )(request: HttpRequest, requiredPermission: Option[authConfig.Permission])(
-      handler: (HttpRequest,
-                Option[authConfig.AuthData]) => Future[HttpResponse])(
-      implicit reqMeta: RequestMetadata): Future[HttpResponse] = {
+    )(request: HttpRequest,
+      requiredPermission: Option[authConfig.Permission]
+    )(handler: (HttpRequest, Option[authConfig.AuthData]) => Future[HttpResponse]
+    )(implicit reqMeta: RequestMetadata
+    ): Future[HttpResponse] = {
 
     val extractedCredentials = authConfig.extractCredentials(request)
 
@@ -51,7 +49,7 @@ trait RequestAuthenticator extends MetadataLogging {
 
   private def authenticationErrorHandler[AuthDataType](
       implicit reqMeta: RequestMetadata
-  ): PartialFunction[Throwable, Option[AuthDataType]] = {
+    ): PartialFunction[Throwable, Option[AuthDataType]] = {
     case e =>
       emitAuthFailedMetric(AuthenticationFutureFailed)
       log.error(s"Authentication future failed with exception: $e")
@@ -60,18 +58,16 @@ trait RequestAuthenticator extends MetadataLogging {
 
   private def attemptAuthentication(
       authConfig: AuthenticationConfig
-  )(cred: authConfig.Cred,
-    request: HttpRequest,
-    requiredPermission: Option[authConfig.Permission])(
-      implicit reqMeta: RequestMetadata)
-    : Future[Option[authConfig.AuthData]] = {
+    )(cred: authConfig.Cred,
+      request: HttpRequest,
+      requiredPermission: Option[authConfig.Permission]
+    )(implicit reqMeta: RequestMetadata
+    ): Future[Option[authConfig.AuthData]] = {
     authConfig
       .authenticate(cred)
       .map {
         case Success(Some(data)) =>
-          authConfig.authDataGrantsPermission(data,
-                                              request,
-                                              requiredPermission) match {
+          authConfig.authDataGrantsPermission(data, request, requiredPermission) match {
             case Some(reason) =>
               emitAuthFailedMetric(reason)
               None
@@ -88,8 +84,6 @@ trait RequestAuthenticator extends MetadataLogging {
   }
 
   private def emitAuthFailedMetric(reason: AuthFailedReason): Unit = {
-    metrics.increment("authentication_attempt_count",
-                      ("result", "failure"),
-                      ("reason", reason.metricTag))
+    metrics.increment("authentication_attempt_count", ("result", "failure"), ("reason", reason.metricTag))
   }
 }

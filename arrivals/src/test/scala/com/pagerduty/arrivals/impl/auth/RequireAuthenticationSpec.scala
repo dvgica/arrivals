@@ -17,17 +17,16 @@ class RequireAuthenticationSpec extends FreeSpecLike with Matchers {
     type AuthData = String
     type Permission = String
 
-    def extractCredentials(request: HttpRequest)(
-        implicit reqMeta: RequestMetadata): List[Cred] = ???
+    def extractCredentials(request: HttpRequest)(implicit reqMeta: RequestMetadata): List[Cred] = ???
 
-    def authenticate(credential: Cred)(
-        implicit reqMeta: RequestMetadata): Future[Try[Option[AuthData]]] = ???
+    def authenticate(credential: Cred)(implicit reqMeta: RequestMetadata): Future[Try[Option[AuthData]]] = ???
 
     def authDataGrantsPermission(
         authData: AuthData,
         request: HttpRequest,
         permission: Option[Permission]
-    )(implicit reqMeta: RequestMetadata): Option[AuthFailedReason] = ???
+      )(implicit reqMeta: RequestMetadata
+      ): Option[AuthFailedReason] = ???
   }
 
   "RequireAuthentication" - {
@@ -38,11 +37,11 @@ class RequireAuthenticationSpec extends FreeSpecLike with Matchers {
     val ra = new RequestAuthenticator {
       override def authenticate(
           authConfig: AuthenticationConfig
-      )(request: HttpRequest,
-        requiredPermission: Option[authConfig.Permission])(
-          handler: (HttpRequest,
-                    Option[authConfig.AuthData]) => Future[HttpResponse])(
-          implicit reqMeta: RequestMetadata): Future[HttpResponse] = {
+        )(request: HttpRequest,
+          requiredPermission: Option[authConfig.Permission]
+        )(handler: (HttpRequest, Option[authConfig.AuthData]) => Future[HttpResponse]
+        )(implicit reqMeta: RequestMetadata
+        ): Future[HttpResponse] = {
         val data =
           if (request == unauthRequest) None
           else authData.asInstanceOf[Option[authConfig.AuthData]]
@@ -62,24 +61,20 @@ class RequireAuthenticationSpec extends FreeSpecLike with Matchers {
 
     "responds with Unauthorized when authentication fails" in {
       val request = unauthRequest
-      val handler = (request: HttpRequest, authData: String) =>
-        Future.successful(HttpResponse())
+      val handler = (request: HttpRequest, authData: String) => Future.successful(HttpResponse())
 
       val response =
-        Await.result(requireAuthentication(ac)(request, None)(handler),
-                     1.seconds)
+        Await.result(requireAuthentication(ac)(request, None)(handler), 1.seconds)
       response.status should be(Unauthorized)
     }
 
     "calls the provided handler when authentication succeeds" in {
       val request = HttpRequest()
       val expectedResponse = HttpResponse(Created)
-      val handler = (request: HttpRequest, authData: String) =>
-        Future.successful(expectedResponse)
+      val handler = (request: HttpRequest, authData: String) => Future.successful(expectedResponse)
 
       val response =
-        Await.result(requireAuthentication(ac)(request, None)(handler),
-                     1.seconds)
+        Await.result(requireAuthentication(ac)(request, None)(handler), 1.seconds)
       response should equal(expectedResponse)
     }
   }

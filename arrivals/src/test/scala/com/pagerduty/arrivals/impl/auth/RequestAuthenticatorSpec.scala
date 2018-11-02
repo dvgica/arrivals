@@ -14,10 +14,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-class RequestAuthenticatorSpec
-    extends FreeSpecLike
-    with Matchers
-    with MockFactory {
+class RequestAuthenticatorSpec extends FreeSpecLike with Matchers with MockFactory {
   implicit val reqMeta = RequestMetadata(None)
 
   case class TestAuthData(userId: Int)
@@ -29,16 +26,14 @@ class RequestAuthenticatorSpec
     type AuthData = TestAuthData
     type Permission = String
 
-    def extractCredentials(request: HttpRequest)(
-        implicit reqMeta: RequestMetadata): List[Cred] = {
+    def extractCredentials(request: HttpRequest)(implicit reqMeta: RequestMetadata): List[Cred] = {
       request.headers.flatMap {
         case Authorization(token: OAuth2BearerToken) => List(token)
-        case _ => List()
+        case _                                       => List()
       }.toList
     }
 
-    def authenticate(credential: Cred)(
-        implicit reqMeta: RequestMetadata): Future[Try[Option[AuthData]]] = {
+    def authenticate(credential: Cred)(implicit reqMeta: RequestMetadata): Future[Try[Option[AuthData]]] = {
       credential.token match {
         case "GOODTOKEN" => Future.successful(Success(Some(authData)))
         case "BADPERMISSIONS" =>
@@ -55,10 +50,11 @@ class RequestAuthenticatorSpec
         authData: AuthData,
         request: HttpRequest,
         permission: Option[Permission]
-    )(implicit reqMeta: RequestMetadata): Option[AuthFailedReason] = {
+      )(implicit reqMeta: RequestMetadata
+      ): Option[AuthFailedReason] = {
       authData match {
         case `badPermsAuthData` => Some(new AuthFailedReason("test"))
-        case _ => None
+        case _                  => None
       }
     }
   }
@@ -92,8 +88,7 @@ class RequestAuthenticatorSpec
 
     "calls handler without auth data when good token provided but insufficient permissions" in {
       val request =
-        HttpRequest().addHeader(
-          Authorization(OAuth2BearerToken("BADPERMISSIONS")))
+        HttpRequest().addHeader(Authorization(OAuth2BearerToken("BADPERMISSIONS")))
       val handler = (req: HttpRequest, optAuthData: Option[TestAuthData]) => {
         optAuthData should equal(None)
         Future.successful(HttpResponse())
@@ -144,8 +139,7 @@ class RequestAuthenticatorSpec
 
     "calls handler without AuthenticationData when auth service call fails because of unexpected response" in {
       val request =
-        HttpRequest().addHeader(
-          Authorization(OAuth2BearerToken("PARSEFAILTOKEN")))
+        HttpRequest().addHeader(Authorization(OAuth2BearerToken("PARSEFAILTOKEN")))
       val handler = (req: HttpRequest, optAuthData: Option[TestAuthData]) => {
         optAuthData should equal(None)
         Future.successful(HttpResponse())
@@ -161,8 +155,7 @@ class RequestAuthenticatorSpec
 
     "calls handler without AuthenticationData when auth service call fails totally" in {
       val request =
-        HttpRequest().addHeader(
-          Authorization(OAuth2BearerToken("COMMSFAILTOKEN")))
+        HttpRequest().addHeader(Authorization(OAuth2BearerToken("COMMSFAILTOKEN")))
       val handler = (req: HttpRequest, optAuthData: Option[TestAuthData]) => {
         optAuthData should equal(None)
         Future.successful(HttpResponse())

@@ -26,23 +26,22 @@ trait TwoStepJsonHydrationAggregator[AuthData, AddressingConfig]
     extends TwoStepAggregator[AuthData, String, Js.Value, AddressingConfig] {
 
   // implement these three methods
-  def handleIncomingRequest(incomingRequest: HttpRequest)
-    : Either[HttpResponse, (AggregatorUpstream[AddressingConfig], HttpRequest)]
+  def handleIncomingRequest(
+      incomingRequest: HttpRequest
+    ): Either[HttpResponse, (AggregatorUpstream[AddressingConfig], HttpRequest)]
 
-  def handleJsonUpstreamResponse(upstreamResponse: HttpResponse,
-                                 upstreamJson: Js.Value): RequestMap
+  def handleJsonUpstreamResponse(upstreamResponse: HttpResponse, upstreamJson: Js.Value): RequestMap
 
   def buildOutgoingJsonResponse(
       initialUpstreamJson: Js.Value,
       upstreamResponseMap: Map[String, (HttpResponse, Js.Value)]
-  ): HttpResponse
+    ): HttpResponse
 
   // the rest is internal implementation
   private val emptyState = ujson.read("{}")
   private val initialRequestKey = "initial"
 
-  override def handleIncomingRequest(incomingRequest: HttpRequest,
-                                     authData: AuthData): HandlerResult = {
+  override def handleIncomingRequest(incomingRequest: HttpRequest, authData: AuthData): HandlerResult = {
     handleIncomingRequest(incomingRequest) match {
       case Right(initialRequest) =>
         Right((emptyState, Map(initialRequestKey -> initialRequest)))
@@ -50,12 +49,8 @@ trait TwoStepJsonHydrationAggregator[AuthData, AddressingConfig]
     }
   }
 
-  override def handleUpstreamResponses(
-      initialState: Js.Value,
-      upstreamResponseMap: ResponseMap
-  ): HandlerResult = {
-    val (upstreamResponse, upstreamEntity) = upstreamResponseMap(
-      initialRequestKey)
+  override def handleUpstreamResponses(initialState: Js.Value, upstreamResponseMap: ResponseMap): HandlerResult = {
+    val (upstreamResponse, upstreamEntity) = upstreamResponseMap(initialRequestKey)
 
     if (upstreamResponse.status == StatusCodes.OK) {
       val upstreamResponseJson = ujson.read(upstreamEntity)
@@ -67,10 +62,7 @@ trait TwoStepJsonHydrationAggregator[AuthData, AddressingConfig]
     }
   }
 
-  override def buildOutgoingResponse(
-      accumulatedState: Js.Value,
-      upstreamResponses: ResponseMap
-  ): HttpResponse = {
+  override def buildOutgoingResponse(accumulatedState: Js.Value, upstreamResponses: ResponseMap): HttpResponse = {
     val jsonResponseMap = upstreamResponses.map {
       case (requestKey, (response, entity)) =>
         (requestKey, (response, ujson.read(entity)))

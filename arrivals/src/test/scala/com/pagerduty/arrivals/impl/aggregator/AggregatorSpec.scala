@@ -1,21 +1,13 @@
 package com.pagerduty.arrivals.impl.aggregator
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.model.{
-  HttpMethods,
-  HttpRequest,
-  HttpResponse,
-  StatusCodes
-}
+import akka.http.scaladsl.model.{HttpMethods, HttpRequest, HttpResponse, StatusCodes}
 import akka.stream.ActorMaterializer
 import akka.testkit.TestKit
 import com.pagerduty.arrivals.api.aggregator.AggregatorDependencies
 import com.pagerduty.arrivals.api.proxy.Upstream
 import com.pagerduty.arrivals.impl
-import com.pagerduty.arrivals.impl.aggregator.support.{
-  TestAuthConfig,
-  TestUpstream
-}
+import com.pagerduty.arrivals.impl.aggregator.support.{TestAuthConfig, TestUpstream}
 import com.pagerduty.arrivals.impl.proxy.HttpProxy
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{BeforeAndAfterAll, FreeSpecLike, Matchers}
@@ -74,10 +66,8 @@ class AggregatorSpec
     val initialFailureResponse = HttpResponse(StatusCodes.MethodNotAllowed)
     val intermediateFailureResponse = HttpResponse(StatusCodes.BadGateway)
 
-    class TestAggregator
-        extends impl.aggregator.Aggregator[String, String, String, String] {
-      override def handleIncomingRequest(incomingRequest: HttpRequest,
-                                         authData: String): HandlerResult = {
+    class TestAggregator extends impl.aggregator.Aggregator[String, String, String, String] {
+      override def handleIncomingRequest(incomingRequest: HttpRequest, authData: String): HandlerResult = {
         authData should equal(testAuthData)
 
         if (incomingRequest.method == HttpMethods.GET) {
@@ -87,8 +77,7 @@ class AggregatorSpec
         }
       }
 
-      def handleIntermediateResponse(state: String,
-                                     responses: ResponseMap): HandlerResult = {
+      def handleIntermediateResponse(state: String, responses: ResponseMap): HandlerResult = {
         state should equal(initialState)
 
         if (responses == expectedResponseMap1) {
@@ -101,9 +90,7 @@ class AggregatorSpec
       def intermediateResponseHandlers: Seq[ResponseHandler] =
         Seq(handleIntermediateResponse)
 
-      def buildOutgoingResponse(
-          state: String,
-          upstreamResponses: ResponseMap): HttpResponse = {
+      def buildOutgoingResponse(state: String, upstreamResponses: ResponseMap): HttpResponse = {
         state should equal(intermediateState)
         upstreamResponses should equal(expectedResponseMap2)
 
@@ -116,9 +103,7 @@ class AggregatorSpec
     "sends requests to upstreams and aggregates responses in multiple steps" in {
       implicit val stubProxy =
         new HttpProxy[String](null, null)(null, null, null) {
-          override def apply(request: HttpRequest,
-                             upstream: Upstream[String],
-                             d: Any): Future[HttpResponse] = {
+          override def apply(request: HttpRequest, upstream: Upstream[String], d: Any): Future[HttpResponse] = {
             upstream match {
               case `upstream1` => Future.successful(response1)
               case `upstream2` => Future.successful(response2)
@@ -129,8 +114,7 @@ class AggregatorSpec
       val request = HttpRequest()
 
       val response =
-        Await.result(aggregator(request, buildDeps(stubProxy), testAuthData),
-                     10.seconds)
+        Await.result(aggregator(request, buildDeps(stubProxy), testAuthData), 10.seconds)
       response should equal(expectedResponse)
     }
 
@@ -141,17 +125,14 @@ class AggregatorSpec
       val request = HttpRequest(HttpMethods.POST)
 
       val response =
-        Await.result(aggregator(request, buildDeps(stubProxy), testAuthData),
-                     10.seconds)
+        Await.result(aggregator(request, buildDeps(stubProxy), testAuthData), 10.seconds)
       response should equal(initialFailureResponse)
     }
 
     "short-circuits if one of the intermediate handlers returns a response" in {
       implicit val stubProxy =
         new HttpProxy[String](null, null)(null, null, null) {
-          override def apply(request: HttpRequest,
-                             upstream: Upstream[String],
-                             t: Any): Future[HttpResponse] = {
+          override def apply(request: HttpRequest, upstream: Upstream[String], t: Any): Future[HttpResponse] = {
             upstream match {
               case `upstream1` => Future.successful(failureResponse1)
               case `upstream2` => Future.successful(response2)
@@ -162,8 +143,7 @@ class AggregatorSpec
       val request = HttpRequest()
 
       val response =
-        Await.result(aggregator(request, buildDeps(stubProxy), testAuthData),
-                     10.seconds)
+        Await.result(aggregator(request, buildDeps(stubProxy), testAuthData), 10.seconds)
       response should equal(intermediateFailureResponse)
     }
   }

@@ -11,16 +11,15 @@ object ExampleGateway {
   val DogsUpstream = ExampleUpstream(33000, "dogs")
 }
 
-class ExampleGateway(addressingConfig: String,
-                     headerAuthConfig: ExampleAuthConfig,
-                     listenInterface: String = "0.0.0.0",
-                     listenPort: Int = 8080)(implicit actorSystem: ActorSystem,
-                                             materializer: Materializer,
-                                             metrics: Metrics = NullMetrics)
-    extends ArrivalsServer(addressingConfig,
-                           headerAuthConfig,
-                           listenInterface,
-                           listenPort) {
+class ExampleGateway(
+    addressingConfig: String,
+    headerAuthConfig: ExampleAuthConfig,
+    listenInterface: String = "0.0.0.0",
+    listenPort: Int = 8080
+  )(implicit actorSystem: ActorSystem,
+    materializer: Materializer,
+    metrics: Metrics = NullMetrics)
+    extends ArrivalsServer(addressingConfig, headerAuthConfig, listenInterface, listenPort) {
 
   import ExampleGateway._
 

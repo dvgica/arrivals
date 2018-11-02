@@ -4,8 +4,7 @@ import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import com.pagerduty.arrivals.api.RequestResponder
 
 trait Aggregator[AuthData, RequestKey, AccumulatedState, AddressingConfig]
-    extends RequestResponder[AggregatorDependencies[AddressingConfig],
-                             AuthData] {
+    extends RequestResponder[AggregatorDependencies[AddressingConfig], AuthData] {
 
   type RequestMap =
     Map[RequestKey, (AggregatorUpstream[AddressingConfig], HttpRequest)]
@@ -14,11 +13,9 @@ trait Aggregator[AuthData, RequestKey, AccumulatedState, AddressingConfig]
   type HandlerResult = Either[HttpResponse, AccumulatedStateAndRequests]
   type ResponseHandler = (AccumulatedState, ResponseMap) => HandlerResult
 
-  def handleIncomingRequest(incomingRequest: HttpRequest,
-                            authData: AuthData): HandlerResult
+  def handleIncomingRequest(incomingRequest: HttpRequest, authData: AuthData): HandlerResult
 
   def intermediateResponseHandlers: Seq[ResponseHandler]
 
-  def buildOutgoingResponse(accumulatedState: AccumulatedState,
-                            upstreamResponses: ResponseMap): HttpResponse
+  def buildOutgoingResponse(accumulatedState: AccumulatedState, upstreamResponses: ResponseMap): HttpResponse
 }

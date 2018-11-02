@@ -15,10 +15,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 import scala.util.Try
 
-class HeaderAuthenticatorSpec
-    extends FreeSpecLike
-    with Matchers
-    with MockFactory {
+class HeaderAuthenticatorSpec extends FreeSpecLike with Matchers with MockFactory {
   val authHeader = RawHeader("auth-header", "test")
 
   class TestAuthConfig extends HeaderAuthConfig {
@@ -26,28 +23,25 @@ class HeaderAuthenticatorSpec
     type AuthData = String
     type Permission = String
 
-    def extractCredentials(request: HttpRequest)(
-        implicit reqMeta: RequestMetadata): List[Cred] = ???
+    def extractCredentials(request: HttpRequest)(implicit reqMeta: RequestMetadata): List[Cred] = ???
 
-    def authenticate(credential: Cred)(
-        implicit reqMeta: RequestMetadata): Future[Try[Option[AuthData]]] = ???
+    def authenticate(credential: Cred)(implicit reqMeta: RequestMetadata): Future[Try[Option[AuthData]]] = ???
 
     def authDataGrantsPermission(
         authData: AuthData,
         request: HttpRequest,
         permission: Option[Permission]
-    )(implicit reqMeta: RequestMetadata): Option[AuthFailedReason] = ???
+      )(implicit reqMeta: RequestMetadata
+      ): Option[AuthFailedReason] = ???
 
-    def dataToAuthHeader(data: AuthData)(
-        implicit reqMeta: RequestMetadata): HttpHeader = authHeader
+    def dataToAuthHeader(data: AuthData)(implicit reqMeta: RequestMetadata): HttpHeader = authHeader
     def authHeaderName: String = authHeader.name
   }
 
   implicit val reqMeta = RequestMetadata(None)
   val ac = new TestAuthConfig
 
-  def buildHeaderAuthenticator(
-      optAuthData: Option[String]): HeaderAuthenticator = {
+  def buildHeaderAuthenticator(optAuthData: Option[String]): HeaderAuthenticator = {
     new HeaderAuthenticator {
       override def requestAuthenticator: RequestAuthenticator =
         new RequestAuthenticator {
@@ -56,13 +50,12 @@ class HeaderAuthenticatorSpec
 
           override def authenticate(
               authConfig: AuthenticationConfig
-          )(request: HttpRequest,
-            requiredPermission: Option[authConfig.Permission])(
-              handler: (HttpRequest,
-                        Option[authConfig.AuthData]) => Future[HttpResponse])(
-              implicit reqMeta: RequestMetadata): Future[HttpResponse] = {
-            handler(request,
-                    optAuthData.asInstanceOf[Option[authConfig.AuthData]])
+            )(request: HttpRequest,
+              requiredPermission: Option[authConfig.Permission]
+            )(handler: (HttpRequest, Option[authConfig.AuthData]) => Future[HttpResponse]
+            )(implicit reqMeta: RequestMetadata
+            ): Future[HttpResponse] = {
+            handler(request, optAuthData.asInstanceOf[Option[authConfig.AuthData]])
           }
         }
     }
@@ -111,8 +104,7 @@ class HeaderAuthenticatorSpec
       }
 
       val response =
-        Await.result(headerAuth.addAndRequireAuthHeader(ac)(request)(handler),
-                     1.seconds)
+        Await.result(headerAuth.addAndRequireAuthHeader(ac)(request)(handler), 1.seconds)
     }
 
     "adds auth header and calls handler when auth is required and successful" in {
@@ -127,8 +119,7 @@ class HeaderAuthenticatorSpec
       }
 
       val response =
-        Await.result(headerAuth.addAndRequireAuthHeader(ac)(request)(handler),
-                     1.seconds)
+        Await.result(headerAuth.addAndRequireAuthHeader(ac)(request)(handler), 1.seconds)
       response.status should be(OK)
     }
   }

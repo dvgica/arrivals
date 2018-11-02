@@ -23,18 +23,15 @@ class HttpProxySpec extends FreeSpecLike with Matchers with ScalaFutures {
     val upstream = new Upstream[String] {
       val metricsTag = "test"
 
-      def addressRequest(request: HttpRequest,
-                         addressingConfig: String): HttpRequest = {
+      def addressRequest(request: HttpRequest, addressingConfig: String): HttpRequest = {
         val uri = request.uri.withAuthority(authority)
         request.withUri(uri)
       }
 
-      override def prepareRequestForDelivery(
-          request: HttpRequest): HttpRequest =
+      override def prepareRequestForDelivery(request: HttpRequest): HttpRequest =
         request.addHeader(additionalHeader)
 
-      override def transformResponse(request: HttpRequest,
-                                     response: HttpResponse): HttpResponse = {
+      override def transformResponse(request: HttpRequest, response: HttpResponse): HttpResponse = {
         response.addHeader(request.getHeader(headerKey).get)
       }
     }
@@ -48,8 +45,7 @@ class HttpProxySpec extends FreeSpecLike with Matchers with ScalaFutures {
     "removes the Timeout-Header if it exists before proxying" in {
       val httpClient = (req: HttpRequest) => {
         if (req.headers.exists(_.is("timeout-access"))) {
-          throw new Exception(
-            "The Timeout-Access header is not being removed as we expect")
+          throw new Exception("The Timeout-Access header is not being removed as we expect")
         }
 
         Future.successful(response)
@@ -57,9 +53,7 @@ class HttpProxySpec extends FreeSpecLike with Matchers with ScalaFutures {
 
       val p = new HttpProxy("localhost", httpClient)
 
-      p(HttpRequest().withHeaders(RawHeader("Timeout-Access", "foo")),
-        upstream,
-        ())
+      p(HttpRequest().withHeaders(RawHeader("Timeout-Access", "foo")), upstream, ())
     }
 
     "prepares the request before proxying" in {
@@ -67,8 +61,7 @@ class HttpProxySpec extends FreeSpecLike with Matchers with ScalaFutures {
         req.headers.find(_.is(headerKey)) match {
           case Some(h) if h.value() == headerValue => // it works!
           case _ =>
-            throw new Exception(
-              "The front-end header is not being added as we expect")
+            throw new Exception("The front-end header is not being added as we expect")
         }
 
         Future.successful(response)
@@ -82,8 +75,7 @@ class HttpProxySpec extends FreeSpecLike with Matchers with ScalaFutures {
     "addresses the request before proxy" in {
       val httpClient = (req: HttpRequest) => {
         if (req.uri.authority != authority) {
-          throw new Exception(
-            "Authority on proxied request not being set as expected")
+          throw new Exception("Authority on proxied request not being set as expected")
         }
         Future.successful(response)
       }

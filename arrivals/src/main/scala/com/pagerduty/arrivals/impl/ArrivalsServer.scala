@@ -5,24 +5,11 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import com.pagerduty.arrivals.api.headerauth.HeaderAuthConfig
-import com.pagerduty.arrivals.impl.aggregator.{
-  AggregatorController,
-  AggregatorRequestHandler
-}
-import com.pagerduty.arrivals.impl.auth.{
-  RequestAuthenticator,
-  RequireAuthentication
-}
-import com.pagerduty.arrivals.impl.authproxy.{
-  AuthProxyController,
-  AuthProxyRequestHandler
-}
+import com.pagerduty.arrivals.impl.aggregator.{AggregatorController, AggregatorRequestHandler}
+import com.pagerduty.arrivals.impl.auth.{RequestAuthenticator, RequireAuthentication}
+import com.pagerduty.arrivals.impl.authproxy.{AuthProxyController, AuthProxyRequestHandler}
 import com.pagerduty.arrivals.impl.headerauth.HeaderAuthenticator
-import com.pagerduty.arrivals.impl.proxy.{
-  HttpProxy,
-  ProxyController,
-  ProxyRequestHandler
-}
+import com.pagerduty.arrivals.impl.proxy.{HttpProxy, ProxyController, ProxyRequestHandler}
 import com.pagerduty.metrics.{Metrics, NullMetrics}
 import org.slf4j.LoggerFactory
 
@@ -35,8 +22,8 @@ abstract class ArrivalsServer[AddressingConfig, AuthConfig <: HeaderAuthConfig](
     headerAuthConfig: AuthConfig,
     listenInterface: String = "0.0.0.0",
     listenPort: Int = 8080,
-    entityConsumptionTimeout: FiniteDuration = 20.seconds)(
-    implicit actorSystem: ActorSystem,
+    entityConsumptionTimeout: FiniteDuration = 20.seconds
+  )(implicit actorSystem: ActorSystem,
     val materializer: Materializer,
     metrics: Metrics = NullMetrics)
     extends ProxyController[AddressingConfig]
@@ -82,11 +69,9 @@ abstract class ArrivalsServer[AddressingConfig, AuthConfig <: HeaderAuthConfig](
     val requestAuthenticator = outer.requestAuthenticator
   }
 
-  logger.info(
-    s"Akka-HTTP binding to port: $listenPort and interface: $listenInterface...")
+  logger.info(s"Akka-HTTP binding to port: $listenPort and interface: $listenInterface...")
   private val bindingFuture =
-    Http(actorSystem).bindAndHandle(routes, listenInterface, listenPort)(
-      materializer)
+    Http(actorSystem).bindAndHandle(routes, listenInterface, listenPort)(materializer)
 
   //   for simplicity, block until the HTTP server is actually started
   private val tryBinding = Try(Await.result(bindingFuture, 10.seconds))

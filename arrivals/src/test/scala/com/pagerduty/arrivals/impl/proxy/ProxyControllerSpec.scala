@@ -9,19 +9,13 @@ import org.scalatest.{FreeSpecLike, Matchers}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class ProxyControllerSpec
-    extends FreeSpecLike
-    with Matchers
-    with ScalatestRouteTest
-    with MockFactory { outer =>
+class ProxyControllerSpec extends FreeSpecLike with Matchers with ScalatestRouteTest with MockFactory { outer =>
 
   "ProxyControllerSpec" - {
     val expectedResponse = HttpResponse(201)
 
     val httpStub = new HttpProxy[String](null, null)(null, null, null) {
-      override def apply(request: HttpRequest,
-                         upstream: Upstream[String],
-                         t: Any): Future[HttpResponse] =
+      override def apply(request: HttpRequest, upstream: Upstream[String], t: Any): Future[HttpResponse] =
         Future.successful(expectedResponse)
     }
     val c = new ProxyController[String] {
@@ -33,16 +27,11 @@ class ProxyControllerSpec
     }
     val upstream = new Upstream[String] {
       val metricsTag = "test"
-      def addressRequest(request: HttpRequest,
-                         addressingConfig: String): HttpRequest = request
+      def addressRequest(request: HttpRequest, addressingConfig: String): HttpRequest = request
     }
 
     "proxies routes" in {
-      Seq(Get(_: String),
-          Post(_: String),
-          Put(_: String),
-          Delete(_: String),
-          Patch(_: String)).foreach { verb =>
+      Seq(Get(_: String), Post(_: String), Put(_: String), Delete(_: String), Patch(_: String)).foreach { verb =>
         verb("/") ~> c.proxyRoute(upstream) ~> check {
           handled shouldBe true
           response should equal(expectedResponse)

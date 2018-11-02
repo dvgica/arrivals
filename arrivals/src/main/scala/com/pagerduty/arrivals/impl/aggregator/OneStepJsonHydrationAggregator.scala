@@ -23,25 +23,19 @@ trait OneStepJsonHydrationAggregator[AuthData, AddressingConfig]
     extends OneStepAggregator[AuthData, String, AddressingConfig] {
 
   // implement these two methods
-  def handleIncomingRequestStateless(
-      incomingRequest: HttpRequest,
-      authData: AuthData): Either[HttpResponse, RequestMap]
+  def handleIncomingRequestStateless(incomingRequest: HttpRequest, authData: AuthData): Either[HttpResponse, RequestMap]
 
-  def buildOutgoingJsonResponseStateless(
-      upstreamJsonResponses: Map[String, (HttpResponse, Js.Value)])
-    : HttpResponse
+  def buildOutgoingJsonResponseStateless(upstreamJsonResponses: Map[String, (HttpResponse, Js.Value)]): HttpResponse
 
   // the rest is internal implementation
-  override def handleIncomingRequest(incomingRequest: HttpRequest,
-                                     authData: AuthData): HandlerResult = {
+  override def handleIncomingRequest(incomingRequest: HttpRequest, authData: AuthData): HandlerResult = {
     handleIncomingRequestStateless(incomingRequest, authData) match {
       case Right(requests) => Right(NotUsed, requests)
-      case Left(response) => Left(response)
+      case Left(response)  => Left(response)
     }
   }
 
-  override def buildOutgoingResponseStateless(
-      upstreamResponses: ResponseMap): HttpResponse = {
+  override def buildOutgoingResponseStateless(upstreamResponses: ResponseMap): HttpResponse = {
     val upstreamJsonResponses = upstreamResponses.map {
       case (requestKey, (response, entity)) =>
         (requestKey, (response, ujson.read(entity)))

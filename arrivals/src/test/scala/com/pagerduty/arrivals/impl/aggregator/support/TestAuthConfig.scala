@@ -15,19 +15,17 @@ class TestAuthConfig extends HeaderAuthConfig {
   type Permission = String
   type AuthHeader = RawHeader
 
-  def extractCredentials(request: HttpRequest)(
-      implicit reqMeta: RequestMetadata): List[Cred] = ???
+  def extractCredentials(request: HttpRequest)(implicit reqMeta: RequestMetadata): List[Cred] = ???
 
-  def authenticate(credential: Cred)(
-      implicit reqMeta: RequestMetadata): Future[Try[Option[AuthData]]] = ???
+  def authenticate(credential: Cred)(implicit reqMeta: RequestMetadata): Future[Try[Option[AuthData]]] = ???
 
   def authDataGrantsPermission(
       authData: AuthData,
       request: HttpRequest,
       permission: Option[Permission]
-  )(implicit reqMeta: RequestMetadata): Option[AuthFailedReason] = ???
+    )(implicit reqMeta: RequestMetadata
+    ): Option[AuthFailedReason] = ???
 
-  def dataToAuthHeader(data: AuthData)(
-      implicit reqMeta: RequestMetadata): AuthHeader = ???
+  def dataToAuthHeader(data: AuthData)(implicit reqMeta: RequestMetadata): AuthHeader = ???
   def authHeaderName: String = ???
 }

@@ -9,5 +9,5 @@ trait AggregatorUpstream[AddressingConfig] extends Upstream[AddressingConfig] {
       authConfig: HeaderAuthConfig,
       request: HttpRequest,
       modelRequest: HttpRequest
-  ): HttpRequest = request
+    ): HttpRequest = request
 }

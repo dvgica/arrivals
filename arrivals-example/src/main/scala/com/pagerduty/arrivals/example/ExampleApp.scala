@@ -35,8 +35,7 @@ object ExampleApp extends App {
             case Some("2") =>
               (StatusCodes.OK, "Hi Rex! Here are some dogs: rex, king, duke")
             case _ =>
-              (StatusCodes.Forbidden,
-               "You're not an authenticated dog. Hint: try adding `?username=rex` to the URL.")
+              (StatusCodes.Forbidden, "You're not an authenticated dog. Hint: try adding `?username=rex` to the URL.")
           }
         }
       }

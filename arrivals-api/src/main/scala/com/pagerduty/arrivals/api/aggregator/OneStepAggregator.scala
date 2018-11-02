@@ -8,11 +8,9 @@ trait OneStepAggregator[AuthData, RequestKey, AddressingConfig]
 
   def intermediateResponseHandlers: Seq[ResponseHandler] = Seq()
 
-  def buildOutgoingResponse(accumulatedState: NotUsed,
-                            upstreamResponses: ResponseMap): HttpResponse = {
+  def buildOutgoingResponse(accumulatedState: NotUsed, upstreamResponses: ResponseMap): HttpResponse = {
     buildOutgoingResponseStateless(upstreamResponses)
   }
 
-  def buildOutgoingResponseStateless(
-      upstreamResponses: ResponseMap): HttpResponse
+  def buildOutgoingResponseStateless(upstreamResponses: ResponseMap): HttpResponse
 }
