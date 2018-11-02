@@ -11,15 +11,14 @@ trait AuthenticationConfig {
   type AuthData
   type Permission
 
-  def extractCredentials(request: HttpRequest)(
-      implicit reqMeta: RequestMetadata): List[Cred]
+  def extractCredentials(request: HttpRequest)(implicit reqMeta: RequestMetadata): List[Cred]
 
-  def authenticate(credential: Cred)(
-      implicit reqMeta: RequestMetadata): Future[Try[Option[AuthData]]]
+  def authenticate(credential: Cred)(implicit reqMeta: RequestMetadata): Future[Try[Option[AuthData]]]
 
   def authDataGrantsPermission(
       authData: AuthData,
       request: HttpRequest,
       permission: Option[Permission]
-  )(implicit reqMeta: RequestMetadata): Option[AuthFailedReason]
+    )(implicit reqMeta: RequestMetadata
+    ): Option[AuthFailedReason]
 }

@@ -1,10 +1,6 @@
 package com.pagerduty.arrivals.impl.proxy
 
-import akka.http.scaladsl.model.{
-  HttpResponse,
-  IllegalResponseException,
-  StatusCodes
-}
+import akka.http.scaladsl.model.{HttpResponse, IllegalResponseException, StatusCodes}
 import akka.http.scaladsl.server.Directives.{complete, extractRequest}
 import akka.http.scaladsl.server.{ExceptionHandler, Route}
 import akka.stream.StreamTcpException
@@ -18,12 +14,9 @@ trait ErrorHandling extends MetadataLogging {
   lazy val proxyExceptionHandler = ExceptionHandler {
     case e: IllegalResponseException =>
       handleProxyError(e)
-    case e: java.lang.RuntimeException
-        if e.getClass.getSimpleName.contains(
-          "UnexpectedConnectionClosureException") =>
+    case e: java.lang.RuntimeException if e.getClass.getSimpleName.contains("UnexpectedConnectionClosureException") =>
       handleProxyError(e)
-    case e: StreamTcpException
-        if e.getMessage.contains("Connection refused") =>
+    case e: StreamTcpException if e.getMessage.contains("Connection refused") =>
       handleProxyError(e)
   }
 

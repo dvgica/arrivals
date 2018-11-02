@@ -4,15 +4,9 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.stream.ActorMaterializer
 import akka.testkit.TestKit
-import com.pagerduty.arrivals.api.aggregator.{
-  AggregatorDependencies,
-  AggregatorUpstream
-}
+import com.pagerduty.arrivals.api.aggregator.{AggregatorDependencies, AggregatorUpstream}
 import com.pagerduty.arrivals.api.proxy.Upstream
-import com.pagerduty.arrivals.impl.aggregator.support.{
-  TestAuthConfig,
-  TestUpstream
-}
+import com.pagerduty.arrivals.impl.aggregator.support.{TestAuthConfig, TestUpstream}
 import com.pagerduty.arrivals.impl.proxy.HttpProxy
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{BeforeAndAfterAll, FreeSpecLike, Matchers}
@@ -71,15 +65,13 @@ class TwoStepJsonHydrationAggregatorSpec
     val initialState = "initial"
     val intermediateState = "intermediate"
 
-    class TestAggregator
-        extends TwoStepJsonHydrationAggregator[String, String] {
-      override def handleIncomingRequest(incomingRequest: HttpRequest)
-        : Either[HttpResponse, (AggregatorUpstream[String], HttpRequest)] =
+    class TestAggregator extends TwoStepJsonHydrationAggregator[String, String] {
+      override def handleIncomingRequest(
+          incomingRequest: HttpRequest
+        ): Either[HttpResponse, (AggregatorUpstream[String], HttpRequest)] =
         Right((upstream1, request1))
 
-      override def handleJsonUpstreamResponse(
-          upstreamResponse: HttpResponse,
-          upstreamJson: Js.Value): RequestMap = {
+      override def handleJsonUpstreamResponse(upstreamResponse: HttpResponse, upstreamJson: Js.Value): RequestMap = {
         upstreamResponse should equal(response1)
         upstreamJson should equal(entityJson1)
 
@@ -89,7 +81,7 @@ class TwoStepJsonHydrationAggregatorSpec
       def buildOutgoingJsonResponse(
           initialUpstreamJson: Js.Value,
           upstreamResponseMap: Map[String, (HttpResponse, Js.Value)]
-      ): HttpResponse = {
+        ): HttpResponse = {
         initialUpstreamJson should equal(entityJson1)
         upstreamResponseMap should have size (1)
         upstreamResponseMap(request2Key) should equal((response2, entityJson2))
@@ -103,9 +95,7 @@ class TwoStepJsonHydrationAggregatorSpec
     "sends requests to upstreams and aggregates responses in multiple steps" in {
       implicit val stubProxy =
         new HttpProxy[String](null, null)(null, null, null) {
-          override def apply(request: HttpRequest,
-                             upstream: Upstream[String],
-                             t: Any): Future[HttpResponse] = {
+          override def apply(request: HttpRequest, upstream: Upstream[String], t: Any): Future[HttpResponse] = {
             upstream match {
               case `upstream1` => Future.successful(response1)
               case `upstream2` => Future.successful(response2)
@@ -115,8 +105,7 @@ class TwoStepJsonHydrationAggregatorSpec
       val request = HttpRequest()
 
       val response =
-        Await.result(aggregator(request, buildDeps(stubProxy), testAuthData),
-                     10.seconds)
+        Await.result(aggregator(request, buildDeps(stubProxy), testAuthData), 10.seconds)
       response should equal(expectedResponse)
     }
   }

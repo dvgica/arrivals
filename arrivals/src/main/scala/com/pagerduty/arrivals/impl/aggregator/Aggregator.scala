@@ -11,15 +11,14 @@ import com.pagerduty.arrivals.api.proxy.HttpProxy
 import scala.concurrent.{ExecutionContext, Future}
 
 trait Aggregator[AuthData, RequestKey, AccumulatedState, AddressingConfig]
-    extends api.aggregator.Aggregator[AuthData,
-                                      RequestKey,
-                                      AccumulatedState,
-                                      AddressingConfig] {
+    extends api.aggregator.Aggregator[AuthData, RequestKey, AccumulatedState, AddressingConfig] {
 
   // implementation
-  override def apply(authedRequest: HttpRequest,
-                     deps: AggregatorDependencies[AddressingConfig],
-                     authData: AuthData): Future[HttpResponse] = {
+  override def apply(
+      authedRequest: HttpRequest,
+      deps: AggregatorDependencies[AddressingConfig],
+      authData: AuthData
+    ): Future[HttpResponse] = {
     val authConfig = deps.authConfig
     implicit val httpProxy = deps.httpProxy
     implicit val ec = deps.executionContext
@@ -31,12 +30,9 @@ trait Aggregator[AuthData, RequestKey, AccumulatedState, AddressingConfig]
     initialHandlerResult match {
       case Right((initialState, initialRequests)) =>
         // the initial handler returned some requests, execute them
-        val fInitialResponses = executeRequests(authConfig)(initialState,
-                                                            initialRequests,
-                                                            authedRequest)
+        val fInitialResponses = executeRequests(authConfig)(initialState, initialRequests, authedRequest)
 
-        val intermediateHandlersResult = executeIntermediateHandlers(
-          authConfig)(authedRequest, fInitialResponses)
+        val intermediateHandlersResult = executeIntermediateHandlers(authConfig)(authedRequest, fInitialResponses)
 
         // all the intermediate handlers have run (or short-circuited), tell the aggregator to build the outgoing response
         intermediateHandlersResult.map {
@@ -53,55 +49,54 @@ trait Aggregator[AuthData, RequestKey, AccumulatedState, AddressingConfig]
     }
   }
 
-  private def executeIntermediateHandlers(authConfig: HeaderAuthConfig)(
-      authedRequest: HttpRequest,
-      initialStateAndResponses: Future[(AccumulatedState, ResponseMap)])(
-      implicit httpProxy: HttpProxy[AddressingConfig],
+  private def executeIntermediateHandlers(
+      authConfig: HeaderAuthConfig
+    )(authedRequest: HttpRequest,
+      initialStateAndResponses: Future[(AccumulatedState, ResponseMap)]
+    )(implicit httpProxy: HttpProxy[AddressingConfig],
       executionContext: ExecutionContext,
-      materializer: Materializer)
-    : Future[Either[HttpResponse, (AccumulatedState, ResponseMap)]] = {
+      materializer: Materializer
+    ): Future[Either[HttpResponse, (AccumulatedState, ResponseMap)]] = {
 
-    val firstIntermediateHandlerInput
-      : Future[Either[HttpResponse, (AccumulatedState, ResponseMap)]] =
+    val firstIntermediateHandlerInput: Future[Either[HttpResponse, (AccumulatedState, ResponseMap)]] =
       initialStateAndResponses.map(Right(_))
 
     // we have the initial handler input; pass it into the first handler, and iterate through the subsequent handlers
-    intermediateResponseHandlers.foldLeft(firstIntermediateHandlerInput) {
-      (respOrStateAndResponses, handler) =>
-        respOrStateAndResponses.flatMap {
-          case Right((previousState, responseMap)) =>
-            // we have state and responses, so we pass them to this handler
-            val respOrNewRequestMap = handler(previousState, responseMap)
+    intermediateResponseHandlers.foldLeft(firstIntermediateHandlerInput) { (respOrStateAndResponses, handler) =>
+      respOrStateAndResponses.flatMap {
+        case Right((previousState, responseMap)) =>
+          // we have state and responses, so we pass them to this handler
+          val respOrNewRequestMap = handler(previousState, responseMap)
 
-            respOrNewRequestMap match {
-              case Right((newState, requests)) =>
-                // the handler returned some requests, execute them
-                executeRequests(authConfig)(newState, requests, authedRequest)
-                  .map(responses => Right(responses))
-              case Left(sc) =>
-                // the handler returned a short-circuit response, wrap it
-                Future.successful(Left(sc))
-            }
-          case shortCircuit @ Left(_) =>
-            // we have a short-circuit response, don't execute this handler
-            Future.successful(shortCircuit)
-        }
+          respOrNewRequestMap match {
+            case Right((newState, requests)) =>
+              // the handler returned some requests, execute them
+              executeRequests(authConfig)(newState, requests, authedRequest)
+                .map(responses => Right(responses))
+            case Left(sc) =>
+              // the handler returned a short-circuit response, wrap it
+              Future.successful(Left(sc))
+          }
+        case shortCircuit @ Left(_) =>
+          // we have a short-circuit response, don't execute this handler
+          Future.successful(shortCircuit)
+      }
     }
   }
 
-  private def executeRequests(authConfig: HeaderAuthConfig)(
-      state: AccumulatedState,
+  private def executeRequests(
+      authConfig: HeaderAuthConfig
+    )(state: AccumulatedState,
       requests: RequestMap,
       authedRequest: HttpRequest
-  )(implicit httpProxy: HttpProxy[AddressingConfig],
-    executionContext: ExecutionContext,
-    materializer: Materializer): Future[(AccumulatedState, ResponseMap)] = {
+    )(implicit httpProxy: HttpProxy[AddressingConfig],
+      executionContext: ExecutionContext,
+      materializer: Materializer
+    ): Future[(AccumulatedState, ResponseMap)] = {
     val preparedRequests = requests.map {
       case (key, (upstream, req)) =>
         val preppedReq =
-          upstream.prepareAggregatorRequestForDelivery(authConfig,
-                                                       req,
-                                                       authedRequest)
+          upstream.prepareAggregatorRequestForDelivery(authConfig, req, authedRequest)
         (key, (upstream, preppedReq))
     }
 

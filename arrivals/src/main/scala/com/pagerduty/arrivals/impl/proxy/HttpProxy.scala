@@ -18,14 +18,14 @@ class HttpProxy[AddressingConfig](
     addressingConfig: AddressingConfig,
     httpClient: HttpRequest => Future[HttpResponse],
     entityConsumptionTimeout: FiniteDuration = 20.seconds
-)(implicit ec: ExecutionContext, materializer: Materializer, metrics: Metrics)
+  )(implicit ec: ExecutionContext,
+    materializer: Materializer,
+    metrics: Metrics)
     extends api.proxy.HttpProxy[AddressingConfig]
     with MetadataLogging {
   import HttpProxy._
 
-  override def apply(request: HttpRequest,
-                     upstream: Upstream[AddressingConfig],
-                     data: Any): Future[HttpResponse] = {
+  override def apply(request: HttpRequest, upstream: Upstream[AddressingConfig], data: Any): Future[HttpResponse] = {
     val addressedRequest =
       upstream
         .addressRequest(request, addressingConfig)
@@ -39,9 +39,7 @@ class HttpProxy[AddressingConfig](
 
     response.flatMap { r =>
       val elapsed = stopwatch.elapsed().toMicros.toInt
-      metrics.histogram("upstream_response_time",
-                        elapsed,
-                        "upstream" -> upstream.metricsTag)
+      metrics.histogram("upstream_response_time", elapsed, "upstream" -> upstream.metricsTag)
 
       r.entity.withoutSizeLimit().toStrict(entityConsumptionTimeout).map { e =>
         upstream.transformResponse(preparedProxyRequest, r.withEntity(e))

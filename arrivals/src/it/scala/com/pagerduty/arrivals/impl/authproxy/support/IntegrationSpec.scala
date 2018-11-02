@@ -7,21 +7,12 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 import com.pagerduty.arrivals.impl.proxy.HttpProxy
 import com.pagerduty.metrics.NullMetrics
-import org.scalatest.{
-  BeforeAndAfterAll,
-  BeforeAndAfterEach,
-  FreeSpecLike,
-  Matchers
-}
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FreeSpecLike, Matchers}
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext}
 
-trait IntegrationSpec
-    extends FreeSpecLike
-    with Matchers
-    with BeforeAndAfterAll
-    with BeforeAndAfterEach {
+trait IntegrationSpec extends FreeSpecLike with Matchers with BeforeAndAfterAll with BeforeAndAfterEach {
 
   val host = "localhost"
   val port = 1234

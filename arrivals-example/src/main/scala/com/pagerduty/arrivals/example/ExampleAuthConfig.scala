@@ -14,19 +14,17 @@ class ExampleAuthConfig extends HeaderAuthConfig {
   type AuthData = UserId
   type Permission = Nothing
 
-  def extractCredentials(request: HttpRequest)(
-      implicit reqMeta: RequestMetadata): List[Cred] = {
+  def extractCredentials(request: HttpRequest)(implicit reqMeta: RequestMetadata): List[Cred] = {
     // obviously, this is a terrible, terrible idea that you should never do
     request.uri.query().get("username").toList
   }
 
-  def authenticate(credential: Cred)(
-      implicit reqMeta: RequestMetadata): Future[Try[Option[AuthData]]] = {
+  def authenticate(credential: Cred)(implicit reqMeta: RequestMetadata): Future[Try[Option[AuthData]]] = {
     // for demo purposes.... don't do this
     Future.successful(Success(credential match {
       case "mittens" => Some(1)
-      case "rex" => Some(2)
-      case _ => None
+      case "rex"     => Some(2)
+      case _         => None
     }))
   }
 
@@ -34,13 +32,13 @@ class ExampleAuthConfig extends HeaderAuthConfig {
       authData: AuthData,
       request: HttpRequest,
       permission: Option[Permission]
-  )(implicit reqMeta: RequestMetadata): Option[AuthFailedReason] = {
+    )(implicit reqMeta: RequestMetadata
+    ): Option[AuthFailedReason] = {
     None
   }
 
   val authHeaderName = "X-User-Id"
-  def dataToAuthHeader(data: AuthData)(
-      implicit reqMeta: RequestMetadata): HttpHeader = {
+  def dataToAuthHeader(data: AuthData)(implicit reqMeta: RequestMetadata): HttpHeader = {
     // normally this header should be cryptographically signed or something
     RawHeader(authHeaderName, data.toString)
   }

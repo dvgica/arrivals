@@ -6,6 +6,5 @@ import com.pagerduty.arrivals.api.auth.AuthenticationConfig
 
 trait HeaderAuthConfig extends AuthenticationConfig {
   def authHeaderName: String
-  def dataToAuthHeader(data: AuthData)(
-      implicit reqMeta: RequestMetadata): HttpHeader
+  def dataToAuthHeader(data: AuthData)(implicit reqMeta: RequestMetadata): HttpHeader
 }

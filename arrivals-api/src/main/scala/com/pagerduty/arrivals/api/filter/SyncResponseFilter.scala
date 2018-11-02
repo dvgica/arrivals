@@ -5,12 +5,8 @@ import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import scala.concurrent.Future
 
 trait SyncResponseFilter[-RequestData] extends ResponseFilter[RequestData] {
-  override def apply(request: HttpRequest,
-                     response: HttpResponse,
-                     data: RequestData): ResponseFilterOutput =
+  override def apply(request: HttpRequest, response: HttpResponse, data: RequestData): ResponseFilterOutput =
     Future.successful(applySync(request, response, data))
 
-  def applySync(request: HttpRequest,
-                response: HttpResponse,
-                data: RequestData): SyncResponseFilterOutput
+  def applySync(request: HttpRequest, response: HttpResponse, data: RequestData): SyncResponseFilterOutput
 }

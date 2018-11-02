@@ -1,10 +1,7 @@
 package com.pagerduty.arrivals.impl.authproxy
 
 import com.github.tomakehurst.wiremock.http.Fault
-import com.pagerduty.arrivals.impl.authproxy.support.{
-  IntegrationSpec,
-  TestAuthConfig
-}
+import com.pagerduty.arrivals.impl.authproxy.support.{IntegrationSpec, TestAuthConfig}
 import scalaj.http.{Http => HttpClient}
 
 class AuthProxyBehaviourSpec extends IntegrationSpec {
@@ -29,8 +26,7 @@ class AuthProxyBehaviourSpec extends IntegrationSpec {
           post(urlEqualTo(path))
             .withHeader(incomingHeaderKey, equalTo(incomingHeaderValue))
             .withHeader("content-type", equalTo(expectedContentType))
-            .withHeader(TestAuthConfig.authHeader.lowercaseName,
-                        equalTo(TestAuthConfig.authHeader.value))
+            .withHeader(TestAuthConfig.authHeader.lowercaseName, equalTo(TestAuthConfig.authHeader.value))
             .withRequestBody(equalToJson(expectedJson))
             .willReturn(
               aResponse()
@@ -70,8 +66,7 @@ class AuthProxyBehaviourSpec extends IntegrationSpec {
           post(urlEqualTo(v2IncidentsPath))
             .withHeader(incomingHeaderKey, equalTo(incomingHeaderValue))
             .withHeader("content-type", equalTo(expectedContentType))
-            .withHeader(TestAuthConfig.authHeader.lowercaseName,
-                        equalTo(TestAuthConfig.authHeader.value))
+            .withHeader(TestAuthConfig.authHeader.lowercaseName, equalTo(TestAuthConfig.authHeader.value))
             .withRequestBody(equalToJson(expectedJson))
             .willReturn(
               aResponse()
@@ -172,7 +167,8 @@ class AuthProxyBehaviourSpec extends IntegrationSpec {
 
         mockService.verify(
           postRequestedFor(urlEqualTo(path))
-            .withoutHeader(TestAuthConfig.authHeader.lowercaseName))
+            .withoutHeader(TestAuthConfig.authHeader.lowercaseName)
+        )
       }
 
       "when the proxy request returns a client error" in {

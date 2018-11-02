@@ -15,11 +15,7 @@ import org.scalatest.{FreeSpecLike, Matchers}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
-class AuthProxyControllerSpec
-    extends FreeSpecLike
-    with Matchers
-    with ScalatestRouteTest
-    with MockFactory { outer =>
+class AuthProxyControllerSpec extends FreeSpecLike with Matchers with ScalatestRouteTest with MockFactory { outer =>
   implicit val reqMeta = RequestMetadata(None)
 
   class TestAuthConfig extends HeaderAuthConfig {
@@ -27,20 +23,18 @@ class AuthProxyControllerSpec
     type AuthData = String
     type Permission = String
 
-    def extractCredentials(request: HttpRequest)(
-        implicit reqMeta: RequestMetadata): List[Cred] = ???
+    def extractCredentials(request: HttpRequest)(implicit reqMeta: RequestMetadata): List[Cred] = ???
 
-    def authenticate(credential: Cred)(
-        implicit reqMeta: RequestMetadata): Future[Try[Option[AuthData]]] = ???
+    def authenticate(credential: Cred)(implicit reqMeta: RequestMetadata): Future[Try[Option[AuthData]]] = ???
 
     def authDataGrantsPermission(
         authData: AuthData,
         request: HttpRequest,
         permission: Option[Permission]
-    )(implicit reqMeta: RequestMetadata): Option[AuthFailedReason] = ???
+      )(implicit reqMeta: RequestMetadata
+      ): Option[AuthFailedReason] = ???
 
-    def dataToAuthHeader(data: AuthData)(
-        implicit reqMeta: RequestMetadata): HttpHeader = ???
+    def dataToAuthHeader(data: AuthData)(implicit reqMeta: RequestMetadata): HttpHeader = ???
     def authHeaderName: String = ???
   }
 
@@ -50,9 +44,7 @@ class AuthProxyControllerSpec
     val expectedTransformedResponse = HttpResponse(302)
 
     val proxyStub = new HttpProxy[String](null, null)(null, null, null) {
-      override def apply(request: HttpRequest,
-                         upstream: Upstream[String],
-                         t: Any): Future[HttpResponse] =
+      override def apply(request: HttpRequest, upstream: Upstream[String], t: Any): Future[HttpResponse] =
         if (request.uri.toString.contains("transformed")) {
           Future.successful(expectedTransformedResponse)
         } else {
@@ -64,13 +56,12 @@ class AuthProxyControllerSpec
     val headerAuthStub = new HeaderAuthenticator {
       override def addAuthHeader(
           authConfig: HeaderAuthConfig
-      )(request: HttpRequest,
-        requiredPermission: Option[authConfig.Permission] = None)(
-          handler: (HttpRequest,
-                    Option[authConfig.AuthData]) => Future[HttpResponse])(
-          implicit reqMeta: RequestMetadata): Future[HttpResponse] = {
-        handler(authedRequest,
-                Some(testAuthData).asInstanceOf[Option[authConfig.AuthData]])
+        )(request: HttpRequest,
+          requiredPermission: Option[authConfig.Permission] = None
+        )(handler: (HttpRequest, Option[authConfig.AuthData]) => Future[HttpResponse]
+        )(implicit reqMeta: RequestMetadata
+        ): Future[HttpResponse] = {
+        handler(authedRequest, Some(testAuthData).asInstanceOf[Option[authConfig.AuthData]])
       }
 
       override def requestAuthenticator = ???
@@ -88,18 +79,13 @@ class AuthProxyControllerSpec
       def headerAuthenticator = headerAuthStub
     }
     val upstream = new Upstream[String] {
-      def addressRequest(request: HttpRequest,
-                         addressingConfig: String): HttpRequest = request
+      def addressRequest(request: HttpRequest, addressingConfig: String): HttpRequest = request
 
       val metricsTag = "test"
     }
 
     "authenticates and proxies requests" in {
-      Seq(Get(_: String),
-          Post(_: String),
-          Put(_: String),
-          Delete(_: String),
-          Patch(_: String)).foreach { verb =>
+      Seq(Get(_: String), Post(_: String), Put(_: String), Delete(_: String), Patch(_: String)).foreach { verb =>
         verb("/") ~> c.authProxyRoute(upstream, Some("permission")) ~> check {
           handled shouldBe true
           response should equal(expectedResponse)
@@ -155,11 +141,7 @@ class AuthProxyControllerSpec
         "/api/v2",
         "/api/v2/"
       ).foreach { url =>
-        Seq(Get(_: String),
-            Post(_: String),
-            Put(_: String),
-            Delete(_: String),
-            Patch(_: String)).foreach { verb =>
+        Seq(Get(_: String), Post(_: String), Put(_: String), Delete(_: String), Patch(_: String)).foreach { verb =>
           verb(url) ~> c.prefixAuthProxyRoute(
             "api" / "v2",
             upstream,

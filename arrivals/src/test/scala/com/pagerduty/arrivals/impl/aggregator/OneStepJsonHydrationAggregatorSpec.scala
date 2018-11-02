@@ -5,15 +5,9 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.stream.ActorMaterializer
 import akka.testkit.TestKit
-import com.pagerduty.arrivals.api.aggregator.{
-  AggregatorDependencies,
-  AggregatorUpstream
-}
+import com.pagerduty.arrivals.api.aggregator.{AggregatorDependencies, AggregatorUpstream}
 import com.pagerduty.arrivals.api.proxy.Upstream
-import com.pagerduty.arrivals.impl.aggregator.support.{
-  TestAuthConfig,
-  TestUpstream
-}
+import com.pagerduty.arrivals.impl.aggregator.support.{TestAuthConfig, TestUpstream}
 import com.pagerduty.arrivals.impl.proxy.HttpProxy
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
@@ -64,26 +58,24 @@ class OneStepJsonHydrationAggregatorSpec
     val reqKey1 = "req1"
     val reqKey2 = "req2"
 
-    val expectedRequests
-      : Map[String, (AggregatorUpstream[String], HttpRequest)] =
+    val expectedRequests: Map[String, (AggregatorUpstream[String], HttpRequest)] =
       Map(reqKey1 -> (upstream1, request1), reqKey2 -> (upstream2, request2))
     val expectedResponse = HttpResponse(entity = "aggregated data")
 
-    val expectedResponses = Map(reqKey1 -> (response1, entityJson1),
-                                reqKey2 -> (response2, entityJson2))
+    val expectedResponses = Map(reqKey1 -> (response1, entityJson1), reqKey2 -> (response2, entityJson2))
 
-    class TestOneStepJsonHydrationAggregator
-        extends OneStepJsonHydrationAggregator[String, String] {
+    class TestOneStepJsonHydrationAggregator extends OneStepJsonHydrationAggregator[String, String] {
       override def handleIncomingRequestStateless(
           incomingRequest: HttpRequest,
-          authData: String): Either[HttpResponse, RequestMap] = {
+          authData: String
+        ): Either[HttpResponse, RequestMap] = {
         authData should equal(authData)
         Right(expectedRequests)
       }
 
       override def buildOutgoingJsonResponseStateless(
           upstreamResponses: Map[String, (HttpResponse, Js.Value)]
-      ): HttpResponse = {
+        ): HttpResponse = {
         upstreamResponses should equal(expectedResponses)
         expectedResponse
       }
@@ -94,9 +86,7 @@ class OneStepJsonHydrationAggregatorSpec
     "sends requests to upstreams and aggregates the responses" in {
       implicit val stubProxy =
         new HttpProxy[String](null, null)(null, null, null) {
-          override def apply(request: HttpRequest,
-                             upstream: Upstream[String],
-                             t: Any): Future[HttpResponse] = {
+          override def apply(request: HttpRequest, upstream: Upstream[String], t: Any): Future[HttpResponse] = {
             upstream match {
               case `upstream1` => Future.successful(response1)
               case `upstream2` => Future.successful(response2)
@@ -106,17 +96,14 @@ class OneStepJsonHydrationAggregatorSpec
       val request = HttpRequest()
 
       val response =
-        Await.result(aggregator(request, buildDeps(stubProxy), testAuthData),
-                     10.seconds)
+        Await.result(aggregator(request, buildDeps(stubProxy), testAuthData), 10.seconds)
       response should equal(expectedResponse)
     }
 
     "fails whole request when one request fails" in {
       implicit val stubProxy =
         new HttpProxy[String](null, null)(null, null, null) {
-          override def apply(request: HttpRequest,
-                             upstream: Upstream[String],
-                             t: Any): Future[HttpResponse] = {
+          override def apply(request: HttpRequest, upstream: Upstream[String], t: Any): Future[HttpResponse] = {
             upstream match {
               case `upstream1` => Future.successful(response1)
               case `upstream2` =>

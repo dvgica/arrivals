@@ -16,19 +16,14 @@ import org.scalatest.{FreeSpecLike, Matchers}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class AggregatorControllerSpec
-    extends FreeSpecLike
-    with Matchers
-    with MockFactory
-    with ScalatestRouteTest {
+class AggregatorControllerSpec extends FreeSpecLike with Matchers with MockFactory with ScalatestRouteTest {
 
   "AggregatorController" - {
     val ac = new TestAuthConfig
     val testAuthData = "test-auth-data"
     val expectedResponse = HttpResponse(StatusCodes.NotModified)
 
-    def buildController(stubHttpProxy: HttpProxy[String] = null)
-      : AggregatorController[TestAuthConfig, String] = {
+    def buildController(stubHttpProxy: HttpProxy[String] = null): AggregatorController[TestAuthConfig, String] = {
       val c = new AggregatorController[TestAuthConfig, String] {
         val authConfig = ac
         val httpProxy = stubHttpProxy
@@ -41,11 +36,11 @@ class AggregatorControllerSpec
 
           override def addAndRequireAuthHeader(
               authConfig: HeaderAuthConfig
-          )(request: HttpRequest,
-            requiredPermission: Option[authConfig.Permission] = None)(
-              handler: (HttpRequest,
-                        authConfig.AuthData) => Future[HttpResponse])(
-              implicit reqMeta: RequestMetadata): Future[HttpResponse] = {
+            )(request: HttpRequest,
+              requiredPermission: Option[authConfig.Permission] = None
+            )(handler: (HttpRequest, authConfig.AuthData) => Future[HttpResponse]
+            )(implicit reqMeta: RequestMetadata
+            ): Future[HttpResponse] = {
             if (request.uri.path.toString.contains("failed-auth")) {
               Future.successful(HttpResponse(Unauthorized))
             } else {
@@ -64,18 +59,17 @@ class AggregatorControllerSpec
     "with a simple test Aggregator" - {
 
       class TestAggregator extends Aggregator[String, String, String, String] {
-        def handleIncomingRequest(incomingRequest: HttpRequest,
-                                  authData: String): HandlerResult = ???
+        def handleIncomingRequest(incomingRequest: HttpRequest, authData: String): HandlerResult = ???
 
         def intermediateResponseHandlers: Seq[ResponseHandler] = ???
 
-        def buildOutgoingResponse(
-            accumulatedState: String,
-            upstreamResponses: ResponseMap): HttpResponse = ???
+        def buildOutgoingResponse(accumulatedState: String, upstreamResponses: ResponseMap): HttpResponse = ???
 
-        override def apply(authedRequest: HttpRequest,
-                           deps: AggregatorDependencies[String],
-                           authData: String): Future[HttpResponse] = {
+        override def apply(
+            authedRequest: HttpRequest,
+            deps: AggregatorDependencies[String],
+            authData: String
+          ): Future[HttpResponse] = {
           authData should equal(testAuthData)
           Future.successful(expectedResponse)
         }
@@ -85,8 +79,7 @@ class AggregatorControllerSpec
 
       "does not execute the aggregator and returns Unauthorized when auth fails" in {
         val c = buildController()
-        Get("/failed-auth") ~> c.prefixAggregatorRoute("failed-auth",
-                                                       aggregator) ~> check {
+        Get("/failed-auth") ~> c.prefixAggregatorRoute("failed-auth", aggregator) ~> check {
           handled shouldBe true
           response.status should equal(Unauthorized)
         }

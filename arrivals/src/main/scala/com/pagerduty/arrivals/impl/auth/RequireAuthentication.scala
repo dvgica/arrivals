@@ -12,14 +12,16 @@ trait RequireAuthentication {
 
   def apply(
       authConfig: AuthenticationConfig
-  )(request: HttpRequest, requiredPermission: Option[authConfig.Permission])(
-      handler: (HttpRequest, authConfig.AuthData) => Future[HttpResponse])(
-      implicit reqMeta: RequestMetadata): Future[HttpResponse] = {
+    )(request: HttpRequest,
+      requiredPermission: Option[authConfig.Permission]
+    )(handler: (HttpRequest, authConfig.AuthData) => Future[HttpResponse]
+    )(implicit reqMeta: RequestMetadata
+    ): Future[HttpResponse] = {
     requestAuthenticator.authenticate(authConfig)(request, requiredPermission) {
       (req: HttpRequest, optAuthData: Option[authConfig.AuthData]) =>
         optAuthData match {
           case Some(authData) => handler(req, authData)
-          case None => Future.successful(HttpResponse(Unauthorized))
+          case None           => Future.successful(HttpResponse(Unauthorized))
         }
     }
   }
