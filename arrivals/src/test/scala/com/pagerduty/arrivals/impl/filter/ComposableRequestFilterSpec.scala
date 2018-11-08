@@ -65,4 +65,28 @@ class ComposableRequestFilterSpec extends FreeSpecLike with Matchers {
       case Left(_) => fail("Whoopsie!")
     }
   }
+
+  "will not apply the second filter if it does not succeed" in {
+
+    object FirstFilter extends RequestFilter[String] with ComposableRequestFilter[String] {
+      def apply(request: HttpRequest, data: String): RequestFilterOutput = {
+        Future.successful(Left(HttpResponse(StatusCodes.Unauthorized)))
+      }
+    }
+
+    object SecondFilter extends RequestFilter[Any] {
+      def apply(request: HttpRequest, data: Any): RequestFilterOutput = {
+        Future.successful(Right(request.addHeader(RawHeader(secondHeaderName, "test"))))
+      }
+    }
+
+    val composedFilter = FirstFilter ~> SecondFilter
+
+    val filterResult = Await.result(composedFilter.apply(HttpRequest(HttpMethods.GET, uri), "test"), 5.seconds)
+
+    filterResult match {
+      case Right(_)   => fail()
+      case Left(resp) => resp.status shouldEqual StatusCodes.Unauthorized
+    }
+  }
 }
