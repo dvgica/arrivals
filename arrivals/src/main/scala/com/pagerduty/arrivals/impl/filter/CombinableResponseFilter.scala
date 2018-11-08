@@ -8,9 +8,9 @@ import scala.concurrent.ExecutionContext
 
 trait CombinableResponseFilter[-RequestData] extends api.filter.ResponseFilter[RequestData] { base =>
 
-  def combine[U <: RequestData](filter: ResponseFilter[U])(implicit ec: ExecutionContext): ResponseFilter[U] = {
-    new ResponseFilter[U] {
-      override def apply(request: HttpRequest, response: HttpResponse, data: U): ResponseFilterOutput = {
+  def combine[T <: RequestData](filter: ResponseFilter[T])(implicit ec: ExecutionContext): ResponseFilter[T] = {
+    new ResponseFilter[T] {
+      override def apply(request: HttpRequest, response: HttpResponse, data: T): ResponseFilterOutput = {
         base.apply(request, response, data) flatMap { resp =>
           filter.apply(request, resp, data)
         }
