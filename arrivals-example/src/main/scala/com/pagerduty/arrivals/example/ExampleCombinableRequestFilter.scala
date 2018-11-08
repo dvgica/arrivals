@@ -3,15 +3,15 @@ package com.pagerduty.arrivals.example
 import akka.http.scaladsl.model.HttpRequest
 import akka.http.scaladsl.model.headers.RawHeader
 import com.pagerduty.arrivals.api.filter.{RequestFilter, RequestFilterOutput}
-import com.pagerduty.arrivals.impl.filter.CombinableRequestFilter
+import com.pagerduty.arrivals.impl.filter.ComposableRequestFilter
 
 import scala.concurrent.{ExecutionContext, Future}
 
-object ExampleCombinedRequestFilter {
+object ExampleComposedRequestFilter {
 
   implicit val ec = ExecutionContext.global
 
-  object ExampleRequestFilterOne extends RequestFilter[Any] with CombinableRequestFilter[Any] {
+  object ExampleRequestFilterOne extends RequestFilter[Any] with ComposableRequestFilter[Any] {
     def apply(request: HttpRequest, data: Any): RequestFilterOutput = {
       Future.successful(Right(request.addHeader(RawHeader("X-Bird-Name", "header bird"))))
     }

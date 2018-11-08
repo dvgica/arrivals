@@ -8,7 +8,7 @@ import org.scalatest.{AsyncFreeSpecLike, FreeSpecLike, Matchers}
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
 
-class CombinableRequestFilterSpec extends FreeSpecLike with Matchers {
+class ComposableRequestFilterSpec extends FreeSpecLike with Matchers {
 
   implicit val ec = ExecutionContext.global
 
@@ -16,14 +16,14 @@ class CombinableRequestFilterSpec extends FreeSpecLike with Matchers {
   val firstHeaderName = "X-TEST-FirstFilter"
   val secondHeaderName = "X-TEST-SecondFilter"
 
-  object FirstFilter extends RequestFilter[String] with CombinableRequestFilter[String] {
+  object FirstFilter extends RequestFilter[String] with ComposableRequestFilter[String] {
     def apply(request: HttpRequest, data: String): RequestFilterOutput = {
       Future.successful(Right(request.addHeader(RawHeader(firstHeaderName, data))))
     }
   }
 
-  "CombinableRequestFilter" - {
-    "can be combined with another RequestFilter of the same RequestData type" in {
+  "ComposableRequestFilter" - {
+    "can be composed with another RequestFilter of the same RequestData type" in {
 
       object SecondFilter extends RequestFilter[String] {
         def apply(request: HttpRequest, data: String): RequestFilterOutput = {
@@ -31,9 +31,9 @@ class CombinableRequestFilterSpec extends FreeSpecLike with Matchers {
         }
       }
 
-      val combinedFilter = FirstFilter.combine(SecondFilter)
+      val composedFilter = FirstFilter.combine(SecondFilter)
 
-      val filterResult = Await.result(combinedFilter.apply(HttpRequest(HttpMethods.GET, uri), "test"), 5.seconds)
+      val filterResult = Await.result(composedFilter.apply(HttpRequest(HttpMethods.GET, uri), "test"), 5.seconds)
 
       filterResult match {
         case Right(req) => {
@@ -45,7 +45,7 @@ class CombinableRequestFilterSpec extends FreeSpecLike with Matchers {
     }
   }
 
-  "can be combined with another RequestFilter of different RequestData type" in {
+  "can be composed with another RequestFilter of different RequestData type" in {
 
     object SecondFilter extends RequestFilter[Any] {
       def apply(request: HttpRequest, data: Any): RequestFilterOutput = {
@@ -53,9 +53,9 @@ class CombinableRequestFilterSpec extends FreeSpecLike with Matchers {
       }
     }
 
-    val combinedFilter = FirstFilter.combine(SecondFilter)
+    val composedFilter = FirstFilter.combine(SecondFilter)
 
-    val filterResult = Await.result(combinedFilter.apply(HttpRequest(HttpMethods.GET, uri), "test"), 5.seconds)
+    val filterResult = Await.result(composedFilter.apply(HttpRequest(HttpMethods.GET, uri), "test"), 5.seconds)
 
     filterResult match {
       case Right(req) => {

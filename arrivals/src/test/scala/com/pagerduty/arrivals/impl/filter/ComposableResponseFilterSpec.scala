@@ -8,7 +8,7 @@ import org.scalatest.{FreeSpecLike, Matchers}
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
 
-class CombinableResponseFilterSpec extends FreeSpecLike with Matchers {
+class ComposableResponseFilterSpec extends FreeSpecLike with Matchers {
 
   implicit val ec = ExecutionContext.global
 
@@ -16,14 +16,14 @@ class CombinableResponseFilterSpec extends FreeSpecLike with Matchers {
   val firstHeaderName = "X-TEST-FirstFilter"
   val secondHeaderName = "X-TEST-SecondFilter"
 
-  object FirstFilter extends ResponseFilter[String] with CombinableResponseFilter[String] {
+  object FirstFilter extends ResponseFilter[String] with ComposableResponseFilter[String] {
     def apply(request: HttpRequest, response: HttpResponse, data: String): ResponseFilterOutput = {
       Future.successful(response.addHeader(RawHeader(firstHeaderName, data)))
     }
   }
 
-  "CombinableResponseFilter" - {
-    "can be combined with another ResponseFilter of the same ResponseData type" in {
+  "ComposableResponseFilter" - {
+    "can be composed with another ResponseFilter of the same ResponseData type" in {
 
       object SecondFilter extends ResponseFilter[String] {
         def apply(request: HttpRequest, response: HttpResponse, data: String): ResponseFilterOutput = {
@@ -31,10 +31,10 @@ class CombinableResponseFilterSpec extends FreeSpecLike with Matchers {
         }
       }
 
-      val combinedFilter = FirstFilter.combine(SecondFilter)
+      val composedFilter = FirstFilter.combine(SecondFilter)
 
       val filterResult = Await.result(
-        combinedFilter.apply(HttpRequest(HttpMethods.GET, uri), HttpResponse(StatusCodes.OK), "test"),
+        composedFilter.apply(HttpRequest(HttpMethods.GET, uri), HttpResponse(StatusCodes.OK), "test"),
         5.seconds
       )
 
@@ -45,7 +45,7 @@ class CombinableResponseFilterSpec extends FreeSpecLike with Matchers {
     }
   }
 
-  "can be combined with another ResponseFilter of different ResponseData type" in {
+  "can be composed with another ResponseFilter of different ResponseData type" in {
 
     object SecondFilter extends ResponseFilter[Any] {
       def apply(request: HttpRequest, response: HttpResponse, data: Any): ResponseFilterOutput = {
@@ -53,10 +53,10 @@ class CombinableResponseFilterSpec extends FreeSpecLike with Matchers {
       }
     }
 
-    val combinedFilter = FirstFilter.combine(SecondFilter)
+    val composedFilter = FirstFilter.combine(SecondFilter)
 
     val filterResult = Await.result(
-      combinedFilter.apply(HttpRequest(HttpMethods.GET, uri), HttpResponse(StatusCodes.OK), "test"),
+      composedFilter.apply(HttpRequest(HttpMethods.GET, uri), HttpResponse(StatusCodes.OK), "test"),
       5.seconds
     )
 

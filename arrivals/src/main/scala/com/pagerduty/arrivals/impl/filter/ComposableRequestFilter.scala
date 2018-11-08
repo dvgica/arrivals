@@ -6,7 +6,7 @@ import com.pagerduty.arrivals.api.filter.{RequestFilter, RequestFilterOutput}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait CombinableRequestFilter[-RequestData] extends api.filter.RequestFilter[RequestData] { base =>
+trait ComposableRequestFilter[-RequestData] extends api.filter.RequestFilter[RequestData] { base =>
 
   def combine[T <: RequestData](filter: RequestFilter[T])(implicit ec: ExecutionContext): RequestFilter[T] = {
     new RequestFilter[T] {
