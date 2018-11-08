@@ -15,7 +15,7 @@ object ExampleApp extends App {
   implicit val ec = system.dispatcher
   implicit val mat = ActorMaterializer()
 
-  // start the cats and dogs upstreams for demo purposes
+  // start the cats, dogs and birds upstreams for demo purposes
   val catRoute = get {
     path("api" / "cats") {
       complete {
@@ -44,6 +44,23 @@ object ExampleApp extends App {
 
   val dogServer =
     Await.result(Http().bindAndHandle(dogRoute, "localhost", 33000), 5.seconds)
+
+  val birdRoute = get {
+    path("api" / "birds") {
+      optionalHeaderValueByName("X-Bird-Name") { birdName =>
+        complete {
+          birdName match {
+            case Some(name) => (StatusCodes.OK, "Here are some birds: woodstock, hedwig, big bird, " + name)
+            case _ =>
+              (StatusCodes.OK, "Nothing to chirp here")
+          }
+        }
+      }
+    }
+  }
+
+  val birdServer =
+    Await.result(Http().bindAndHandle(birdRoute, "localhost", 44000), 5.seconds)
 
   // start the gateway that we'll talk to at 8080
   val gateway = new ExampleGateway("localhost", new ExampleAuthConfig)

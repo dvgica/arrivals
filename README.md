@@ -16,6 +16,7 @@ A basic example of using Arrivals via `ArrivalsServer` is available in [arrivals
 
 - http://localhost:8080/api/cats
 - http://localhost:8080/api/dogs
+- http://localhost:8080/api/birds
 - http://localhost:8080/api/dogs?username=rex
 - http://localhost:8080/api/all?username=rex
 

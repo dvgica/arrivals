@@ -3,12 +3,14 @@ package com.pagerduty.arrivals.example
 import akka.actor.ActorSystem
 import akka.http.scaladsl.server.Directives._
 import akka.stream.Materializer
+import com.pagerduty.arrivals.example.ExampleCombinedRequestFilter.{ExampleRequestFilterOne, ExampleRequestFilterTwo}
 import com.pagerduty.arrivals.impl.ArrivalsServer
 import com.pagerduty.metrics.{Metrics, NullMetrics}
 
 object ExampleGateway {
   val CatsUpstream = ExampleUpstream(22000, "cats")
   val DogsUpstream = ExampleUpstream(33000, "dogs")
+  val BirdsUpstream = ExampleUpstream(44000, "birds")
 }
 
 class ExampleGateway(
@@ -23,8 +25,11 @@ class ExampleGateway(
 
   import ExampleGateway._
 
+  val ExampleCombinedRequestFilter = ExampleRequestFilterOne.combine(ExampleRequestFilterTwo)
+
   lazy val routes = pathPrefix("api")(
     prefixProxyRoute("cats", CatsUpstream, ExampleResponseFilter) ~
+      prefixProxyRoute("birds", BirdsUpstream, ExampleCombinedRequestFilter) ~
       prefixAuthProxyRoute("dogs", DogsUpstream) ~
       prefixAggregatorRoute("all", ExampleAggregator)
   )
