@@ -11,7 +11,7 @@ trait ComposableResponseFilter[-RequestData] extends api.filter.ResponseFilter[R
   def combine[T <: RequestData](filter: ResponseFilter[T])(implicit ec: ExecutionContext): ResponseFilter[T] = {
     new ResponseFilter[T] {
       override def apply(request: HttpRequest, response: HttpResponse, data: T): ResponseFilterOutput = {
-        base.apply(request, response, data) flatMap { resp =>
+        base.apply(request, response, data).flatMap { resp =>
           filter.apply(request, resp, data)
         }
       }
