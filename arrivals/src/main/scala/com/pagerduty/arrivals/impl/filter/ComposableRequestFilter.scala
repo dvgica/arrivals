@@ -8,7 +8,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 trait ComposableRequestFilter[-RequestData] extends api.filter.RequestFilter[RequestData] { base =>
 
-  def combine[T <: RequestData](filter: RequestFilter[T])(implicit ec: ExecutionContext): RequestFilter[T] = {
+  def ~>[T <: RequestData](filter: RequestFilter[T])(implicit ec: ExecutionContext): RequestFilter[T] = {
     new RequestFilter[T] {
       override def apply(request: HttpRequest, data: T): RequestFilterOutput = {
         base.apply(request, data).flatMap {

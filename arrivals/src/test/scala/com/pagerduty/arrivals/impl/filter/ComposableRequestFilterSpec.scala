@@ -31,7 +31,7 @@ class ComposableRequestFilterSpec extends FreeSpecLike with Matchers {
         }
       }
 
-      val composedFilter = FirstFilter.combine(SecondFilter)
+      val composedFilter = FirstFilter ~> SecondFilter
 
       val filterResult = Await.result(composedFilter.apply(HttpRequest(HttpMethods.GET, uri), "test"), 5.seconds)
 
@@ -53,7 +53,7 @@ class ComposableRequestFilterSpec extends FreeSpecLike with Matchers {
       }
     }
 
-    val composedFilter = FirstFilter.combine(SecondFilter)
+    val composedFilter = FirstFilter ~> SecondFilter
 
     val filterResult = Await.result(composedFilter.apply(HttpRequest(HttpMethods.GET, uri), "test"), 5.seconds)
 

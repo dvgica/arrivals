@@ -25,7 +25,7 @@ class ExampleGateway(
 
   import ExampleGateway._
 
-  val ExampleComposedRequestFilter = ExampleRequestFilterOne.combine(ExampleRequestFilterTwo)
+  val ExampleComposedRequestFilter = ExampleRequestFilterOne ~> ExampleRequestFilterTwo
 
   lazy val routes = pathPrefix("api")(
     prefixProxyRoute("cats", CatsUpstream, ExampleResponseFilter) ~
