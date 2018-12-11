@@ -4,7 +4,6 @@ import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.Materializer
 import com.pagerduty.arrivals.api
-import com.pagerduty.arrivals.api.aggregator.AggregatorDependencies
 import com.pagerduty.arrivals.api.headerauth.HeaderAuthConfig
 import com.pagerduty.arrivals.api.proxy.HttpProxy
 
@@ -14,7 +13,7 @@ trait Aggregator[AuthData, RequestKey, AccumulatedState, AddressingConfig]
     extends api.aggregator.Aggregator[AuthData, RequestKey, AccumulatedState, AddressingConfig] {
 
   // implementation
-  override def apply(
+  def apply(
       authedRequest: HttpRequest,
       deps: AggregatorDependencies[AddressingConfig],
       authData: AuthData
@@ -104,7 +103,7 @@ trait Aggregator[AuthData, RequestKey, AccumulatedState, AddressingConfig]
       .sequence(preparedRequests.map {
         case (key, (upstream, r)) =>
           httpProxy
-            .apply(r, upstream, None)
+            .apply(r, upstream)
             .flatMap(resp => {
               Unmarshal(resp.entity)
                 .to[String]

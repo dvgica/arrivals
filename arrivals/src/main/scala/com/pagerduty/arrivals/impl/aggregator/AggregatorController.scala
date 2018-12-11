@@ -5,19 +5,20 @@ import akka.http.scaladsl.server.{PathMatcher, Route}
 import akka.stream.Materializer
 import com.pagerduty.arrivals.api.filter.{NoOpRequestFilter, NoOpResponseFilter, RequestFilter, ResponseFilter}
 import com.pagerduty.akka.http.support.RequestMetadata
-import com.pagerduty.arrivals.api.aggregator.AggregatorDependencies
 import com.pagerduty.arrivals.api.headerauth.HeaderAuthConfig
-import com.pagerduty.arrivals.impl.headerauth.HeaderAuthenticator
 import com.pagerduty.arrivals.api.proxy.HttpProxy
+import com.pagerduty.arrivals.impl.auth.AuthenticationDirectives._
+import com.pagerduty.arrivals.impl.filter.FilterDirectives.{filterRequest, filterResponse}
+import com.pagerduty.arrivals.impl.headerauth.AuthHeaderDirectives._
+import com.pagerduty.metrics.Metrics
 
 import scala.concurrent.ExecutionContext
 
 trait AggregatorController[AuthConfig <: HeaderAuthConfig, AddressingConfig] {
   val authConfig: AuthConfig
-  def headerAuthenticator: HeaderAuthenticator
-  implicit def httpProxy: HttpProxy[AddressingConfig]
-  def aggregatorRequestHandler: AggregatorRequestHandler[AddressingConfig, AuthConfig#AuthData]
 
+  implicit def httpProxy: HttpProxy[AddressingConfig]
+  implicit def metrics: Metrics
   implicit def executionContext: ExecutionContext
   implicit def materializer: Materializer
 
@@ -140,22 +141,27 @@ trait AggregatorController[AuthConfig <: HeaderAuthConfig, AddressingConfig] {
       requestFilter: RequestFilter[AuthConfig#AuthData] = NoOpRequestFilter,
       responseFilter: ResponseFilter[AuthConfig#AuthData] = NoOpResponseFilter
     ): Route = {
-    extractRequest { incomingRequest =>
-      complete {
-        implicit val reqMeta = RequestMetadata.fromRequest(incomingRequest)
+    extractRequest { request =>
+      implicit val reqMeta = RequestMetadata.fromRequest(request)
 
-        headerAuthenticator.addAndRequireAuthHeader(authConfig)(
-          incomingRequest,
-          requiredPermission.asInstanceOf[Option[authConfig.Permission]]
-        ) { (authedRequest, authData) =>
-          aggregatorRequestHandler.apply(
-            authedRequest,
-            AggregatorDependencies(authConfig, httpProxy, executionContext, materializer),
-            authData,
-            aggregator,
-            requestFilter,
-            responseFilter
-          )
+      requireAuthentication(authConfig)(requiredPermission.asInstanceOf[Option[authConfig.Permission]])(
+        reqMeta,
+        metrics
+      ) { authData =>
+        filterRequest(requestFilter, authData) {
+          addAuthHeader(authConfig)(Some(authData).asInstanceOf[Option[authConfig.AuthData]])(reqMeta) {
+            filterResponse(responseFilter, authData) {
+              extractRequest { authedRequest =>
+                complete {
+                  aggregator(
+                    authedRequest,
+                    AggregatorDependencies(authConfig, httpProxy, executionContext, materializer),
+                    authData
+                  )
+                }
+              }
+            }
+          }
         }
       }
     }

@@ -5,7 +5,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.stream.ActorMaterializer
 import akka.testkit.TestKit
-import com.pagerduty.arrivals.api.aggregator.{AggregatorDependencies, AggregatorUpstream}
+import com.pagerduty.arrivals.api.aggregator.AggregatorUpstream
 import com.pagerduty.arrivals.api.proxy.Upstream
 import com.pagerduty.arrivals.impl.aggregator.support.{TestAuthConfig, TestUpstream}
 import com.pagerduty.arrivals.impl.proxy.HttpProxy
@@ -86,7 +86,7 @@ class OneStepJsonHydrationAggregatorSpec
     "sends requests to upstreams and aggregates the responses" in {
       implicit val stubProxy =
         new HttpProxy[String](null, null)(null, null, null) {
-          override def apply(request: HttpRequest, upstream: Upstream[String], t: Any): Future[HttpResponse] = {
+          override def apply(request: HttpRequest, upstream: Upstream[String]): Future[HttpResponse] = {
             upstream match {
               case `upstream1` => Future.successful(response1)
               case `upstream2` => Future.successful(response2)
@@ -103,7 +103,7 @@ class OneStepJsonHydrationAggregatorSpec
     "fails whole request when one request fails" in {
       implicit val stubProxy =
         new HttpProxy[String](null, null)(null, null, null) {
-          override def apply(request: HttpRequest, upstream: Upstream[String], t: Any): Future[HttpResponse] = {
+          override def apply(request: HttpRequest, upstream: Upstream[String]): Future[HttpResponse] = {
             upstream match {
               case `upstream1` => Future.successful(response1)
               case `upstream2` =>

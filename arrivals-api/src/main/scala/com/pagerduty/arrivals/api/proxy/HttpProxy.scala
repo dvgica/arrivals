@@ -1,5 +1,8 @@
 package com.pagerduty.arrivals.api.proxy
 
-import com.pagerduty.arrivals.api.RequestResponder
+import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
+import scala.concurrent.Future
 
-trait HttpProxy[AddressingConfig] extends RequestResponder[Upstream[AddressingConfig], Any]
+trait HttpProxy[AddressingConfig] {
+  def apply(request: HttpRequest, upstream: Upstream[AddressingConfig]): Future[HttpResponse]
+}

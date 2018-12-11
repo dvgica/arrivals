@@ -9,9 +9,7 @@ import com.pagerduty.metrics.Metrics
 import org.slf4j.LoggerFactory
 import akka.http.scaladsl.server.Directives.{handleExceptions, _}
 import com.pagerduty.arrivals.api.proxy.Upstream
-import com.pagerduty.arrivals.impl.auth.RequestAuthenticator
-import com.pagerduty.arrivals.impl.authproxy.{AuthProxyController, AuthProxyRequestHandler}
-import com.pagerduty.arrivals.impl.headerauth.HeaderAuthenticator
+import com.pagerduty.arrivals.impl.authproxy.AuthProxyController
 import com.pagerduty.arrivals.impl.proxy.{ErrorHandling, HttpProxy}
 
 import scala.concurrent.Await
@@ -37,15 +35,6 @@ class HttpServer(
 
   val authConfig = new TestAuthConfig
 
-  val requestAuthenticator = new RequestAuthenticator {
-    val executionContext = outer.executionContext
-    val metrics = outer.metrics
-  }
-
-  val headerAuthenticator = new HeaderAuthenticator {
-    val requestAuthenticator = outer.requestAuthenticator
-  }
-
   val incidentUpstream = new Upstream[String] {
     def addressRequest(request: HttpRequest, addressingConfig: String): HttpRequest = {
       val uri = request.uri.withAuthority(Authority(Uri.Host("localhost"), servicePort))
@@ -54,10 +43,6 @@ class HttpServer(
     val metricsTag = "test"
   }
 
-  val authProxyRequestHandler =
-    new AuthProxyRequestHandler[String, TestAuthConfig#AuthData] {
-      val executionContext = outer.executionContext
-    }
   val httpRoutes = {
 
     (handleExceptions(proxyExceptionHandler)) {

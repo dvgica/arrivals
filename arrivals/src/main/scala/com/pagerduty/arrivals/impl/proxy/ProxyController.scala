@@ -5,11 +5,11 @@ import akka.http.scaladsl.server.{PathMatcher, Route}
 import com.pagerduty.arrivals.api
 import com.pagerduty.arrivals.api.filter.{NoOpRequestFilter, NoOpResponseFilter, RequestFilter, ResponseFilter}
 import com.pagerduty.arrivals.api.proxy.Upstream
+import com.pagerduty.arrivals.impl.filter.FilterDirectives._
 
 trait ProxyController[AddressingConfig] {
 
   def httpProxy: api.proxy.HttpProxy[AddressingConfig]
-  def proxyRequestHandler: ProxyRequestHandler[AddressingConfig]
 
   def prefixProxyRoute(
       path: PathMatcher[Unit],
@@ -36,9 +36,14 @@ trait ProxyController[AddressingConfig] {
       requestFilter: RequestFilter[Unit] = NoOpRequestFilter,
       responseFilter: ResponseFilter[Unit] = NoOpResponseFilter
     ): Route =
-    extractRequest { request =>
-      complete {
-        proxyRequestHandler.apply(request, upstream, (), httpProxy, requestFilter, responseFilter)
+    filterRequest(requestFilter, ()) {
+      filterResponse(responseFilter, ()) {
+        extractRequest { filteredRequest =>
+          complete {
+            httpProxy(filteredRequest, upstream)
+          }
+        }
       }
     }
+
 }

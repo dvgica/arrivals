@@ -7,14 +7,16 @@ import com.pagerduty.arrivals.api.filter.{NoOpRequestFilter, NoOpResponseFilter,
 import com.pagerduty.akka.http.support.RequestMetadata
 import com.pagerduty.arrivals.api.headerauth.HeaderAuthConfig
 import com.pagerduty.arrivals.api.proxy.{HttpProxy, Upstream}
-import com.pagerduty.arrivals.impl.headerauth.HeaderAuthenticator
+import com.pagerduty.arrivals.impl.auth.AuthenticationDirectives._
+import com.pagerduty.arrivals.impl.headerauth.AuthHeaderDirectives._
+import com.pagerduty.arrivals.impl.filter.FilterDirectives._
+import com.pagerduty.metrics.Metrics
 
 trait AuthProxyController[AuthConfig <: HeaderAuthConfig, AddressingConfig] {
 
+  implicit def metrics: Metrics
   val authConfig: AuthConfig
   def httpProxy: HttpProxy[AddressingConfig]
-  def authProxyRequestHandler: AuthProxyRequestHandler[AddressingConfig, AuthConfig#AuthData]
-  def headerAuthenticator: HeaderAuthenticator
 
   def prefixAuthProxyRoute(
       path: PathMatcher[Unit],
@@ -143,14 +145,19 @@ trait AuthProxyController[AuthConfig <: HeaderAuthConfig, AddressingConfig] {
       responseFilter: ResponseFilter[Option[AuthConfig#AuthData]]
     )(implicit reqMeta: RequestMetadata
     ): Route = {
-    complete {
-      headerAuthenticator.addAuthHeader(authConfig)(
-        request,
-        requiredPermission.asInstanceOf[Option[authConfig.Permission]]
-      ) {
-        case (authedRequest, optAuthData) =>
-          authProxyRequestHandler.apply(authedRequest, upstream, optAuthData, httpProxy, requestFilter, responseFilter)
-      }
+    authenticate(authConfig)(requiredPermission.asInstanceOf[Option[authConfig.Permission]])(reqMeta, metrics) {
+      optAuthData =>
+        filterRequest(requestFilter, optAuthData) {
+          addAuthHeader(authConfig)(optAuthData.asInstanceOf[Option[authConfig.AuthData]])(reqMeta) {
+            filterResponse(responseFilter, optAuthData) {
+              extractRequest { authedRequest =>
+                complete {
+                  httpProxy(authedRequest, upstream)
+                }
+              }
+            }
+          }
+        }
     }
   }
 

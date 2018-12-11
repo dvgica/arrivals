@@ -18,7 +18,7 @@ class ExampleGateway(
     listenPort: Int = 8080
   )(implicit actorSystem: ActorSystem,
     materializer: Materializer,
-    metrics: Metrics = NullMetrics)
+    val metrics: Metrics = NullMetrics)
     extends ArrivalsServer(addressingConfig, headerAuthConfig, listenInterface, listenPort) {
 
   import ExampleGateway._

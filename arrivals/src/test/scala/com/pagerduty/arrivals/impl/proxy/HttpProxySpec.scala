@@ -53,7 +53,7 @@ class HttpProxySpec extends FreeSpecLike with Matchers with ScalaFutures {
 
       val p = new HttpProxy("localhost", httpClient)
 
-      p(HttpRequest().withHeaders(RawHeader("Timeout-Access", "foo")), upstream, ())
+      p(HttpRequest().withHeaders(RawHeader("Timeout-Access", "foo")), upstream)
     }
 
     "prepares the request before proxying" in {
@@ -69,7 +69,7 @@ class HttpProxySpec extends FreeSpecLike with Matchers with ScalaFutures {
 
       val p = new HttpProxy("localhost", httpClient)
 
-      p(HttpRequest(), upstream, ())
+      p(HttpRequest(), upstream)
     }
 
     "addresses the request before proxy" in {
@@ -82,7 +82,7 @@ class HttpProxySpec extends FreeSpecLike with Matchers with ScalaFutures {
 
       val p = new HttpProxy("localhost", httpClient)
 
-      p(HttpRequest(), upstream, ())
+      p(HttpRequest(), upstream)
     }
 
     "transforms responses for an upstream" in {
@@ -92,7 +92,7 @@ class HttpProxySpec extends FreeSpecLike with Matchers with ScalaFutures {
 
       val p = new HttpProxy("localhost", httpClient)
 
-      whenReady(p(HttpRequest(), upstream, ())) { response =>
+      whenReady(p(HttpRequest(), upstream)) { response =>
         response.getHeader(headerKey).get.value shouldBe headerValue
       }
     }
