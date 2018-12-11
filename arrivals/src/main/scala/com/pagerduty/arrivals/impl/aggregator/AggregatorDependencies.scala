@@ -1,4 +1,4 @@
-package com.pagerduty.arrivals.api.aggregator
+package com.pagerduty.arrivals.impl.aggregator
 
 import akka.stream.Materializer
 import com.pagerduty.arrivals.api.headerauth.HeaderAuthConfig

@@ -25,7 +25,7 @@ class HttpProxy[AddressingConfig](
     with MetadataLogging {
   import HttpProxy._
 
-  override def apply(request: HttpRequest, upstream: Upstream[AddressingConfig], data: Any): Future[HttpResponse] = {
+  override def apply(request: HttpRequest, upstream: Upstream[AddressingConfig]): Future[HttpResponse] = {
     val addressedRequest =
       upstream
         .addressRequest(request, addressingConfig)

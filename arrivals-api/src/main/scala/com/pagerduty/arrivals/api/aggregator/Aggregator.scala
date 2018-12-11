@@ -1,11 +1,8 @@
 package com.pagerduty.arrivals.api.aggregator
 
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
-import com.pagerduty.arrivals.api.RequestResponder
 
-trait Aggregator[AuthData, RequestKey, AccumulatedState, AddressingConfig]
-    extends RequestResponder[AggregatorDependencies[AddressingConfig], AuthData] {
-
+trait Aggregator[AuthData, RequestKey, AccumulatedState, AddressingConfig] {
   type RequestMap =
     Map[RequestKey, (AggregatorUpstream[AddressingConfig], HttpRequest)]
   type ResponseMap = Map[RequestKey, (HttpResponse, String)]

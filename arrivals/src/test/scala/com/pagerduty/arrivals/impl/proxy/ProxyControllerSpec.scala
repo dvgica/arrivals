@@ -1,13 +1,13 @@
 package com.pagerduty.arrivals.impl.proxy
 
-import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
+import akka.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import com.pagerduty.arrivals.api.RequestHandler
+import com.pagerduty.arrivals.api.filter.{RequestFilter, RequestFilterOutput, ResponseFilter}
 import com.pagerduty.arrivals.api.proxy.Upstream
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FreeSpecLike, Matchers}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 class ProxyControllerSpec extends FreeSpecLike with Matchers with ScalatestRouteTest with MockFactory { outer =>
 
@@ -15,26 +15,38 @@ class ProxyControllerSpec extends FreeSpecLike with Matchers with ScalatestRoute
     val expectedResponse = HttpResponse(201)
 
     val httpStub = new HttpProxy[String](null, null)(null, null, null) {
-      override def apply(request: HttpRequest, upstream: Upstream[String], t: Any): Future[HttpResponse] =
+      override def apply(request: HttpRequest, upstream: Upstream[String]): Future[HttpResponse] =
         Future.successful(expectedResponse)
     }
     val c = new ProxyController[String] {
       override def httpProxy = httpStub
-      override def proxyRequestHandler =
-        new ProxyRequestHandler[String] {
-          implicit val executionContext = ExecutionContext.global
-        }
     }
     val upstream = new Upstream[String] {
       val metricsTag = "test"
       def addressRequest(request: HttpRequest, addressingConfig: String): HttpRequest = request
     }
 
-    "proxies routes" in {
-      Seq(Get(_: String), Post(_: String), Put(_: String), Delete(_: String), Patch(_: String)).foreach { verb =>
-        verb("/") ~> c.proxyRoute(upstream) ~> check {
-          handled shouldBe true
+    "filters and proxies routes" in {
+      val requestTransformer = new RequestFilter[Any] {
+        def apply(request: HttpRequest, t: Any): RequestFilterOutput = {
+          Future.successful(Right(request.withUri("transformed")))
+        }
+      }
+
+      val transformedResponse = HttpResponse(StatusCodes.MethodNotAllowed)
+
+      val responseTransformer = new ResponseFilter[Any] {
+        def apply(request: HttpRequest, response: HttpResponse, t: Any): Future[HttpResponse] = {
           response should equal(expectedResponse)
+
+          Future.successful(transformedResponse)
+        }
+      }
+
+      Seq(Get(_: String), Post(_: String), Put(_: String), Delete(_: String), Patch(_: String)).foreach { verb =>
+        verb("/") ~> c.proxyRoute(upstream, requestTransformer, responseTransformer) ~> check {
+          handled shouldBe true
+          response should equal(transformedResponse)
         }
       }
     }
