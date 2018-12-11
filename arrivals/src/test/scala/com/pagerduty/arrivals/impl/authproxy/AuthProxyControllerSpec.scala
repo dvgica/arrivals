@@ -9,7 +9,7 @@ import com.pagerduty.arrivals.api.auth.AuthFailedReason
 import com.pagerduty.arrivals.api.filter.{RequestFilter, RequestFilterOutput, ResponseFilter}
 import com.pagerduty.arrivals.api.headerauth.HeaderAuthConfig
 import com.pagerduty.arrivals.api.proxy.Upstream
-import com.pagerduty.arrivals.impl.proxy.HttpProxy
+import com.pagerduty.arrivals.api.proxy.HttpProxy
 import com.pagerduty.metrics.NullMetrics
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FreeSpecLike, Matchers}
@@ -50,7 +50,7 @@ class AuthProxyControllerSpec extends FreeSpecLike with Matchers with ScalatestR
     val expectedResponse = HttpResponse(201)
     val expectedTransformedResponse = HttpResponse(302)
 
-    val proxyStub = new HttpProxy[String](null, null)(null, null, null) {
+    val proxyStub = new HttpProxy[String] {
       override def apply(request: HttpRequest, upstream: Upstream[String]): Future[HttpResponse] = {
         if (request.headers.exists(_.is(testAuthConfig.authHeaderName.toLowerCase))) {
           if (request.uri.toString.contains("transformed")) {
