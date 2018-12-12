@@ -39,7 +39,20 @@ class HttpProxy[AddressingConfig](
 
     response.flatMap { r =>
       val elapsed = stopwatch.elapsed().toMicros.toInt
-      metrics.histogram("upstream_response_time", elapsed, "upstream" -> upstream.metricsTag)
+
+      val responseErrorType = r.status.intValue match {
+        case i if i >= 400 && i < 500 => "client"
+        case i if i >= 500 && i < 600 => "server"
+        case _                        => "none"
+      }
+
+      val upstreamTag = "upstream" -> upstream.metricsTag
+      val errorTags = Seq(
+        ("response_code", r.status.intValue.toString),
+        ("response_error_type", responseErrorType)
+      )
+      metrics.increment("upstream_response_count", (errorTags :+ upstreamTag): _*)
+      metrics.histogram("upstream_response_time", elapsed, upstreamTag)
 
       r.entity.withoutSizeLimit().toStrict(entityConsumptionTimeout).map { e =>
         upstream.transformResponse(preparedProxyRequest, r.withEntity(e))
