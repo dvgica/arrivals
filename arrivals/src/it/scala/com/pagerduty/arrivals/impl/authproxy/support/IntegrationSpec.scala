@@ -1,10 +1,14 @@
 package com.pagerduty.arrivals.impl.authproxy.support
 
 import akka.actor.ActorSystem
+import akka.http.scaladsl.model.HttpRequest
+import akka.http.scaladsl.model.ws.{Message, WebSocketRequest}
 import akka.http.scaladsl.{Http, HttpExt}
 import akka.stream.ActorMaterializer
+import akka.stream.scaladsl.Flow
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
+import com.pagerduty.arrivals.api.proxy.HttpClient
 import com.pagerduty.arrivals.impl.proxy.HttpProxy
 import com.pagerduty.metrics.NullMetrics
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FreeSpecLike, Matchers}
@@ -26,7 +30,7 @@ trait IntegrationSpec extends FreeSpecLike with Matchers with BeforeAndAfterAll 
   implicit var as: ActorSystem = _
   implicit var m: ActorMaterializer = _
   implicit var ec: ExecutionContext = _
-  var httpClient: HttpExt = _
+  var http: HttpExt = _
   var s: HttpServer = _
   var mockService: WireMockServer = _
   var mockAs: WireMockServer = _
@@ -36,9 +40,15 @@ trait IntegrationSpec extends FreeSpecLike with Matchers with BeforeAndAfterAll 
     ec = as.dispatcher
     m = ActorMaterializer()
     implicit val metrics = NullMetrics
-    httpClient = Http()
+    http = Http()
 
-    val httpProxy = new HttpProxy("localhost", httpClient.singleRequest(_))
+    val httpClient = new HttpClient {
+      override def executeRequest(request: HttpRequest) = http.singleRequest(request)
+      override def executeWebSocketRequest[T](request: WebSocketRequest, clientFlow: Flow[Message, Message, T]) =
+        http.singleWebSocketRequest(request, clientFlow)
+    }
+
+    val httpProxy = new HttpProxy("localhost", httpClient)
     s = new HttpServer(host, port, servicePort, httpProxy)
 
     mockService = new WireMockServer(options().port(servicePort))
@@ -62,7 +72,7 @@ trait IntegrationSpec extends FreeSpecLike with Matchers with BeforeAndAfterAll 
   }
 
   def cleanup(): Unit = {
-    httpClient.shutdownAllConnectionPools()
+    http.shutdownAllConnectionPools()
     s.stop()
     mockService.stop()
     mockAs.stop()

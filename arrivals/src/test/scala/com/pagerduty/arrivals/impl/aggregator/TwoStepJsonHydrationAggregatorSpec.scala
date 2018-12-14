@@ -4,6 +4,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.stream.ActorMaterializer
 import akka.testkit.TestKit
+import com.pagerduty.akka.http.support.RequestMetadata
 import com.pagerduty.arrivals.api.aggregator.AggregatorUpstream
 import com.pagerduty.arrivals.api.proxy.Upstream
 import com.pagerduty.arrivals.impl.aggregator.support.{TestAuthConfig, TestUpstream}
@@ -28,6 +29,7 @@ class TwoStepJsonHydrationAggregatorSpec
 
   implicit val executionContext = ExecutionContext.global
   implicit val materializer = ActorMaterializer()
+  implicit val reqMeta = RequestMetadata.fromRequest(HttpRequest())
 
   val ac = new TestAuthConfig
 
@@ -95,7 +97,11 @@ class TwoStepJsonHydrationAggregatorSpec
     "sends requests to upstreams and aggregates responses in multiple steps" in {
       implicit val stubProxy =
         new HttpProxy[String](null, null)(null, null, null) {
-          override def apply(request: HttpRequest, upstream: Upstream[String]): Future[HttpResponse] = {
+          override def apply(
+              request: HttpRequest,
+              upstream: Upstream[String]
+            )(implicit reqMeta: RequestMetadata
+            ): Future[HttpResponse] = {
             upstream match {
               case `upstream1` => Future.successful(response1)
               case `upstream2` => Future.successful(response2)

@@ -2,9 +2,13 @@ package com.pagerduty.arrivals.impl
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
+import akka.http.scaladsl.model.HttpRequest
+import akka.http.scaladsl.model.ws.{Message, WebSocketRequest}
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
+import akka.stream.scaladsl.Flow
 import com.pagerduty.arrivals.api.headerauth.HeaderAuthConfig
+import com.pagerduty.arrivals.api.proxy.HttpClient
 import com.pagerduty.arrivals.impl.aggregator.AggregatorController
 import com.pagerduty.arrivals.impl.authproxy.AuthProxyController
 import com.pagerduty.arrivals.impl.proxy.{HttpProxy, ProxyController}
@@ -36,8 +40,16 @@ abstract class ArrivalsServer[AddressingConfig, AuthConfig <: HeaderAuthConfig](
   val authConfig = headerAuthConfig
   implicit val executionContext = actorSystem.dispatcher
 
+  val http = Http()
+
+  val httpClient = new HttpClient {
+    override def executeRequest(request: HttpRequest) = http.singleRequest(request)
+    override def executeWebSocketRequest[T](request: WebSocketRequest, clientFlow: Flow[Message, Message, T]) =
+      http.singleWebSocketRequest(request, clientFlow)
+  }
+
   val httpProxy =
-    new HttpProxy(addressingConfig, Http().singleRequest(_))
+    new HttpProxy(addressingConfig, httpClient)
 
   logger.info(s"Akka-HTTP binding to port: $listenPort and interface: $listenInterface...")
   private val bindingFuture =

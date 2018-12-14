@@ -2,6 +2,7 @@ package com.pagerduty.arrivals.impl.proxy
 
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{PathMatcher, Route}
+import com.pagerduty.akka.http.support.RequestMetadata
 import com.pagerduty.arrivals.api
 import com.pagerduty.arrivals.api.filter.{NoOpRequestFilter, NoOpResponseFilter, RequestFilter, ResponseFilter}
 import com.pagerduty.arrivals.api.proxy.Upstream
@@ -39,6 +40,7 @@ trait ProxyController[AddressingConfig] {
     filterRequest(requestFilter, ()) {
       filterResponse(responseFilter, ()) {
         extractRequest { filteredRequest =>
+          implicit val reqMeta = RequestMetadata.fromRequest(filteredRequest)
           complete {
             httpProxy(filteredRequest, upstream)
           }

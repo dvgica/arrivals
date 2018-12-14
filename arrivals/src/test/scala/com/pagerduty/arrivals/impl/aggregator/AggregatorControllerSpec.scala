@@ -77,6 +77,7 @@ class AggregatorControllerSpec extends FreeSpecLike with Matchers with MockFacto
             authedRequest: HttpRequest,
             deps: AggregatorDependencies[String],
             authData: String
+          )(implicit reqMeta: RequestMetadata
           ): Future[HttpResponse] = {
           authData should equal(testAuthData)
           Future.successful(expectedResponse)
