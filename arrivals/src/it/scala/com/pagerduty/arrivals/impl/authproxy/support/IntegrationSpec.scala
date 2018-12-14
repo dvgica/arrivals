@@ -49,7 +49,7 @@ trait IntegrationSpec extends FreeSpecLike with Matchers with BeforeAndAfterAll 
     }
 
     val httpProxy = new HttpProxy("localhost", httpClient)
-    s = new HttpServer(host, port, servicePort, httpProxy)
+    s = new HttpServer(host, port, servicePort, 10100, httpProxy)
 
     mockService = new WireMockServer(options().port(servicePort))
     mockService.start()

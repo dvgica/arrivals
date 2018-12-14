@@ -1,8 +1,15 @@
 package com.pagerduty.arrivals.impl.authproxy
 
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.model.{HttpMethods, HttpRequest, HttpResponse, Uri}
+import akka.http.scaladsl.model.ws.{Message, TextMessage, UpgradeToWebSocket, WebSocketRequest}
+import akka.stream.scaladsl.{Flow, Keep, Sink, Source}
 import com.github.tomakehurst.wiremock.http.Fault
 import com.pagerduty.arrivals.impl.authproxy.support.{IntegrationSpec, TestAuthConfig}
 import scalaj.http.{Http => HttpClient}
+
+import scala.concurrent.Await
+import scala.concurrent.duration._
 
 class AuthProxyBehaviourSpec extends IntegrationSpec {
   import com.github.tomakehurst.wiremock.client.WireMock._
@@ -212,6 +219,55 @@ class AuthProxyBehaviourSpec extends IntegrationSpec {
         val r = HttpClient(url(s"$path/garbage")).asString
         r.code should equal(expectedStatus)
       }
+    }
+
+    "proxies WebSockets" in {
+      // fake upstream WebSocket server, based on https://github.com/akka/akka-http/blob/v10.1.5/docs/src/test/scala/docs/http/scaladsl/server/WebSocketExampleSpec.scala
+      val stubWebSocketService =
+        Flow[Message]
+          .mapConcat {
+            case tm: TextMessage.Strict =>
+              TextMessage.Strict(s"Hello ${tm.text}") :: Nil
+            case _ =>
+              throw new RuntimeException("Unexpected message received in test server")
+          }
+
+      val requestHandler: HttpRequest => HttpResponse = {
+        case req @ HttpRequest(HttpMethods.GET, Uri.Path("/ws"), _, _, _) =>
+          req.header[UpgradeToWebSocket] match {
+            case Some(upgrade) =>
+              upgrade.handleMessages(stubWebSocketService)
+            case None =>
+              HttpResponse(400, entity = "Not a valid websocket request!")
+          }
+        case r: HttpRequest =>
+          r.discardEntityBytes() // important to drain incoming HTTP Entity stream
+          HttpResponse(404, entity = "Unknown resource!")
+      }
+
+      val bindingFuture =
+        Http().bindAndHandleSync(requestHandler, interface = "localhost", port = 10100)
+
+      // a simple WebSocket client
+      val sink = Sink.head[Message]
+
+      val sendSource = Source.single(TextMessage("test"))
+
+      val flow = Flow.fromSinkAndSourceMat(sink, sendSource)(Keep.left)
+
+      // send a WebSocket request to our server under test
+      val resp = Http().singleWebSocketRequest(WebSocketRequest("ws://localhost:1234/ws"), flow)
+
+      // wait for the response message and make sure it matches what the stub upstream should give
+      val receivedMessage = Await.result(resp._2, 1.second)
+      receivedMessage match {
+        case tm: TextMessage.Strict => tm.text should equal("Hello test")
+        case _ =>
+          throw new RuntimeException("Received unexpected message in test")
+      }
+
+      bindingFuture
+        .flatMap(_.unbind()) // trigger unbinding from the port
     }
   }
 }

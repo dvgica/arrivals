@@ -22,6 +22,7 @@ class HttpServer(
     val httpInterface: String,
     val port: Int,
     val servicePort: Int,
+    val wsPort: Int,
     val httpProxy: HttpProxy[String]
   )(implicit actorSystem: ActorSystem,
     materializer: ActorMaterializer,
@@ -43,12 +44,21 @@ class HttpServer(
     val metricsTag = "test"
   }
 
+  val wsUpstream = new Upstream[String] {
+    def addressRequest(request: HttpRequest, addressingConfig: String): HttpRequest = {
+      val uri = request.uri.withAuthority(Authority(Uri.Host("localhost"), wsPort))
+      request.withUri(uri)
+    }
+    override def metricsTag = "test"
+  }
+
   val httpRoutes = {
 
     (handleExceptions(proxyExceptionHandler)) {
       prefixAuthProxyRoute("api" / "v1" / "incidents", incidentUpstream) ~
         prefixAuthProxyRoute("api" / "v2" / "incidents", incidentUpstream, IncidentsPermission) ~
-        prefixAuthProxyRoute("api" / "v2" / "schedules", incidentUpstream, SchedulesPermission)
+        prefixAuthProxyRoute("api" / "v2" / "schedules", incidentUpstream, SchedulesPermission) ~
+        prefixAuthProxyRoute("ws", wsUpstream)
     }
   }
 
