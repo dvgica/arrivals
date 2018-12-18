@@ -255,7 +255,7 @@ class AuthProxyBehaviourSpec extends IntegrationSpec {
 
       val flow = Flow.fromSinkAndSourceMat(sink, sendSource)(Keep.left)
 
-      // send a WebSocket request to our server under test
+      // send a WebSocket request to our server under test (the BFF spun up by IntegrationSpec)
       val resp = Http().singleWebSocketRequest(WebSocketRequest("ws://localhost:1234/ws"), flow)
 
       // wait for the response message and make sure it matches what the stub upstream should give
