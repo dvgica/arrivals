@@ -6,7 +6,7 @@ import akka.http.scaladsl.model.ws.{Message, TextMessage, UpgradeToWebSocket, We
 import akka.stream.scaladsl.{Flow, Keep, Sink, Source}
 import com.github.tomakehurst.wiremock.http.Fault
 import com.pagerduty.arrivals.impl.authproxy.support.{IntegrationSpec, TestAuthConfig}
-import scalaj.http.{Http => HttpClient}
+import scalaj.http.{Http => Client}
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -43,7 +43,7 @@ class AuthProxyBehaviourSpec extends IntegrationSpec {
             )
         )
 
-        val r = HttpClient(url(path))
+        val r = Client(url(path))
           .header(incomingHeaderKey, incomingHeaderValue)
           .header("Authorization", "Bearer GOODTOKEN")
           .postData(expectedJson)
@@ -83,7 +83,7 @@ class AuthProxyBehaviourSpec extends IntegrationSpec {
             )
         )
 
-        val r = HttpClient(url(v2IncidentsPath))
+        val r = Client(url(v2IncidentsPath))
           .header(incomingHeaderKey, incomingHeaderValue)
           .header("Authorization", "Bearer GOODTOKEN")
           .postData(expectedJson)
@@ -122,7 +122,7 @@ class AuthProxyBehaviourSpec extends IntegrationSpec {
             )
         )
 
-        val r = HttpClient(url(v2SchedulesPath))
+        val r = Client(url(v2SchedulesPath))
           .header(incomingHeaderKey, incomingHeaderValue)
           .header("Authorization", "Bearer GOODTOKEN")
           .postData(expectedJson)
@@ -162,7 +162,7 @@ class AuthProxyBehaviourSpec extends IntegrationSpec {
             )
         )
 
-        val r = HttpClient(url(path))
+        val r = Client(url(path))
           .header(incomingHeaderKey, incomingHeaderValue)
           .header("Authorization", "Bearer BADTOKEN")
           .postData(expectedJson)
@@ -189,7 +189,7 @@ class AuthProxyBehaviourSpec extends IntegrationSpec {
             )
         )
 
-        val r = HttpClient(url(path)).asString
+        val r = Client(url(path)).asString
         r.code should equal(expectedStatus)
       }
 
@@ -204,7 +204,7 @@ class AuthProxyBehaviourSpec extends IntegrationSpec {
             )
         )
 
-        val r = HttpClient(url(path)).asString
+        val r = Client(url(path)).asString
         r.code should equal(expectedStatus)
       }
 
@@ -216,7 +216,7 @@ class AuthProxyBehaviourSpec extends IntegrationSpec {
             .willReturn(aResponse().withFault(Fault.RANDOM_DATA_THEN_CLOSE))
         )
 
-        val r = HttpClient(url(s"$path/garbage")).asString
+        val r = Client(url(s"$path/garbage")).asString
         r.code should equal(expectedStatus)
       }
     }
