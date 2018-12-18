@@ -2,7 +2,6 @@ package com.pagerduty.arrivals.impl.proxy
 
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import com.pagerduty.akka.http.support.RequestMetadata
 import com.pagerduty.arrivals.api.filter.{RequestFilter, RequestFilterOutput, ResponseFilter}
 import com.pagerduty.arrivals.api.proxy.Upstream
 import org.scalamock.scalatest.MockFactory
@@ -16,11 +15,7 @@ class ProxyControllerSpec extends FreeSpecLike with Matchers with ScalatestRoute
     val expectedResponse = HttpResponse(201)
 
     val httpStub = new HttpProxy[String](null, null)(null, null, null) {
-      override def apply(
-          request: HttpRequest,
-          upstream: Upstream[String]
-        )(implicit reqMeta: RequestMetadata
-        ): Future[HttpResponse] =
+      override def apply(request: HttpRequest, upstream: Upstream[String]): Future[HttpResponse] =
         Future.successful(expectedResponse)
     }
     val c = new ProxyController[String] {

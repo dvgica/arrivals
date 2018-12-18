@@ -51,11 +51,7 @@ class AuthProxyControllerSpec extends FreeSpecLike with Matchers with ScalatestR
     val expectedTransformedResponse = HttpResponse(302)
 
     val proxyStub = new HttpProxy[String] {
-      override def apply(
-          request: HttpRequest,
-          upstream: Upstream[String]
-        )(implicit reqMeta: RequestMetadata
-        ): Future[HttpResponse] = {
+      override def apply(request: HttpRequest, upstream: Upstream[String]): Future[HttpResponse] = {
         if (request.headers.exists(_.is(testAuthConfig.authHeaderName.toLowerCase))) {
           if (request.uri.toString.contains("transformed")) {
             Future.successful(expectedTransformedResponse)

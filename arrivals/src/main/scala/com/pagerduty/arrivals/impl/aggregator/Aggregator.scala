@@ -3,7 +3,6 @@ package com.pagerduty.arrivals.impl.aggregator
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.Materializer
-import com.pagerduty.akka.http.support.RequestMetadata
 import com.pagerduty.arrivals.api
 import com.pagerduty.arrivals.api.headerauth.HeaderAuthConfig
 import com.pagerduty.arrivals.api.proxy.HttpProxy
@@ -18,7 +17,6 @@ trait Aggregator[AuthData, RequestKey, AccumulatedState, AddressingConfig]
       authedRequest: HttpRequest,
       deps: AggregatorDependencies[AddressingConfig],
       authData: AuthData
-    )(implicit reqMeta: RequestMetadata
     ): Future[HttpResponse] = {
     val authConfig = deps.authConfig
     implicit val httpProxy = deps.httpProxy
@@ -56,8 +54,7 @@ trait Aggregator[AuthData, RequestKey, AccumulatedState, AddressingConfig]
       initialStateAndResponses: Future[(AccumulatedState, ResponseMap)]
     )(implicit httpProxy: HttpProxy[AddressingConfig],
       executionContext: ExecutionContext,
-      materializer: Materializer,
-      reqMeta: RequestMetadata
+      materializer: Materializer
     ): Future[Either[HttpResponse, (AccumulatedState, ResponseMap)]] = {
 
     val firstIntermediateHandlerInput: Future[Either[HttpResponse, (AccumulatedState, ResponseMap)]] =
@@ -93,8 +90,7 @@ trait Aggregator[AuthData, RequestKey, AccumulatedState, AddressingConfig]
       authedRequest: HttpRequest
     )(implicit httpProxy: HttpProxy[AddressingConfig],
       executionContext: ExecutionContext,
-      materializer: Materializer,
-      reqMeta: RequestMetadata
+      materializer: Materializer
     ): Future[(AccumulatedState, ResponseMap)] = {
     val preparedRequests = requests.map {
       case (key, (upstream, req)) =>

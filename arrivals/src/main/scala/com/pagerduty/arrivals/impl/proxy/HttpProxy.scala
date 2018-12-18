@@ -38,11 +38,9 @@ class HttpProxy[AddressingConfig](
     with MetadataLogging {
   import HttpProxy._
 
-  override def apply(
-      request: HttpRequest,
-      upstream: Upstream[AddressingConfig]
-    )(implicit reqMeta: RequestMetadata
-    ): Future[HttpResponse] = {
+  override def apply(request: HttpRequest, upstream: Upstream[AddressingConfig]): Future[HttpResponse] = {
+    implicit val reqMeta = RequestMetadata.fromRequest(request)
+
     val addressedRequest =
       upstream
         .addressRequest(request, addressingConfig)
