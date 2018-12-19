@@ -9,7 +9,8 @@ import com.pagerduty.metrics.Metrics
 import org.slf4j.LoggerFactory
 import akka.http.scaladsl.server.Directives.{handleExceptions, _}
 import com.pagerduty.arrivals.api.proxy.Upstream
-import com.pagerduty.arrivals.impl.authproxy.AuthProxyController
+import com.pagerduty.arrivals.impl.ArrivalsContext
+import com.pagerduty.arrivals.impl.authproxy.AuthProxyDirectives
 import com.pagerduty.arrivals.impl.proxy.{ErrorHandling, HttpProxy}
 
 import scala.concurrent.Await
@@ -27,8 +28,7 @@ class HttpServer(
   )(implicit actorSystem: ActorSystem,
     materializer: ActorMaterializer,
     val metrics: Metrics)
-    extends AuthProxyController[TestAuthConfig, String]
-    with ErrorHandling { outer =>
+    extends ErrorHandling { outer =>
 
   val log = LoggerFactory.getLogger(getClass)
 
@@ -51,6 +51,11 @@ class HttpServer(
     }
     override def metricsTag = "test"
   }
+
+  implicit val context = ArrivalsContext("test")
+
+  val authProxyDirectives = new AuthProxyDirectives(authConfig)
+  import authProxyDirectives._
 
   val httpRoutes = {
 

@@ -1,30 +1,41 @@
 package com.pagerduty.arrivals.impl.proxy
 
+import akka.http.scaladsl.model.ws.{Message, WebSocketRequest, WebSocketUpgradeResponse}
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import akka.stream.scaladsl.Flow
 import com.pagerduty.arrivals.api.filter.{RequestFilter, RequestFilterOutput, ResponseFilter}
-import com.pagerduty.arrivals.api.proxy.Upstream
+import com.pagerduty.arrivals.api.proxy.{HttpClient, Upstream}
+import com.pagerduty.arrivals.impl.ArrivalsContext
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FreeSpecLike, Matchers}
 
 import scala.concurrent.Future
 
-class ProxyControllerSpec extends FreeSpecLike with Matchers with ScalatestRouteTest with MockFactory { outer =>
+class ProxyDirectivesSpec extends FreeSpecLike with Matchers with ScalatestRouteTest with MockFactory { outer =>
 
   "ProxyControllerSpec" - {
     val expectedResponse = HttpResponse(201)
 
-    val httpStub = new HttpProxy[String](null, null)(null, null, null) {
-      override def apply(request: HttpRequest, upstream: Upstream[String]): Future[HttpResponse] =
-        Future.successful(expectedResponse)
-    }
-    val c = new ProxyController[String] {
-      override def httpProxy = httpStub
-    }
-    val upstream = new Upstream[String] {
+    implicit val ctx = ArrivalsContext(
+      (),
+      buildHttpClient = (_, _) =>
+        new HttpClient {
+          def executeRequest(request: HttpRequest): Future[HttpResponse] = Future.successful(expectedResponse)
+
+          def executeWebSocketRequest[T](
+              request: WebSocketRequest,
+              clientFlow: Flow[Message, Message, T]
+            ): (Future[WebSocketUpgradeResponse], T) = ???
+      }
+    )
+
+    val upstream = new Upstream[Unit] {
       val metricsTag = "test"
-      def addressRequest(request: HttpRequest, addressingConfig: String): HttpRequest = request
+      def addressRequest(request: HttpRequest, addressingConfig: Unit): HttpRequest = request
     }
+
+    import ProxyDirectives._
 
     "filters and proxies routes" in {
       val requestTransformer = new RequestFilter[Any] {
@@ -44,7 +55,7 @@ class ProxyControllerSpec extends FreeSpecLike with Matchers with ScalatestRoute
       }
 
       Seq(Get(_: String), Post(_: String), Put(_: String), Delete(_: String), Patch(_: String)).foreach { verb =>
-        verb("/") ~> c.proxyRoute(upstream, requestTransformer, responseTransformer) ~> check {
+        verb("/") ~> proxyRoute(upstream, requestTransformer, responseTransformer) ~> check {
           handled shouldBe true
           response should equal(transformedResponse)
         }

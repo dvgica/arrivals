@@ -10,7 +10,8 @@ import com.pagerduty.arrivals.api.proxy.HttpProxy
 import scala.concurrent.{ExecutionContext, Future}
 
 trait Aggregator[AuthData, RequestKey, AccumulatedState, AddressingConfig]
-    extends api.aggregator.Aggregator[AuthData, RequestKey, AccumulatedState, AddressingConfig] {
+    extends api.aggregator.Aggregator[AuthData, RequestKey, AccumulatedState, AddressingConfig]
+    with RunnableAggregator[AuthData, AddressingConfig] {
 
   // implementation
   def apply(

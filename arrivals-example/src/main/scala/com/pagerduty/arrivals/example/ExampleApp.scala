@@ -5,6 +5,9 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.StatusCodes
 import akka.stream.ActorMaterializer
 import akka.http.scaladsl.server.Directives._
+import com.pagerduty.arrivals.impl.ArrivalsContext
+import com.pagerduty.arrivals.impl.aggregator.AggregatorDirectives
+import com.pagerduty.arrivals.impl.authproxy.AuthProxyDirectives
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -15,9 +18,11 @@ object ExampleApp extends App {
   implicit val ec = system.dispatcher
   implicit val mat = ActorMaterializer()
 
+  import ExampleUpstream._
+
   // start the cats and dogs upstreams for demo purposes
   val catRoute = get {
-    path("api" / "cats") {
+    path("cats") {
       complete {
         (StatusCodes.OK, "Here are some cats: mittens, garfield, tiger")
       }
@@ -25,10 +30,10 @@ object ExampleApp extends App {
   }
 
   val catServer =
-    Await.result(Http().bindAndHandle(catRoute, "localhost", 22000), 5.seconds)
+    Await.result(Http().bindAndHandle(catRoute, "localhost", CatsUpstream.port), 5.seconds)
 
   val dogRoute = get {
-    path("api" / "dogs") {
+    path("dogs") {
       optionalHeaderValueByName("X-User-Id") { userId =>
         complete {
           userId match {
@@ -43,14 +48,36 @@ object ExampleApp extends App {
   }
 
   val dogServer =
-    Await.result(Http().bindAndHandle(dogRoute, "localhost", 33000), 5.seconds)
+    Await.result(Http().bindAndHandle(dogRoute, "localhost", DogsUpstream.port), 5.seconds)
 
-  // start the gateway that we'll talk to at 8080
-  val gateway = new ExampleGateway("localhost", new ExampleAuthConfig)
+  implicit val arrivalsCtx = ArrivalsContext("localhost")
+  implicit val authConfig = new ExampleAuthConfig
+
+  val authProxyDirectives = new AuthProxyDirectives(authConfig)
+  val aggregatorDirectives = new AggregatorDirectives(authConfig)
+
+  import com.pagerduty.arrivals.impl.proxy.ProxyDirectives._
+  import authProxyDirectives._
+  import aggregatorDirectives._
+
+  val ExampleComposedResponseFilter = ExampleResponseFilterOne ~> ExampleResponseFilterTwo
+
+  val apiGatewayRoutes =
+    prefixProxyRoute("cats", CatsUpstream, ExampleComposedResponseFilter) ~
+      prefixAuthProxyRoute("dogs", DogsUpstream) ~
+      prefixAggregatorRoute("all", ExampleAggregator)
+
+  // start the API gateway with Arrivals routes
+  val apiGateway =
+    Await.result(Http().bindAndHandle(apiGatewayRoutes, "0.0.0.0", 8080), 5.seconds)
+
+  println("Example API Gateway running at localhost:8080")
+  println("Press ENTER to exit")
 
   StdIn.readLine() // let it run until user presses return
-  gateway.stop()
+  apiGateway.unbind()
   dogServer.unbind()
   catServer.unbind()
+  arrivalsCtx.shutdown()
   system.terminate()
 }

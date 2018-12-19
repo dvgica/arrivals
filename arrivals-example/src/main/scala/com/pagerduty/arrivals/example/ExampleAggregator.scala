@@ -5,13 +5,13 @@ import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import com.pagerduty.arrivals.impl.aggregator.OneStepAggregator
 
 object ExampleAggregator extends OneStepAggregator[UserId, String, AddressingConfig] {
-  import ExampleGateway._
+  import ExampleUpstream._
 
   override def handleIncomingRequest(incomingRequest: HttpRequest, authData: UserId): HandlerResult = {
 
     val requests = Map(
-      "cats" -> (CatsUpstream, HttpRequest(uri = "/api/cats")),
-      "dogs" -> (DogsUpstream, HttpRequest(uri = "/api/dogs"))
+      "cats" -> (CatsUpstream, HttpRequest(uri = "/cats")),
+      "dogs" -> (DogsUpstream, HttpRequest(uri = "/dogs"))
     )
     Right((NotUsed, requests))
   }
