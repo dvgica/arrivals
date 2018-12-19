@@ -15,7 +15,7 @@ import org.scalatest.{FreeSpecLike, Matchers}
 import scala.concurrent.Future
 import scala.util.{Success, Try}
 
-class AggregatorDirectivesSpec extends FreeSpecLike with Matchers with MockFactory with ScalatestRouteTest {
+class AggregatorRoutesSpec extends FreeSpecLike with Matchers with MockFactory with ScalatestRouteTest {
 
   val testAuthData = "auth-data"
 
@@ -46,14 +46,14 @@ class AggregatorDirectivesSpec extends FreeSpecLike with Matchers with MockFacto
     def authHeaderName: String = "X-Authed"
   }
 
-  "AggregatorController" - {
+  "AggregatorRoutes" - {
     val ac = new TestAuthConfig
     val expectedResponse = HttpResponse(StatusCodes.NotModified)
 
     implicit val context = ArrivalsContext("localhost")
 
-    def buildController(stubHttpProxy: HttpProxy[String] = null): AggregatorDirectives[TestAuthConfig] = {
-      new AggregatorDirectives[TestAuthConfig](ac)
+    def buildController(stubHttpProxy: HttpProxy[String] = null): AggregatorRoutes[TestAuthConfig] = {
+      new AggregatorRoutes[TestAuthConfig](ac)
     }
 
     "with a simple test Aggregator" - {

@@ -12,7 +12,7 @@ import com.pagerduty.arrivals.impl.auth.AuthenticationDirectives._
 import com.pagerduty.arrivals.impl.headerauth.AuthHeaderDirectives._
 import com.pagerduty.arrivals.impl.filter.FilterDirectives._
 
-class AuthProxyDirectives[AuthConfig <: HeaderAuthConfig](headerAuthConfig: AuthConfig) {
+class AuthProxyRoutes[AuthConfig <: HeaderAuthConfig](headerAuthConfig: AuthConfig) {
 
   def prefixAuthProxyRoute[AddressingConfig](
       path: PathMatcher[Unit],

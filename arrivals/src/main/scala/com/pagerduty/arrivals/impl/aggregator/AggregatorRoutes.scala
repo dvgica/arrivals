@@ -10,7 +10,7 @@ import com.pagerduty.arrivals.impl.auth.AuthenticationDirectives._
 import com.pagerduty.arrivals.impl.filter.FilterDirectives.{filterRequest, filterResponse}
 import com.pagerduty.arrivals.impl.headerauth.AuthHeaderDirectives._
 
-class AggregatorDirectives[AuthConfig <: HeaderAuthConfig](headerAuthConfig: AuthConfig) {
+class AggregatorRoutes[AuthConfig <: HeaderAuthConfig](headerAuthConfig: AuthConfig) {
 
   def prefixAggregatorRoute[AddressingConfig](
       pathMatcher: PathMatcher[Unit],

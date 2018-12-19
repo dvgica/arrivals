@@ -18,7 +18,7 @@ import org.scalatest.{FreeSpecLike, Matchers}
 import scala.concurrent.Future
 import scala.util.{Success, Try}
 
-class AuthProxyDirectivesSpec extends FreeSpecLike with Matchers with ScalatestRouteTest with MockFactory { outer =>
+class AuthProxyRoutesSpec extends FreeSpecLike with Matchers with ScalatestRouteTest with MockFactory { outer =>
   implicit val reqMeta = RequestMetadata(None)
 
   val testAuthData = "auth-data"
@@ -45,7 +45,7 @@ class AuthProxyDirectivesSpec extends FreeSpecLike with Matchers with ScalatestR
     def authHeaderName: String = "X-Authed"
   }
 
-  "AuthProxyController" - {
+  "AuthProxyRoutes" - {
     val testAuthConfig = new TestAuthConfig
 
     val expectedResponse = HttpResponse(201)
@@ -73,7 +73,7 @@ class AuthProxyDirectivesSpec extends FreeSpecLike with Matchers with ScalatestR
             ): (Future[WebSocketUpgradeResponse], T) = ???
       }
     )
-    val c = new AuthProxyDirectives[TestAuthConfig](testAuthConfig)
+    val c = new AuthProxyRoutes[TestAuthConfig](testAuthConfig)
     val upstream = new Upstream[Unit] {
       def addressRequest(request: HttpRequest, addressingConfig: Unit): HttpRequest = request
 
