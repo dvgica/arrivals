@@ -6,129 +6,155 @@ import akka.http.scaladsl.server.{PathMatcher, Route}
 import com.pagerduty.arrivals.api.filter.{NoOpRequestFilter, NoOpResponseFilter, RequestFilter, ResponseFilter}
 import com.pagerduty.akka.http.support.RequestMetadata
 import com.pagerduty.arrivals.api.headerauth.HeaderAuthConfig
-import com.pagerduty.arrivals.api.proxy.{HttpProxy, Upstream}
+import com.pagerduty.arrivals.api.proxy.Upstream
+import com.pagerduty.arrivals.impl.ArrivalsContext
 import com.pagerduty.arrivals.impl.auth.AuthenticationDirectives._
 import com.pagerduty.arrivals.impl.headerauth.AuthHeaderDirectives._
 import com.pagerduty.arrivals.impl.filter.FilterDirectives._
-import com.pagerduty.metrics.Metrics
 
-trait AuthProxyController[AuthConfig <: HeaderAuthConfig, AddressingConfig] {
+class AuthProxyDirectives[AuthConfig <: HeaderAuthConfig](headerAuthConfig: AuthConfig) {
 
-  implicit def metrics: Metrics
-  val authConfig: AuthConfig
-  def httpProxy: HttpProxy[AddressingConfig]
-
-  def prefixAuthProxyRoute(
+  def prefixAuthProxyRoute[AddressingConfig](
       path: PathMatcher[Unit],
       upstream: Upstream[AddressingConfig],
       requestFilter: RequestFilter[Option[AuthConfig#AuthData]]
+    )(implicit ctx: ArrivalsContext[AddressingConfig]
     ): Route =
-    prefixAuthProxyRoute(path, upstream, None, requestFilter)
+    prefixAuthProxyRoute[AddressingConfig](path, upstream, None, requestFilter)
 
-  def prefixAuthProxyRoute(
+  def prefixAuthProxyRoute[AddressingConfig](
       path: PathMatcher[Unit],
       upstream: Upstream[AddressingConfig],
       responseFilter: ResponseFilter[Option[AuthConfig#AuthData]]
+    )(implicit ctx: ArrivalsContext[AddressingConfig]
     ): Route =
-    prefixAuthProxyRoute(path, upstream, None, responseFilter = responseFilter)
+    prefixAuthProxyRoute[AddressingConfig](path, upstream, None, responseFilter = responseFilter)
 
-  def prefixAuthProxyRoute(
+  def prefixAuthProxyRoute[AddressingConfig](
       path: PathMatcher[Unit],
       upstream: Upstream[AddressingConfig],
       requiredPermission: AuthConfig#Permission
+    )(implicit ctx: ArrivalsContext[AddressingConfig]
     ): Route =
-    prefixAuthProxyRoute(path, upstream, Option(requiredPermission))
+    prefixAuthProxyRoute[AddressingConfig](path, upstream, Option(requiredPermission))
 
-  def prefixAuthProxyRoute(
+  def prefixAuthProxyRoute[AddressingConfig](
       path: PathMatcher[Unit],
       upstream: Upstream[AddressingConfig],
       requiredPermission: AuthConfig#Permission,
       requestFilter: RequestFilter[Option[AuthConfig#AuthData]]
+    )(implicit ctx: ArrivalsContext[AddressingConfig]
     ): Route =
-    prefixAuthProxyRoute(path, upstream, Option(requiredPermission), requestFilter)
+    prefixAuthProxyRoute[AddressingConfig](path, upstream, Option(requiredPermission), requestFilter)
 
-  def prefixAuthProxyRoute(
+  def prefixAuthProxyRoute[AddressingConfig](
       path: PathMatcher[Unit],
       upstream: Upstream[AddressingConfig],
       requiredPermission: AuthConfig#Permission,
       responseFilter: ResponseFilter[Option[AuthConfig#AuthData]]
+    )(implicit ctx: ArrivalsContext[AddressingConfig]
     ): Route =
-    prefixAuthProxyRoute(path, upstream, Option(requiredPermission), NoOpRequestFilter, responseFilter)
+    prefixAuthProxyRoute[AddressingConfig](
+      path,
+      upstream,
+      Option(requiredPermission),
+      NoOpRequestFilter,
+      responseFilter
+    )
 
-  def prefixAuthProxyRoute(
+  def prefixAuthProxyRoute[AddressingConfig](
       path: PathMatcher[Unit],
       upstream: Upstream[AddressingConfig],
       requiredPermission: AuthConfig#Permission,
       requestFilter: RequestFilter[Option[AuthConfig#AuthData]],
       responseFilter: ResponseFilter[Option[AuthConfig#AuthData]]
+    )(implicit ctx: ArrivalsContext[AddressingConfig]
     ): Route =
-    prefixAuthProxyRoute(path, upstream, Option(requiredPermission), requestFilter, responseFilter)
+    prefixAuthProxyRoute[AddressingConfig](
+      path,
+      upstream,
+      Option(requiredPermission),
+      requestFilter,
+      responseFilter
+    )
 
-  def prefixAuthProxyRoute(
+  def prefixAuthProxyRoute[AddressingConfig](
       path: PathMatcher[Unit],
       upstream: Upstream[AddressingConfig],
       requiredPermission: Option[AuthConfig#Permission] = None,
       requestFilter: RequestFilter[Option[AuthConfig#AuthData]] = NoOpRequestFilter,
       responseFilter: ResponseFilter[Option[AuthConfig#AuthData]] = NoOpResponseFilter
+    )(implicit ctx: ArrivalsContext[AddressingConfig]
     ): Route =
     pathPrefix(path) {
-      authProxyRoute(upstream, requiredPermission, requestFilter, responseFilter)
+      authProxyRoute[AddressingConfig](upstream, requiredPermission, requestFilter, responseFilter)
     }
 
-  def authProxyRoute(upstream: Upstream[AddressingConfig], requiredPermission: AuthConfig#Permission): Route =
-    authProxyRoute(upstream, Some(requiredPermission))
+  def authProxyRoute[AddressingConfig](
+      upstream: Upstream[AddressingConfig],
+      requiredPermission: AuthConfig#Permission
+    )(implicit ctx: ArrivalsContext[AddressingConfig]
+    ): Route =
+    authProxyRoute[AddressingConfig](upstream, Some(requiredPermission))
 
-  def authProxyRoute(
+  def authProxyRoute[AddressingConfig](
       upstream: Upstream[AddressingConfig],
       requestFilter: RequestFilter[Option[AuthConfig#AuthData]]
+    )(implicit ctx: ArrivalsContext[AddressingConfig]
     ): Route =
-    authProxyRoute(upstream, None, requestFilter)
+    authProxyRoute[AddressingConfig](upstream, None, requestFilter)
 
-  def authProxyRoute(
+  def authProxyRoute[AddressingConfig](
       upstream: Upstream[AddressingConfig],
       responseFilter: ResponseFilter[Option[AuthConfig#AuthData]]
+    )(implicit ctx: ArrivalsContext[AddressingConfig]
     ): Route =
-    authProxyRoute(upstream, None, NoOpRequestFilter, responseFilter)
+    authProxyRoute[AddressingConfig](upstream, None, NoOpRequestFilter, responseFilter)
 
-  def authProxyRoute(
+  def authProxyRoute[AddressingConfig](
       upstream: Upstream[AddressingConfig],
       requiredPermission: AuthConfig#Permission,
       requestFilter: RequestFilter[Option[AuthConfig#AuthData]]
+    )(implicit ctx: ArrivalsContext[AddressingConfig]
     ): Route =
-    authProxyRoute(upstream, Some(requiredPermission), requestFilter)
+    authProxyRoute[AddressingConfig](upstream, Some(requiredPermission), requestFilter)
 
-  def authProxyRoute(
+  def authProxyRoute[AddressingConfig](
       upstream: Upstream[AddressingConfig],
       requiredPermission: AuthConfig#Permission,
       responseFilter: ResponseFilter[Option[AuthConfig#AuthData]]
+    )(implicit ctx: ArrivalsContext[AddressingConfig]
     ): Route =
-    authProxyRoute(upstream, Some(requiredPermission), NoOpRequestFilter, responseFilter)
+    authProxyRoute[AddressingConfig](upstream, Some(requiredPermission), NoOpRequestFilter, responseFilter)
 
-  def authProxyRoute(
+  def authProxyRoute[AddressingConfig](
       upstream: Upstream[AddressingConfig],
       requestFilter: RequestFilter[Option[AuthConfig#AuthData]],
       responseFilter: ResponseFilter[Option[AuthConfig#AuthData]]
+    )(implicit ctx: ArrivalsContext[AddressingConfig]
     ): Route =
-    authProxyRoute(upstream, None, requestFilter, responseFilter)
+    authProxyRoute[AddressingConfig](upstream, None, requestFilter, responseFilter)
 
-  def authProxyRoute(
+  def authProxyRoute[AddressingConfig](
       upstream: Upstream[AddressingConfig],
       requiredPermission: AuthConfig#Permission,
       requestFilter: RequestFilter[Option[AuthConfig#AuthData]],
       responseFilter: ResponseFilter[Option[AuthConfig#AuthData]]
+    )(implicit ctx: ArrivalsContext[AddressingConfig]
     ): Route =
-    authProxyRoute(upstream, Option(requiredPermission), requestFilter, responseFilter)
+    authProxyRoute[AddressingConfig](upstream, Option(requiredPermission), requestFilter, responseFilter)
 
-  def authProxyRoute(
+  def authProxyRoute[AddressingConfig](
       upstream: Upstream[AddressingConfig],
       requiredPermission: Option[AuthConfig#Permission] = None,
       requestFilter: RequestFilter[Option[AuthConfig#AuthData]] = NoOpRequestFilter,
       responseFilter: ResponseFilter[Option[AuthConfig#AuthData]] = NoOpResponseFilter
+    )(implicit ctx: ArrivalsContext[AddressingConfig]
     ): Route =
     extractRequest { request =>
       implicit val reqMeta = RequestMetadata.fromRequest(request)
 
-      authenticateAndProxyRequest(
+      authenticateAndProxyRequest[AddressingConfig](
         upstream,
         request,
         requiredPermission,
@@ -137,27 +163,30 @@ trait AuthProxyController[AuthConfig <: HeaderAuthConfig, AddressingConfig] {
       )
     }
 
-  private def authenticateAndProxyRequest(
+  private def authenticateAndProxyRequest[AddressingConfig](
       upstream: Upstream[AddressingConfig],
       request: HttpRequest,
       requiredPermission: Option[AuthConfig#Permission],
       requestFilter: RequestFilter[Option[AuthConfig#AuthData]],
       responseFilter: ResponseFilter[Option[AuthConfig#AuthData]]
-    )(implicit reqMeta: RequestMetadata
+    )(implicit ctx: ArrivalsContext[AddressingConfig],
+      reqMeta: RequestMetadata
     ): Route = {
-    authenticate(authConfig)(requiredPermission.asInstanceOf[Option[authConfig.Permission]])(reqMeta, metrics) {
-      optAuthData =>
-        filterRequest(requestFilter, optAuthData) {
-          addAuthHeader(authConfig)(optAuthData.asInstanceOf[Option[authConfig.AuthData]])(reqMeta) {
-            filterResponse(responseFilter, optAuthData) {
-              extractRequest { authedRequest =>
-                complete {
-                  httpProxy(authedRequest, upstream)
-                }
+    authenticate(headerAuthConfig)(requiredPermission.asInstanceOf[Option[headerAuthConfig.Permission]])(
+      reqMeta,
+      ctx.metrics
+    ) { optAuthData =>
+      filterRequest(requestFilter, optAuthData) {
+        addAuthHeader(headerAuthConfig)(optAuthData.asInstanceOf[Option[headerAuthConfig.AuthData]])(reqMeta) {
+          filterResponse(responseFilter, optAuthData) {
+            extractRequest { authedRequest =>
+              complete {
+                ctx.httpProxy(authedRequest, upstream)
               }
             }
           }
         }
+      }
     }
   }
 

@@ -5,6 +5,11 @@ import akka.http.scaladsl.model.Uri.Authority
 import com.pagerduty.arrivals.api.aggregator.AggregatorUpstream
 import com.pagerduty.arrivals.api.headerauth.HeaderAuthConfig
 
+object ExampleUpstream {
+  val CatsUpstream = ExampleUpstream(22000, "cats")
+  val DogsUpstream = ExampleUpstream(33000, "dogs")
+}
+
 case class ExampleUpstream(port: Int, metricsTag: String) extends AggregatorUpstream[String] {
   def addressRequest(request: HttpRequest, addressingConfig: String): HttpRequest = {
     val newUri =

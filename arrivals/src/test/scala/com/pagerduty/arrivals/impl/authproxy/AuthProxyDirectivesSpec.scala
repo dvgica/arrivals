@@ -1,23 +1,24 @@
 package com.pagerduty.arrivals.impl.authproxy
 
 import akka.http.scaladsl.model.headers.RawHeader
+import akka.http.scaladsl.model.ws.{Message, WebSocketRequest, WebSocketUpgradeResponse}
 import akka.http.scaladsl.model.{HttpHeader, HttpRequest, HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import akka.stream.scaladsl.Flow
 import com.pagerduty.akka.http.support.RequestMetadata
 import com.pagerduty.arrivals.api.auth.AuthFailedReason
 import com.pagerduty.arrivals.api.filter.{RequestFilter, RequestFilterOutput, ResponseFilter}
 import com.pagerduty.arrivals.api.headerauth.HeaderAuthConfig
-import com.pagerduty.arrivals.api.proxy.Upstream
-import com.pagerduty.arrivals.api.proxy.HttpProxy
-import com.pagerduty.metrics.NullMetrics
+import com.pagerduty.arrivals.api.proxy.{HttpClient, Upstream}
+import com.pagerduty.arrivals.impl.ArrivalsContext
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FreeSpecLike, Matchers}
 
 import scala.concurrent.Future
 import scala.util.{Success, Try}
 
-class AuthProxyControllerSpec extends FreeSpecLike with Matchers with ScalatestRouteTest with MockFactory { outer =>
+class AuthProxyDirectivesSpec extends FreeSpecLike with Matchers with ScalatestRouteTest with MockFactory { outer =>
   implicit val reqMeta = RequestMetadata(None)
 
   val testAuthData = "auth-data"
@@ -50,30 +51,31 @@ class AuthProxyControllerSpec extends FreeSpecLike with Matchers with ScalatestR
     val expectedResponse = HttpResponse(201)
     val expectedTransformedResponse = HttpResponse(302)
 
-    val proxyStub = new HttpProxy[String] {
-      override def apply(request: HttpRequest, upstream: Upstream[String]): Future[HttpResponse] = {
-        if (request.headers.exists(_.is(testAuthConfig.authHeaderName.toLowerCase))) {
-          if (request.uri.toString.contains("transformed")) {
-            Future.successful(expectedTransformedResponse)
-          } else {
-            Future.successful(expectedResponse)
+    implicit val ctx = ArrivalsContext(
+      (),
+      buildHttpClient = (_, _) =>
+        new HttpClient {
+          def executeRequest(request: HttpRequest): Future[HttpResponse] = {
+            if (request.headers.exists(_.is(testAuthConfig.authHeaderName.toLowerCase))) {
+              if (request.uri.toString.contains("transformed")) {
+                Future.successful(expectedTransformedResponse)
+              } else {
+                Future.successful(expectedResponse)
+              }
+            } else {
+              Future.successful(HttpResponse(StatusCodes.Forbidden))
+            }
           }
-        } else {
-          Future.successful(HttpResponse(StatusCodes.Forbidden))
-        }
+
+          def executeWebSocketRequest[T](
+              request: WebSocketRequest,
+              clientFlow: Flow[Message, Message, T]
+            ): (Future[WebSocketUpgradeResponse], T) = ???
       }
-
-    }
-
-    val c = new AuthProxyController[TestAuthConfig, String] {
-      implicit val executionContext =
-        scala.concurrent.ExecutionContext.Implicits.global
-      val authConfig = testAuthConfig
-      def httpProxy = proxyStub
-      val metrics = NullMetrics
-    }
-    val upstream = new Upstream[String] {
-      def addressRequest(request: HttpRequest, addressingConfig: String): HttpRequest = request
+    )
+    val c = new AuthProxyDirectives[TestAuthConfig](testAuthConfig)
+    val upstream = new Upstream[Unit] {
+      def addressRequest(request: HttpRequest, addressingConfig: Unit): HttpRequest = request
 
       val metricsTag = "test"
     }

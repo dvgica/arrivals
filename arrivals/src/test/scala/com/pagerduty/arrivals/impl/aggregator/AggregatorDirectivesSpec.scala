@@ -2,22 +2,20 @@ package com.pagerduty.arrivals.impl.aggregator
 
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.model.{HttpHeader, HttpRequest, HttpResponse, StatusCodes}
-import akka.http.scaladsl.server.AuthorizationFailedRejection
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import akka.stream.ActorMaterializer
 import com.pagerduty.akka.http.support.RequestMetadata
 import com.pagerduty.arrivals.api.auth.AuthFailedReason
 import com.pagerduty.arrivals.api.filter.{RequestFilter, RequestFilterOutput, ResponseFilter}
 import com.pagerduty.arrivals.api.headerauth.HeaderAuthConfig
+import com.pagerduty.arrivals.impl.ArrivalsContext
 import com.pagerduty.arrivals.impl.proxy.HttpProxy
-import com.pagerduty.metrics.NullMetrics
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FreeSpecLike, Matchers}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 import scala.util.{Success, Try}
 
-class AggregatorControllerSpec extends FreeSpecLike with Matchers with MockFactory with ScalatestRouteTest {
+class AggregatorDirectivesSpec extends FreeSpecLike with Matchers with MockFactory with ScalatestRouteTest {
 
   val testAuthData = "auth-data"
 
@@ -52,16 +50,10 @@ class AggregatorControllerSpec extends FreeSpecLike with Matchers with MockFacto
     val ac = new TestAuthConfig
     val expectedResponse = HttpResponse(StatusCodes.NotModified)
 
-    def buildController(stubHttpProxy: HttpProxy[String] = null): AggregatorController[TestAuthConfig, String] = {
-      val c = new AggregatorController[TestAuthConfig, String] {
-        val authConfig = ac
-        val httpProxy = stubHttpProxy
-        val executionContext = ExecutionContext.global
-        val materializer = ActorMaterializer()
-        val metrics = NullMetrics
-      }
+    implicit val context = ArrivalsContext("localhost")
 
-      c
+    def buildController(stubHttpProxy: HttpProxy[String] = null): AggregatorDirectives[TestAuthConfig] = {
+      new AggregatorDirectives[TestAuthConfig](ac)
     }
 
     "with a simple test Aggregator" - {
