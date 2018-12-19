@@ -10,6 +10,7 @@ import com.pagerduty.arrivals.api.proxy.HttpClient
 import com.pagerduty.arrivals.impl.proxy.HttpProxy
 import com.pagerduty.metrics.{Metrics, NullMetrics}
 
+import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.duration._
 
@@ -39,7 +40,7 @@ case class ArrivalsContext[AddressingConfig](
 
   val httpProxy = new HttpProxy(addressingConfig, httpClient)
 
-  def shutdown(): Unit = {
+  def shutdown(): Future[Unit] = {
     http.shutdownAllConnectionPools()
   }
 }
