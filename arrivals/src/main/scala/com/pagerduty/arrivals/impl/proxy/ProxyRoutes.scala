@@ -7,7 +7,7 @@ import com.pagerduty.arrivals.api.proxy.Upstream
 import com.pagerduty.arrivals.impl.ArrivalsContext
 import com.pagerduty.arrivals.impl.filter.FilterDirectives._
 
-object ProxyDirectives {
+object ProxyRoutes {
 
   def prefixProxyRoute[AddressingConfig](
       path: PathMatcher[Unit],

@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory
 import akka.http.scaladsl.server.Directives.{handleExceptions, _}
 import com.pagerduty.arrivals.api.proxy.Upstream
 import com.pagerduty.arrivals.impl.ArrivalsContext
-import com.pagerduty.arrivals.impl.authproxy.AuthProxyDirectives
+import com.pagerduty.arrivals.impl.authproxy.AuthProxyRoutes
 import com.pagerduty.arrivals.impl.proxy.{ErrorHandling, HttpProxy}
 
 import scala.concurrent.Await
@@ -54,7 +54,7 @@ class HttpServer(
 
   implicit val context = ArrivalsContext("test")
 
-  val authProxyDirectives = new AuthProxyDirectives(authConfig)
+  val authProxyDirectives = new AuthProxyRoutes(authConfig)
   import authProxyDirectives._
 
   val httpRoutes = {

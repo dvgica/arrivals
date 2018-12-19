@@ -12,9 +12,9 @@ import org.scalatest.{FreeSpecLike, Matchers}
 
 import scala.concurrent.Future
 
-class ProxyDirectivesSpec extends FreeSpecLike with Matchers with ScalatestRouteTest with MockFactory { outer =>
+class ProxyRoutesSpec extends FreeSpecLike with Matchers with ScalatestRouteTest with MockFactory { outer =>
 
-  "ProxyControllerSpec" - {
+  "ProxyRoutes" - {
     val expectedResponse = HttpResponse(201)
 
     implicit val ctx = ArrivalsContext(
@@ -35,7 +35,7 @@ class ProxyDirectivesSpec extends FreeSpecLike with Matchers with ScalatestRoute
       def addressRequest(request: HttpRequest, addressingConfig: Unit): HttpRequest = request
     }
 
-    import ProxyDirectives._
+    import ProxyRoutes._
 
     "filters and proxies routes" in {
       val requestTransformer = new RequestFilter[Any] {
