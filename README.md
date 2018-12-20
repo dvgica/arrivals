@@ -12,7 +12,7 @@ Arrivals is meant to be used by developers without deep knowledge of Akka HTTP, 
 
 ## Usage
 
-Arrivals functionality is provided via Akka HTTP `Route`s available in `AuthProxyDirectives`, `ProxyDirectives`, and `AggregatorDirectives`. Other lower-level `Directive`s are also available.
+Arrivals functionality is provided via Akka HTTP `Route`s available in `AuthProxyRoutes`, `ProxyRoutes`, and `AggregatorRoutes`. Other lower-level `Directive`s are also available.
 
 A basic example of using Arrivals is available in [arrivals-example](https://github.com/PagerDuty/arrivals/blob/master/arrivals-example/src/main/scala/com/pagerduty/arrivals/example/ExampleApp.scala). The example can be run by cloning this repository and running `sbt arrivalsExample/run`. Try the following URLs:
 
