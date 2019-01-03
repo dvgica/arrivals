@@ -10,12 +10,12 @@ import com.pagerduty.arrivals.impl.auth.AuthenticationDirectives._
 import com.pagerduty.arrivals.impl.filter.FilterDirectives.{filterRequest, filterResponse}
 import com.pagerduty.arrivals.impl.headerauth.AuthHeaderDirectives._
 
-class AggregatorRoutes[AuthConfig <: HeaderAuthConfig](headerAuthConfig: AuthConfig) {
+class AggregatorRoutes[AuthConfig <: HeaderAuthConfig](val headerAuthConfig: AuthConfig) {
 
   def prefixAggregatorRoute[AddressingConfig](
       pathMatcher: PathMatcher[Unit],
-      aggregator: RunnableAggregator[AuthConfig#AuthData, AddressingConfig],
-      requiredPermission: AuthConfig#Permission
+      aggregator: RunnableAggregator[headerAuthConfig.AuthData, AddressingConfig],
+      requiredPermission: headerAuthConfig.Permission
     )(implicit ctx: ArrivalsContext[AddressingConfig]
     ): Route =
     prefixAggregatorRoute[AddressingConfig](
@@ -26,8 +26,8 @@ class AggregatorRoutes[AuthConfig <: HeaderAuthConfig](headerAuthConfig: AuthCon
 
   def prefixAggregatorRoute[AddressingConfig](
       pathMatcher: PathMatcher[Unit],
-      aggregator: RunnableAggregator[AuthConfig#AuthData, AddressingConfig],
-      responseFilter: ResponseFilter[AuthConfig#AuthData]
+      aggregator: RunnableAggregator[headerAuthConfig.AuthData, AddressingConfig],
+      responseFilter: ResponseFilter[headerAuthConfig.AuthData]
     )(implicit ctx: ArrivalsContext[AddressingConfig]
     ): Route =
     prefixAggregatorRoute[AddressingConfig](
@@ -40,8 +40,8 @@ class AggregatorRoutes[AuthConfig <: HeaderAuthConfig](headerAuthConfig: AuthCon
 
   def prefixAggregatorRoute[AddressingConfig](
       pathMatcher: PathMatcher[Unit],
-      aggregator: RunnableAggregator[AuthConfig#AuthData, AddressingConfig],
-      requestFilter: RequestFilter[AuthConfig#AuthData]
+      aggregator: RunnableAggregator[headerAuthConfig.AuthData, AddressingConfig],
+      requestFilter: RequestFilter[headerAuthConfig.AuthData]
     )(implicit ctx: ArrivalsContext[AddressingConfig]
     ): Route =
     prefixAggregatorRoute[AddressingConfig](
@@ -53,9 +53,9 @@ class AggregatorRoutes[AuthConfig <: HeaderAuthConfig](headerAuthConfig: AuthCon
 
   def prefixAggregatorRoute[AddressingConfig](
       pathMatcher: PathMatcher[Unit],
-      aggregator: RunnableAggregator[AuthConfig#AuthData, AddressingConfig],
-      requestFilter: RequestFilter[AuthConfig#AuthData],
-      responseFilter: ResponseFilter[AuthConfig#AuthData]
+      aggregator: RunnableAggregator[headerAuthConfig.AuthData, AddressingConfig],
+      requestFilter: RequestFilter[headerAuthConfig.AuthData],
+      responseFilter: ResponseFilter[headerAuthConfig.AuthData]
     )(implicit ctx: ArrivalsContext[AddressingConfig]
     ): Route =
     prefixAggregatorRoute[AddressingConfig](
@@ -68,9 +68,9 @@ class AggregatorRoutes[AuthConfig <: HeaderAuthConfig](headerAuthConfig: AuthCon
 
   def prefixAggregatorRoute[AddressingConfig](
       pathMatcher: PathMatcher[Unit],
-      aggregator: RunnableAggregator[AuthConfig#AuthData, AddressingConfig],
-      requiredPermission: AuthConfig#Permission,
-      responseFilter: ResponseFilter[AuthConfig#AuthData]
+      aggregator: RunnableAggregator[headerAuthConfig.AuthData, AddressingConfig],
+      requiredPermission: headerAuthConfig.Permission,
+      responseFilter: ResponseFilter[headerAuthConfig.AuthData]
     )(implicit ctx: ArrivalsContext[AddressingConfig]
     ): Route =
     prefixAggregatorRoute[AddressingConfig](
@@ -83,9 +83,9 @@ class AggregatorRoutes[AuthConfig <: HeaderAuthConfig](headerAuthConfig: AuthCon
 
   def prefixAggregatorRoute[AddressingConfig](
       pathMatcher: PathMatcher[Unit],
-      aggregator: RunnableAggregator[AuthConfig#AuthData, AddressingConfig],
-      requiredPermission: AuthConfig#Permission,
-      requestFilter: RequestFilter[AuthConfig#AuthData]
+      aggregator: RunnableAggregator[headerAuthConfig.AuthData, AddressingConfig],
+      requiredPermission: headerAuthConfig.Permission,
+      requestFilter: RequestFilter[headerAuthConfig.AuthData]
     )(implicit ctx: ArrivalsContext[AddressingConfig]
     ): Route =
     prefixAggregatorRoute[AddressingConfig](
@@ -97,10 +97,10 @@ class AggregatorRoutes[AuthConfig <: HeaderAuthConfig](headerAuthConfig: AuthCon
 
   def prefixAggregatorRoute[AddressingConfig](
       pathMatcher: PathMatcher[Unit],
-      aggregator: RunnableAggregator[AuthConfig#AuthData, AddressingConfig],
-      requiredPermission: AuthConfig#Permission,
-      requestFilter: RequestFilter[AuthConfig#AuthData],
-      responseFilter: ResponseFilter[AuthConfig#AuthData]
+      aggregator: RunnableAggregator[headerAuthConfig.AuthData, AddressingConfig],
+      requiredPermission: headerAuthConfig.Permission,
+      requestFilter: RequestFilter[headerAuthConfig.AuthData],
+      responseFilter: ResponseFilter[headerAuthConfig.AuthData]
     )(implicit ctx: ArrivalsContext[AddressingConfig]
     ): Route =
     prefixAggregatorRoute[AddressingConfig](
@@ -113,10 +113,10 @@ class AggregatorRoutes[AuthConfig <: HeaderAuthConfig](headerAuthConfig: AuthCon
 
   def prefixAggregatorRoute[AddressingConfig](
       pathMatcher: PathMatcher[Unit],
-      aggregator: RunnableAggregator[AuthConfig#AuthData, AddressingConfig],
-      requiredPermission: Option[AuthConfig#Permission] = None,
-      requestFilter: RequestFilter[AuthConfig#AuthData] = NoOpRequestFilter,
-      responseFilter: ResponseFilter[AuthConfig#AuthData] = NoOpResponseFilter
+      aggregator: RunnableAggregator[headerAuthConfig.AuthData, AddressingConfig],
+      requiredPermission: Option[headerAuthConfig.Permission] = None,
+      requestFilter: RequestFilter[headerAuthConfig.AuthData] = NoOpRequestFilter,
+      responseFilter: ResponseFilter[headerAuthConfig.AuthData] = NoOpResponseFilter
     )(implicit ctx: ArrivalsContext[AddressingConfig]
     ): Route = {
     pathPrefix(pathMatcher) {
@@ -130,16 +130,16 @@ class AggregatorRoutes[AuthConfig <: HeaderAuthConfig](headerAuthConfig: AuthCon
   }
 
   def aggregatorRoute[AddressingConfig](
-      aggregator: RunnableAggregator[AuthConfig#AuthData, AddressingConfig],
-      requiredPermission: AuthConfig#Permission
+      aggregator: RunnableAggregator[headerAuthConfig.AuthData, AddressingConfig],
+      requiredPermission: headerAuthConfig.Permission
     )(implicit ctx: ArrivalsContext[AddressingConfig]
     ): Route =
     aggregatorRoute[AddressingConfig](aggregator, Option(requiredPermission))
 
   def aggregatorRoute[AddressingConfig](
-      aggregator: RunnableAggregator[AuthConfig#AuthData, AddressingConfig],
-      requiredPermission: AuthConfig#Permission,
-      requestFilter: RequestFilter[AuthConfig#AuthData]
+      aggregator: RunnableAggregator[headerAuthConfig.AuthData, AddressingConfig],
+      requiredPermission: headerAuthConfig.Permission,
+      requestFilter: RequestFilter[headerAuthConfig.AuthData]
     )(implicit ctx: ArrivalsContext[AddressingConfig]
     ): Route =
     aggregatorRoute[AddressingConfig](
@@ -149,9 +149,9 @@ class AggregatorRoutes[AuthConfig <: HeaderAuthConfig](headerAuthConfig: AuthCon
     )
 
   def aggregatorRoute[AddressingConfig](
-      aggregator: RunnableAggregator[AuthConfig#AuthData, AddressingConfig],
-      requiredPermission: AuthConfig#Permission,
-      responseFilter: ResponseFilter[AuthConfig#AuthData]
+      aggregator: RunnableAggregator[headerAuthConfig.AuthData, AddressingConfig],
+      requiredPermission: headerAuthConfig.Permission,
+      responseFilter: ResponseFilter[headerAuthConfig.AuthData]
     )(implicit ctx: ArrivalsContext[AddressingConfig]
     ): Route =
     aggregatorRoute[AddressingConfig](
@@ -162,15 +162,15 @@ class AggregatorRoutes[AuthConfig <: HeaderAuthConfig](headerAuthConfig: AuthCon
     )
 
   def aggregatorRoute[AddressingConfig](
-      aggregator: RunnableAggregator[AuthConfig#AuthData, AddressingConfig],
-      requestFilter: RequestFilter[AuthConfig#AuthData]
+      aggregator: RunnableAggregator[headerAuthConfig.AuthData, AddressingConfig],
+      requestFilter: RequestFilter[headerAuthConfig.AuthData]
     )(implicit ctx: ArrivalsContext[AddressingConfig]
     ): Route =
     aggregatorRoute[AddressingConfig](aggregator, None, requestFilter)
 
   def aggregatorRoute[AddressingConfig](
-      aggregator: RunnableAggregator[AuthConfig#AuthData, AddressingConfig],
-      responseFilter: ResponseFilter[AuthConfig#AuthData]
+      aggregator: RunnableAggregator[headerAuthConfig.AuthData, AddressingConfig],
+      responseFilter: ResponseFilter[headerAuthConfig.AuthData]
     )(implicit ctx: ArrivalsContext[AddressingConfig]
     ): Route =
     aggregatorRoute[AddressingConfig](
@@ -181,9 +181,9 @@ class AggregatorRoutes[AuthConfig <: HeaderAuthConfig](headerAuthConfig: AuthCon
     )
 
   def aggregatorRoute[AddressingConfig](
-      aggregator: RunnableAggregator[AuthConfig#AuthData, AddressingConfig],
-      requestFilter: RequestFilter[AuthConfig#AuthData],
-      responseFilter: ResponseFilter[AuthConfig#AuthData]
+      aggregator: RunnableAggregator[headerAuthConfig.AuthData, AddressingConfig],
+      requestFilter: RequestFilter[headerAuthConfig.AuthData],
+      responseFilter: ResponseFilter[headerAuthConfig.AuthData]
     )(implicit ctx: ArrivalsContext[AddressingConfig]
     ): Route =
     aggregatorRoute[AddressingConfig](
@@ -194,10 +194,10 @@ class AggregatorRoutes[AuthConfig <: HeaderAuthConfig](headerAuthConfig: AuthCon
     )
 
   def aggregatorRoute[AddressingConfig](
-      aggregator: RunnableAggregator[AuthConfig#AuthData, AddressingConfig],
-      requiredPermission: AuthConfig#Permission,
-      requestFilter: RequestFilter[AuthConfig#AuthData],
-      responseFilter: ResponseFilter[AuthConfig#AuthData]
+      aggregator: RunnableAggregator[headerAuthConfig.AuthData, AddressingConfig],
+      requiredPermission: headerAuthConfig.Permission,
+      requestFilter: RequestFilter[headerAuthConfig.AuthData],
+      responseFilter: ResponseFilter[headerAuthConfig.AuthData]
     )(implicit ctx: ArrivalsContext[AddressingConfig]
     ): Route =
     aggregatorRoute[AddressingConfig](
@@ -208,21 +208,21 @@ class AggregatorRoutes[AuthConfig <: HeaderAuthConfig](headerAuthConfig: AuthCon
     )
 
   def aggregatorRoute[AddressingConfig](
-      aggregator: RunnableAggregator[AuthConfig#AuthData, AddressingConfig],
-      requiredPermission: Option[AuthConfig#Permission] = None,
-      requestFilter: RequestFilter[AuthConfig#AuthData] = NoOpRequestFilter,
-      responseFilter: ResponseFilter[AuthConfig#AuthData] = NoOpResponseFilter
+      aggregator: RunnableAggregator[headerAuthConfig.AuthData, AddressingConfig],
+      requiredPermission: Option[headerAuthConfig.Permission] = None,
+      requestFilter: RequestFilter[headerAuthConfig.AuthData] = NoOpRequestFilter,
+      responseFilter: ResponseFilter[headerAuthConfig.AuthData] = NoOpResponseFilter
     )(implicit ctx: ArrivalsContext[AddressingConfig]
     ): Route = {
     extractRequest { request =>
       implicit val reqMeta = RequestMetadata.fromRequest(request)
 
-      requireAuthentication(headerAuthConfig)(requiredPermission.asInstanceOf[Option[headerAuthConfig.Permission]])(
+      requireAuthentication(headerAuthConfig)(requiredPermission)(
         reqMeta,
         ctx.metrics
       ) { authData =>
         filterRequest(requestFilter, authData) {
-          addAuthHeader(headerAuthConfig)(Some(authData).asInstanceOf[Option[headerAuthConfig.AuthData]])(reqMeta) {
+          addAuthHeader(headerAuthConfig)(Some(authData))(reqMeta) {
             filterResponse(responseFilter, authData) {
               extractRequest { authedRequest =>
                 complete {
