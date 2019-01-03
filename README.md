@@ -81,5 +81,5 @@ This library is maintained by the Core team at PagerDuty. Opening a GitHub issue
 - Convenience trait for Filters that never return a response
 - Metadata logging is inconsistently used because it's a PITA - would be nice to do something less ugly and not include `akka-http-support` in `arrivals-api`
 - De-couple authentication and authorization
-- `filterRequest` should extract the new request for convenience
+- `filterRequest` and `addAuthHeader` should extract the new request for convenience
 - `Upstream` should be contravariant
