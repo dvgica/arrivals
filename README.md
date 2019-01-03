@@ -8,7 +8,7 @@ This open-source project provides building blocks for constructing an API Gatewa
  - Filtering and transforming requests and responses
  - Turning a single request into multiple upstream requests, and aggregating the responses into a single response
   
-Arrivals is meant to be used by developers without deep knowledge of Akka HTTP, so there is an emphasis on simple Scala APIs rather than the more flexible, but also more complex, APIs provided by Akka HTTP. 
+As much as possible, Arrivals follows idioms found in Akka HTTP. This means that it exposes `Route`s and `Directive`s to the library user which can be combined with other Akka HTTP-based code.  
 
 ## Usage
 
