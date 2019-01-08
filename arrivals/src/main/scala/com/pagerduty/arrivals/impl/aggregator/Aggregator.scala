@@ -14,7 +14,7 @@ trait Aggregator[AuthData, RequestKey, AccumulatedState, AddressingConfig]
     with RunnableAggregator[AuthData, AddressingConfig] {
 
   // implementation
-  def apply(
+  override def apply(
       authedRequest: HttpRequest,
       deps: AggregatorDependencies[AddressingConfig],
       authData: AuthData
