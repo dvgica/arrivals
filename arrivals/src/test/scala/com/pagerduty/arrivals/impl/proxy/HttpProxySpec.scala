@@ -8,6 +8,12 @@ import akka.http.scaladsl.model.{HttpRequest, HttpResponse, Uri}
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Flow
 import com.pagerduty.akka.http.support.RequestMetadata
+import com.pagerduty.arrivals.api.filter.{
+  SyncRequestFilter,
+  SyncRequestFilterOutput,
+  SyncResponseFilter,
+  SyncResponseFilterOutput
+}
 import com.pagerduty.arrivals.api.proxy.{HttpClient, Upstream}
 import com.pagerduty.metrics.NullMetrics
 import org.scalatest.concurrent.ScalaFutures
@@ -45,11 +51,14 @@ class HttpProxySpec extends FreeSpecLike with Matchers with ScalaFutures {
         request.withUri(uri)
       }
 
-      override def prepareRequestForDelivery(request: HttpRequest): HttpRequest =
-        request.addHeader(additionalHeader)
+      override def requestFilter = new SyncRequestFilter[Any] {
+        override def applySync(request: HttpRequest, reqData: Any): SyncRequestFilterOutput =
+          Right(request.addHeader(additionalHeader))
+      }
 
-      override def transformResponse(request: HttpRequest, response: HttpResponse): HttpResponse = {
-        response.addHeader(request.getHeader(headerKey).get)
+      override def responseFilter = new SyncResponseFilter[Any] {
+        override def applySync(request: HttpRequest, response: HttpResponse, reqData: Any): SyncResponseFilterOutput =
+          response.addHeader(request.getHeader(headerKey).get)
       }
     }
 

@@ -46,36 +46,41 @@ class HttpProxy[AddressingConfig](
         .addressRequest(request, addressingConfig)
         .removeHeader(TimeoutAccessHeaderName) // Akka HTTP server adds the Timeout-Access for internal reasons, but it should not be proxied
 
-    val preparedProxyRequest =
-      upstream.prepareRequestForDelivery(addressedRequest)
+    val upstreamFilterResult =
+      upstream.requestFilter(addressedRequest, ())
 
-    val stopwatch = Stopwatch.start()
+    upstreamFilterResult.flatMap {
+      case Right(filteredRequest) =>
+        val stopwatch = Stopwatch.start()
 
-    val response = preparedProxyRequest.header[UpgradeToWebSocket] match {
-      case Some(upgrade) =>
-        proxyWebSocketRequest(preparedProxyRequest, upgrade)
-      case None =>
-        proxyHttpRequest(preparedProxyRequest, upstream)
-    }
+        val response = filteredRequest.header[UpgradeToWebSocket] match {
+          case Some(upgrade) =>
+            proxyWebSocketRequest(filteredRequest, upgrade, upstream)
+          case None =>
+            proxyHttpRequest(filteredRequest, upstream)
+        }
 
-    response.map { r =>
-      emitUpstreamResponseMetrics(r, stopwatch, upstream)
-      r
+        response.map { r =>
+          emitUpstreamResponseMetrics(r, stopwatch, upstream)
+          r
+        }
+      case Left(response) => Future.successful(response)
     }
   }
 
   private def proxyHttpRequest(request: HttpRequest, upstream: Upstream[AddressingConfig]): Future[HttpResponse] = {
     val response = httpClient.executeRequest(request)
     response.flatMap { r =>
-      r.entity.withoutSizeLimit().toStrict(entityConsumptionTimeout).map { e =>
-        upstream.transformResponse(request, r.withEntity(e))
+      r.entity.withoutSizeLimit().toStrict(entityConsumptionTimeout).flatMap { e =>
+        upstream.responseFilter(request, r.withEntity(e), ())
       }
     }
   }
 
   private def proxyWebSocketRequest(
       request: HttpRequest,
-      upgrade: UpgradeToWebSocket
+      upgrade: UpgradeToWebSocket,
+      upstream: Upstream[AddressingConfig]
     )(implicit reqMeta: RequestMetadata
     ): Future[HttpResponse] = {
     // this code heavily inspired by https://github.com/DataBiosphere/leonardo/blob/develop/src/main/scala/org/broadinstitute/dsde/workbench/leonardo/service/ProxyService.scala
@@ -92,7 +97,7 @@ class HttpProxy[AddressingConfig](
         flow
       )
 
-    responseFuture.map {
+    val response = responseFuture.map {
       case ValidUpgrade(response, chosenSubprotocol) =>
         val webSocketResponse = upgrade.handleMessages(
           Flow.fromSinkAndSource(Sink.fromSubscriber(subscriber), Source.fromPublisher(publisher)),
@@ -103,6 +108,10 @@ class HttpProxy[AddressingConfig](
       case InvalidUpgradeResponse(response, cause) =>
         log.warn(s"WebSocket upgrade response was invalid: $cause")
         response
+    }
+
+    response.flatMap { resp =>
+      upstream.responseFilter(request, resp, ())
     }
   }
 
