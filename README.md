@@ -76,7 +76,6 @@ This library is maintained by the Core team at PagerDuty. Opening a GitHub issue
 ## TODO
 
 - Docs and examples
-- Just use Request/Response Filters for `Upstream#prepareReqeustForDelivery` and `Upstream#transformResponse`
 - Convenience trait for Filters that don't use request data
 - Convenience trait for Filters that never return a response
 - Metadata logging is inconsistently used because it's a PITA - would be nice to do something less ugly and not include `akka-http-support` in `arrivals-api`

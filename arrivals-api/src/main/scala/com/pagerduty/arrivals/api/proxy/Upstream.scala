@@ -1,7 +1,7 @@
 package com.pagerduty.arrivals.api.proxy
 
-import akka.http.scaladsl.model.{HttpRequest, HttpResponse, Uri}
-import akka.http.scaladsl.model.Uri.Authority
+import akka.http.scaladsl.model.HttpRequest
+import com.pagerduty.arrivals.api.filter.{NoOpRequestFilter, NoOpResponseFilter, RequestFilter, ResponseFilter}
 
 // Upstreams are parameterized on an `AddressingConfig` to support any dynamic configuration you
 // may need for your upstream.
@@ -12,18 +12,18 @@ import akka.http.scaladsl.model.Uri.Authority
 //    An HTTPRequest needs a place to go, you're job as the Upstream implemeter
 //    is to attach a uri to given request
 //
-// 2. prepare request.
+// 2. filter request.
 //    Last chance to make any modifications to the HTTPRequest before the request is made.
 //
-// 3. transform response.
-//    We've received a response from the prepared request, define a transform before we pass it
+// 3. filter response.
+//    We've received a response from the prepared request, define a filter before we pass it
 //    up to whomever made the request.
 trait Upstream[-AddressingConfig] {
   def metricsTag: String
 
   def addressRequest(request: HttpRequest, addressingConfig: AddressingConfig): HttpRequest
 
-  def prepareRequestForDelivery(request: HttpRequest): HttpRequest = request
+  def requestFilter: RequestFilter[Unit] = NoOpRequestFilter
 
-  def transformResponse(request: HttpRequest, response: HttpResponse): HttpResponse = response
+  def responseFilter: ResponseFilter[Unit] = NoOpResponseFilter
 }
