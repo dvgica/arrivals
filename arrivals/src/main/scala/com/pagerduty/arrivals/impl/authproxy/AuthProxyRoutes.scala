@@ -11,6 +11,7 @@ import com.pagerduty.arrivals.impl.ArrivalsContext
 import com.pagerduty.arrivals.impl.auth.AuthenticationDirectives._
 import com.pagerduty.arrivals.impl.headerauth.AuthHeaderDirectives._
 import com.pagerduty.arrivals.impl.filter.FilterDirectives._
+import com.pagerduty.arrivals.impl.proxy.ProxyRoutes.proxyRoute
 
 class AuthProxyRoutes[AuthConfig <: HeaderAuthConfig](val headerAuthConfig: AuthConfig) {
 
@@ -179,11 +180,7 @@ class AuthProxyRoutes[AuthConfig <: HeaderAuthConfig](val headerAuthConfig: Auth
       filterRequest(requestFilter, optAuthData) {
         addAuthHeader(headerAuthConfig)(optAuthData)(reqMeta) {
           filterResponse(responseFilter, optAuthData) {
-            extractRequest { authedRequest =>
-              complete {
-                ctx.httpProxy(authedRequest, upstream)
-              }
-            }
+            proxyRoute(upstream)
           }
         }
       }
