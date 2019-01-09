@@ -18,7 +18,7 @@ import akka.http.scaladsl.model.Uri.Authority
 // 3. transform response.
 //    We've received a response from the prepared request, define a transform before we pass it
 //    up to whomever made the request.
-trait Upstream[AddressingConfig] {
+trait Upstream[-AddressingConfig] {
   def metricsTag: String
 
   def addressRequest(request: HttpRequest, addressingConfig: AddressingConfig): HttpRequest
