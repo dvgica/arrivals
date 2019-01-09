@@ -43,12 +43,19 @@ object ProxyRoutes {
     ): Route =
     filterRequest(requestFilter, ()) {
       filterResponse(responseFilter, ()) {
-        extractRequest { filteredRequest =>
-          complete {
-            ctx.httpProxy(filteredRequest, upstream)
-          }
-        }
+        proxyRoute(upstream)
       }
     }
+
+  def proxyRoute[AddressingConfig](
+      upstream: Upstream[AddressingConfig]
+    )(implicit ctx: ArrivalsContext[AddressingConfig]
+    ): Route = {
+    extractRequest { request =>
+      complete {
+        ctx.httpProxy(request, upstream)
+      }
+    }
+  }
 
 }
