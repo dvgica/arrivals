@@ -1,8 +1,8 @@
 package com.pagerduty.arrivals.impl.filter
 
-import akka.http.scaladsl.model.HttpRequest
+import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import com.pagerduty.arrivals.api
-import com.pagerduty.arrivals.api.filter.{RequestFilter, RequestFilterOutput}
+import com.pagerduty.arrivals.api.filter.RequestFilter
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -10,7 +10,7 @@ trait ComposableRequestFilter[-RequestData] extends api.filter.RequestFilter[Req
 
   def ~>[T <: RequestData](filter: RequestFilter[T])(implicit ec: ExecutionContext): RequestFilter[T] = {
     new RequestFilter[T] {
-      override def apply(request: HttpRequest, data: T): RequestFilterOutput = {
+      override def apply(request: HttpRequest, data: T): Future[Either[HttpResponse, HttpRequest]] = {
         base.apply(request, data).flatMap {
           case Right(interimRequest) => filter.apply(interimRequest, data)
           case Left(response)        => Future.successful(Left(response))

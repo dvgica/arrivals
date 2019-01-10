@@ -2,7 +2,7 @@ package com.pagerduty.arrivals.impl.filter
 
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.RawHeader
-import com.pagerduty.arrivals.api.filter.{RequestFilter, RequestFilterOutput}
+import com.pagerduty.arrivals.api.filter.RequestFilter
 import org.scalatest.{AsyncFreeSpecLike, FreeSpecLike, Matchers}
 
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -17,7 +17,7 @@ class ComposableRequestFilterSpec extends FreeSpecLike with Matchers {
   val secondHeaderName = "X-TEST-SecondFilter"
 
   object FirstFilter extends RequestFilter[String] with ComposableRequestFilter[String] {
-    def apply(request: HttpRequest, data: String): RequestFilterOutput = {
+    def apply(request: HttpRequest, data: String): Future[Right[Nothing, HttpRequest]] = {
       Future.successful(Right(request.addHeader(RawHeader(firstHeaderName, data))))
     }
   }
@@ -26,7 +26,7 @@ class ComposableRequestFilterSpec extends FreeSpecLike with Matchers {
     "can be composed with another RequestFilter of the same RequestData type" in {
 
       object SecondFilter extends RequestFilter[String] {
-        def apply(request: HttpRequest, data: String): RequestFilterOutput = {
+        def apply(request: HttpRequest, data: String): Future[Right[Nothing, HttpRequest]] = {
           Future.successful(Right(request.addHeader(RawHeader(secondHeaderName, data))))
         }
       }
@@ -48,7 +48,7 @@ class ComposableRequestFilterSpec extends FreeSpecLike with Matchers {
   "can be composed with another RequestFilter of different RequestData type" in {
 
     object SecondFilter extends RequestFilter[Any] {
-      def apply(request: HttpRequest, data: Any): RequestFilterOutput = {
+      def apply(request: HttpRequest, data: Any): Future[Right[Nothing, HttpRequest]] = {
         Future.successful(Right(request.addHeader(RawHeader(secondHeaderName, "test"))))
       }
     }
@@ -69,13 +69,13 @@ class ComposableRequestFilterSpec extends FreeSpecLike with Matchers {
   "will not apply the second filter if it does not succeed" in {
 
     object FirstFilter extends RequestFilter[String] with ComposableRequestFilter[String] {
-      def apply(request: HttpRequest, data: String): RequestFilterOutput = {
+      def apply(request: HttpRequest, data: String): Future[Left[HttpResponse, Nothing]] = {
         Future.successful(Left(HttpResponse(StatusCodes.Unauthorized)))
       }
     }
 
     object SecondFilter extends RequestFilter[Any] {
-      def apply(request: HttpRequest, data: Any): RequestFilterOutput = {
+      def apply(request: HttpRequest, data: Any): Future[Right[Nothing, HttpRequest]] = {
         Future.successful(Right(request.addHeader(RawHeader(secondHeaderName, "test"))))
       }
     }

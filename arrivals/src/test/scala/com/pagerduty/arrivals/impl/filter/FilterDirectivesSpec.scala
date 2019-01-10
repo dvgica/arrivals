@@ -2,7 +2,7 @@ package com.pagerduty.arrivals.impl.filter
 import akka.http.scaladsl.model.{HttpMethods, HttpRequest, HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.{AuthorizationFailedRejection, Route}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import com.pagerduty.arrivals.api.filter.{RequestFilter, RequestFilterOutput, ResponseFilter, ResponseFilterOutput}
+import com.pagerduty.arrivals.api.filter.{RequestFilter, ResponseFilter}
 import akka.http.scaladsl.server.Directives._
 import org.scalatest.{FreeSpec, Matchers}
 
@@ -12,7 +12,7 @@ class FilterDirectivesSpec extends FreeSpec with Matchers with ScalatestRouteTes
   "filterRequest" - {
     "filters the request when the filter returns a new request" in {
       val filter = new RequestFilter[String] {
-        def apply(request: HttpRequest, data: String): RequestFilterOutput = {
+        def apply(request: HttpRequest, data: String): Future[Right[Nothing, HttpRequest]] = {
           Future.successful(Right(HttpRequest(HttpMethods.PUT, uri = data)))
         }
       }
@@ -36,7 +36,7 @@ class FilterDirectivesSpec extends FreeSpec with Matchers with ScalatestRouteTes
 
     "completes the request when the filter returns a response" in {
       val filter = new RequestFilter[String] {
-        def apply(request: HttpRequest, data: String): RequestFilterOutput = {
+        def apply(request: HttpRequest, data: String): Future[Left[HttpResponse, Nothing]] = {
           Future.successful(Left(HttpResponse(StatusCodes.BadRequest)))
         }
       }
@@ -59,7 +59,7 @@ class FilterDirectivesSpec extends FreeSpec with Matchers with ScalatestRouteTes
 
     "returns a 500 if the filter throws an exception" in {
       val filter = new RequestFilter[String] {
-        def apply(request: HttpRequest, data: String): RequestFilterOutput = {
+        def apply(request: HttpRequest, data: String): Future[Either[HttpResponse, HttpRequest]] = {
           throw new RuntimeException("expected test exception")
         }
       }
@@ -84,7 +84,7 @@ class FilterDirectivesSpec extends FreeSpec with Matchers with ScalatestRouteTes
   "filterResponse" - {
     "filters the response if the route completes" in {
       val filter = new ResponseFilter[String] {
-        def apply(request: HttpRequest, response: HttpResponse, data: String): ResponseFilterOutput = {
+        def apply(request: HttpRequest, response: HttpResponse, data: String): Future[HttpResponse] = {
           Future.successful(HttpResponse(StatusCodes.Created).withEntity(data))
         }
       }
@@ -102,7 +102,7 @@ class FilterDirectivesSpec extends FreeSpec with Matchers with ScalatestRouteTes
 
     "does not filter the response if the route rejects" in {
       val filter = new ResponseFilter[String] {
-        def apply(request: HttpRequest, response: HttpResponse, data: String): ResponseFilterOutput = {
+        def apply(request: HttpRequest, response: HttpResponse, data: String): Future[HttpResponse] = {
           Future.successful(HttpResponse(StatusCodes.Created).withEntity(data))
         }
       }
@@ -120,7 +120,7 @@ class FilterDirectivesSpec extends FreeSpec with Matchers with ScalatestRouteTes
 
     "responds with 500 if the filter throws an exception" in {
       val filter = new ResponseFilter[String] {
-        def apply(request: HttpRequest, response: HttpResponse, data: String): ResponseFilterOutput = {
+        def apply(request: HttpRequest, response: HttpResponse, data: String): Future[HttpResponse] = {
           throw new RuntimeException("expected test exception")
         }
       }

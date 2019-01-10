@@ -5,7 +5,7 @@ import akka.http.scaladsl.model.{HttpHeader, HttpRequest, HttpResponse, StatusCo
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import com.pagerduty.akka.http.support.RequestMetadata
 import com.pagerduty.arrivals.api.auth.AuthFailedReason
-import com.pagerduty.arrivals.api.filter.{RequestFilter, RequestFilterOutput, ResponseFilter}
+import com.pagerduty.arrivals.api.filter.{RequestFilter, ResponseFilter}
 import com.pagerduty.arrivals.api.headerauth.HeaderAuthConfig
 import com.pagerduty.arrivals.impl.ArrivalsContext
 import com.pagerduty.arrivals.impl.proxy.HttpProxy
@@ -96,7 +96,7 @@ class AggregatorRoutesSpec extends FreeSpecLike with Matchers with MockFactory w
         val c = buildController()
 
         val requestTransformer = new RequestFilter[String] {
-          def apply(request: HttpRequest, authData: String): RequestFilterOutput = {
+          def apply(request: HttpRequest, authData: String): Future[Right[Nothing, HttpRequest]] = {
             authData should equal(testAuthData)
 
             Future.successful(Right(request.withUri("transformed")))
