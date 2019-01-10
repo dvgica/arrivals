@@ -78,3 +78,4 @@ This library is maintained by the Core team at PagerDuty. Opening a GitHub issue
 - Docs and examples
 - Metadata logging is inconsistently used because it's a PITA - would be nice to do something less ugly and not include `akka-http-support` in `arrivals-api`
 - De-couple authentication and authorization
+- Allow for customizeable handling of multiple credentials
