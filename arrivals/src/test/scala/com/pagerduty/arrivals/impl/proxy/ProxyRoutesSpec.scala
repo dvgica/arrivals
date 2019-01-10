@@ -4,7 +4,7 @@ import akka.http.scaladsl.model.ws.{Message, WebSocketRequest, WebSocketUpgradeR
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.stream.scaladsl.Flow
-import com.pagerduty.arrivals.api.filter.{RequestFilter, RequestFilterOutput, ResponseFilter}
+import com.pagerduty.arrivals.api.filter.{RequestFilter, ResponseFilter}
 import com.pagerduty.arrivals.api.proxy.{HttpClient, Upstream}
 import com.pagerduty.arrivals.impl.ArrivalsContext
 import org.scalamock.scalatest.MockFactory
@@ -39,7 +39,7 @@ class ProxyRoutesSpec extends FreeSpecLike with Matchers with ScalatestRouteTest
 
     "filters and proxies routes" in {
       val requestTransformer = new RequestFilter[Any] {
-        def apply(request: HttpRequest, t: Any): RequestFilterOutput = {
+        def apply(request: HttpRequest, t: Any): Future[Right[Nothing, HttpRequest]] = {
           Future.successful(Right(request.withUri("transformed")))
         }
       }

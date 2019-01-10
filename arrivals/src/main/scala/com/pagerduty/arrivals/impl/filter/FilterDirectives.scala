@@ -1,5 +1,6 @@
 package com.pagerduty.arrivals.impl.filter
 
+import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.http.scaladsl.server.{Directive, Directive0, Directive1, RouteResult}
 import com.pagerduty.arrivals.api.filter._
 import akka.http.scaladsl.server.Directives._
@@ -19,7 +20,7 @@ object FilterDirectives {
   private def extractRequestFilterResult[RequestData](
       requestFilter: RequestFilter[RequestData],
       requestData: RequestData
-    ): Directive1[SyncRequestFilterOutput] = {
+    ): Directive1[Either[HttpResponse, HttpRequest]] = {
     Directive { inner => ctx =>
       implicit val ec = ctx.executionContext
 

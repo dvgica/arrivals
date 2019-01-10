@@ -8,7 +8,7 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.stream.scaladsl.Flow
 import com.pagerduty.akka.http.support.RequestMetadata
 import com.pagerduty.arrivals.api.auth.AuthFailedReason
-import com.pagerduty.arrivals.api.filter.{RequestFilter, RequestFilterOutput, ResponseFilter}
+import com.pagerduty.arrivals.api.filter.{RequestFilter, ResponseFilter}
 import com.pagerduty.arrivals.api.headerauth.HeaderAuthConfig
 import com.pagerduty.arrivals.api.proxy.{HttpClient, Upstream}
 import com.pagerduty.arrivals.impl.ArrivalsContext
@@ -82,7 +82,7 @@ class AuthProxyRoutesSpec extends FreeSpecLike with Matchers with ScalatestRoute
 
     "filters, authenticates and proxies requests" in {
       val requestTransformer = new RequestFilter[Option[String]] {
-        def apply(request: HttpRequest, optAuthData: Option[String]): RequestFilterOutput = {
+        def apply(request: HttpRequest, optAuthData: Option[String]): Future[Right[Nothing, HttpRequest]] = {
           optAuthData should equal(Some(testAuthData))
 
           Future.successful(Right(request.withUri("transformed")))

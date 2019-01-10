@@ -2,7 +2,7 @@ package com.pagerduty.arrivals.impl.filter
 
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.RawHeader
-import com.pagerduty.arrivals.api.filter.{ResponseFilter, ResponseFilterOutput}
+import com.pagerduty.arrivals.api.filter.ResponseFilter
 import org.scalatest.{FreeSpecLike, Matchers}
 
 import scala.concurrent.duration._
@@ -17,7 +17,7 @@ class ComposableResponseFilterSpec extends FreeSpecLike with Matchers {
   val secondHeaderName = "X-TEST-SecondFilter"
 
   object FirstFilter extends ResponseFilter[String] with ComposableResponseFilter[String] {
-    def apply(request: HttpRequest, response: HttpResponse, data: String): ResponseFilterOutput = {
+    def apply(request: HttpRequest, response: HttpResponse, data: String): Future[HttpResponse] = {
       Future.successful(response.addHeader(RawHeader(firstHeaderName, data)))
     }
   }
@@ -26,7 +26,7 @@ class ComposableResponseFilterSpec extends FreeSpecLike with Matchers {
     "can be composed with another ResponseFilter of the same ResponseData type" in {
 
       object SecondFilter extends ResponseFilter[String] {
-        def apply(request: HttpRequest, response: HttpResponse, data: String): ResponseFilterOutput = {
+        def apply(request: HttpRequest, response: HttpResponse, data: String): Future[HttpResponse] = {
           Future.successful(response.addHeader(RawHeader(secondHeaderName, data)))
         }
       }
@@ -48,7 +48,7 @@ class ComposableResponseFilterSpec extends FreeSpecLike with Matchers {
   "can be composed with another ResponseFilter of different ResponseData type" in {
 
     object SecondFilter extends ResponseFilter[Any] {
-      def apply(request: HttpRequest, response: HttpResponse, data: Any): ResponseFilterOutput = {
+      def apply(request: HttpRequest, response: HttpResponse, data: Any): Future[HttpResponse] = {
         Future.successful(response.addHeader(RawHeader(secondHeaderName, "test")))
       }
     }
