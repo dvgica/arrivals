@@ -8,7 +8,7 @@ lazy val logbackVersion = "1.2+"
 
 lazy val sharedSettings = Seq(
   organization := "com.pagerduty",
-  scalaVersion := "2.12.5",
+  scalaVersion := "2.12.8",
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   bintrayOrganization := Some("pagerduty"),
   bintrayRepository := "oss-maven",
