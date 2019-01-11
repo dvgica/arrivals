@@ -1,5 +1,5 @@
 lazy val akkaVersion = "2.5.9"
-lazy val akkaHttpVersion = "10.0.11"
+lazy val akkaHttpVersion = "10.1.7"
 lazy val scalaMetricsVersion = "2.0.0"
 lazy val scalaTestVersion = "3.0.4"
 lazy val scalaMockVersion = "4.1.0"
@@ -45,6 +45,7 @@ lazy val arrivals =
         "com.lihaoyi" %% "ujson" % "0.6.6",
         "com.pagerduty" %% "metrics-api" % scalaMetricsVersion,
         "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion % "test",
+        "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion % "test",
         "org.scalamock" %% "scalamock" % scalaMockVersion % "test",
         "org.scalatest" %% "scalatest" % scalaTestVersion % "test,it",
         "ch.qos.logback" % "logback-classic" % logbackVersion % "test,it",
