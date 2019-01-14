@@ -1,4 +1,4 @@
-lazy val akkaVersion = "2.5.9"
+lazy val akkaVersion = "2.5.19"
 lazy val akkaHttpVersion = "10.1.7"
 lazy val scalaMetricsVersion = "2.0.0"
 lazy val scalaTestVersion = "3.0.4"
