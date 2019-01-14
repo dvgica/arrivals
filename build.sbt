@@ -3,7 +3,7 @@ lazy val akkaHttpVersion = "10.1.7"
 lazy val scalaMetricsVersion = "2.0.0"
 lazy val scalaTestVersion = "3.0.4"
 lazy val scalaMockVersion = "4.1.0"
-lazy val akkaSupportHttpVersion = "0.6.4"
+lazy val akkaSupportHttpVersion = "0.7.1"
 lazy val logbackVersion = "1.2+"
 
 lazy val sharedSettings = Seq(
