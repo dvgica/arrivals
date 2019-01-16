@@ -1,14 +1,14 @@
-lazy val akkaVersion = "2.5.9"
-lazy val akkaHttpVersion = "10.0.11"
+lazy val akkaVersion = "2.5.19"
+lazy val akkaHttpVersion = "10.1.7"
 lazy val scalaMetricsVersion = "2.0.0"
 lazy val scalaTestVersion = "3.0.4"
 lazy val scalaMockVersion = "4.1.0"
-lazy val akkaSupportHttpVersion = "0.6.4"
+lazy val akkaSupportHttpVersion = "0.7.1"
 lazy val logbackVersion = "1.2+"
 
 lazy val sharedSettings = Seq(
   organization := "com.pagerduty",
-  scalaVersion := "2.12.5",
+  scalaVersion := "2.12.8",
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   bintrayOrganization := Some("pagerduty"),
   bintrayRepository := "oss-maven",
@@ -45,6 +45,7 @@ lazy val arrivals =
         "com.lihaoyi" %% "ujson" % "0.6.6",
         "com.pagerduty" %% "metrics-api" % scalaMetricsVersion,
         "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion % "test",
+        "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion % "test",
         "org.scalamock" %% "scalamock" % scalaMockVersion % "test",
         "org.scalatest" %% "scalatest" % scalaTestVersion % "test,it",
         "ch.qos.logback" % "logback-classic" % logbackVersion % "test,it",
