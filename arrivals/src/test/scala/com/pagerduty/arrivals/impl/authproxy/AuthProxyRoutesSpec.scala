@@ -10,8 +10,9 @@ import com.pagerduty.akka.http.support.RequestMetadata
 import com.pagerduty.arrivals.api.auth.AuthFailedReason
 import com.pagerduty.arrivals.api.filter.{RequestFilter, ResponseFilter}
 import com.pagerduty.arrivals.api.headerauth.HeaderAuthConfig
-import com.pagerduty.arrivals.api.proxy.{HttpClient, Upstream}
+import com.pagerduty.arrivals.api.proxy.Upstream
 import com.pagerduty.arrivals.impl.ArrivalsContext
+import com.pagerduty.arrivals.impl.proxy.HttpClient
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FreeSpecLike, Matchers}
 

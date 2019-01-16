@@ -9,7 +9,7 @@ import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Flow
 import com.pagerduty.akka.http.support.RequestMetadata
 import com.pagerduty.arrivals.api.filter.{SyncRequestFilter, SyncResponseFilter}
-import com.pagerduty.arrivals.api.proxy.{HttpClient, Upstream}
+import com.pagerduty.arrivals.api.proxy.Upstream
 import com.pagerduty.metrics.NullMetrics
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FreeSpecLike, Matchers}

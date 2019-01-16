@@ -53,7 +53,7 @@ class AuthenticationDirectivesSpec extends FreeSpec with Matchers with Scalatest
       )(implicit reqMeta: RequestMetadata
       ): Option[AuthFailedReason] = {
       authData match {
-        case `badPermsAuthData` => Some(new AuthFailedReason("test"))
+        case `badPermsAuthData` => Some(new AuthFailedReason { val metricTag = "test" })
         case _                  => None
       }
     }

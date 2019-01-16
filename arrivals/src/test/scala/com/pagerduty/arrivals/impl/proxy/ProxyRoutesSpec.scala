@@ -5,7 +5,7 @@ import akka.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.stream.scaladsl.Flow
 import com.pagerduty.arrivals.api.filter.{RequestFilter, ResponseFilter}
-import com.pagerduty.arrivals.api.proxy.{HttpClient, Upstream}
+import com.pagerduty.arrivals.api.proxy.Upstream
 import com.pagerduty.arrivals.impl.ArrivalsContext
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FreeSpecLike, Matchers}
