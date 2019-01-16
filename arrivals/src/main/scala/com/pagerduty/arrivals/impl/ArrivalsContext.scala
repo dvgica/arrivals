@@ -6,8 +6,7 @@ import akka.http.scaladsl.model.HttpRequest
 import akka.http.scaladsl.model.ws.{Message, WebSocketRequest}
 import akka.stream.Materializer
 import akka.stream.scaladsl.Flow
-import com.pagerduty.arrivals.api.proxy.HttpClient
-import com.pagerduty.arrivals.impl.proxy.HttpProxy
+import com.pagerduty.arrivals.impl.proxy.{HttpClient, HttpProxy}
 import com.pagerduty.metrics.{Metrics, NullMetrics}
 
 import scala.concurrent.Future

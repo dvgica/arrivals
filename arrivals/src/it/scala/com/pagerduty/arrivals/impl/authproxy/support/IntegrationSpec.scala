@@ -8,8 +8,7 @@ import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Flow
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
-import com.pagerduty.arrivals.api.proxy.HttpClient
-import com.pagerduty.arrivals.impl.proxy.HttpProxy
+import com.pagerduty.arrivals.impl.proxy.{HttpClient, HttpProxy}
 import com.pagerduty.metrics.NullMetrics
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FreeSpecLike, Matchers}
 

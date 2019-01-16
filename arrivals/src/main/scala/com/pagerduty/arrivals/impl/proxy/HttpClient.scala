@@ -1,5 +1,4 @@
-package com.pagerduty.arrivals.api.proxy
-
+package com.pagerduty.arrivals.impl.proxy
 import akka.http.scaladsl.model.ws.{Message, WebSocketRequest, WebSocketUpgradeResponse}
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.stream.scaladsl.Flow

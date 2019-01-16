@@ -11,9 +11,11 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 object AuthenticationDirectives extends MetadataLogging {
-  case object AuthenticationFutureFailed extends AuthFailedReason("authentication_future_exception")
-  case object UnexpectedFailureWhileAuthenticating extends AuthFailedReason("unexpected_failure_while_authenticating")
-  case object InvalidCredentialReason extends AuthFailedReason("invalid_credential")
+  case object AuthenticationFutureFailed extends AuthFailedReason { val metricTag = "authentication_future_exception" }
+  case object UnexpectedFailureWhileAuthenticating extends AuthFailedReason {
+    val metricTag = "unexpected_failure_while_authenticating"
+  }
+  case object InvalidCredentialReason extends AuthFailedReason { val metricTag = "invalid_credential" }
 
   def requireAuthentication(
       authConfig: AuthenticationConfig

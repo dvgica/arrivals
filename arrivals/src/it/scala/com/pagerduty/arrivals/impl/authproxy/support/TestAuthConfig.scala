@@ -52,7 +52,7 @@ class TestAuthConfig extends HeaderAuthConfig {
     permission match {
       case Some(p) =>
         if (authData.contains(p.value)) None
-        else Some(new AuthFailedReason("test"))
+        else Some(new AuthFailedReason { val metricTag = "test" })
       case None => None
     }
   }
