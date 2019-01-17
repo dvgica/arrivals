@@ -116,7 +116,13 @@
         <span class="name">arrivals</span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="com.pagerduty">pagerduty</a></dd></dl></div>
+      <p class="shortcomment cmt">Arrivals is an open-source project providing building blocks for constructing an API Gateway using Akka HTTP.</p><div class="fullcomment"><div class="comment cmt"><p>Arrivals is an open-source project providing building blocks for constructing an API Gateway using Akka HTTP.
+[PagerDuty](https://www.pagerduty.com) has [used it](https://www.youtube.com/watch?v=DRxLFWmvJ8A) in production to build a few
+[BFFs](https://samnewman.io/patterns/architectural/bff/). Currently, the project is focused on the following areas:</p><ul><li>Proxying HTTP requests to upstream services</li><li>Authenticating those requests</li><li>Adding a header to prove authentication to upstream services</li><li>Filtering and transforming requests and responses</li><li>Turning a single request into multiple upstream requests, and aggregating the responses into a single response</li></ul><p>As much as possible, Arrivals follows idioms found in Akka HTTP. This means that it exposes <code>Route</code>s and <code>Directive</code>s
+to the library user which can be combined with other Akka HTTP-based code.</p><p>For installation and usage, please see [https://github.com/PagerDuty/arrivals](https://github.com/PagerDuty/arrivals).</p><p>Here's some API docs to try:
+- <a href="authproxy/AuthProxyRoutes.html" class="extype" name="com.pagerduty.arrivals.authproxy.AuthProxyRoutes">com.pagerduty.arrivals.authproxy.AuthProxyRoutes</a>
+- <a href="aggregator/AggregatorRoutes.html" class="extype" name="com.pagerduty.arrivals.aggregator.AggregatorRoutes">com.pagerduty.arrivals.aggregator.AggregatorRoutes</a>
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="com.pagerduty">pagerduty</a></dd></dl></div>
     </li><li name="com.pagerduty.arrivals.aggregator" visbl="pub" class="indented4 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="aggregator"></a><a id="aggregator:aggregator"></a>
       <span class="permalink">
@@ -277,7 +283,18 @@
       </h4>
 
       
-          <div id="comment" class="fullcommenttop"></div>
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Arrivals is an open-source project providing building blocks for constructing an API Gateway using Akka HTTP.
+[PagerDuty](https://www.pagerduty.com) has [used it](https://www.youtube.com/watch?v=DRxLFWmvJ8A) in production to build a few
+[BFFs](https://samnewman.io/patterns/architectural/bff/). Currently, the project is focused on the following areas:</p><ul><li>Proxying HTTP requests to upstream services</li><li>Authenticating those requests</li><li>Adding a header to prove authentication to upstream services</li><li>Filtering and transforming requests and responses</li><li>Turning a single request into multiple upstream requests, and aggregating the responses into a single response</li></ul><p>As much as possible, Arrivals follows idioms found in Akka HTTP. This means that it exposes <code>Route</code>s and <code>Directive</code>s
+to the library user which can be combined with other Akka HTTP-based code.</p><p>For installation and usage, please see [https://github.com/PagerDuty/arrivals](https://github.com/PagerDuty/arrivals).</p><p>Here's some API docs to try:
+- <a href="authproxy/AuthProxyRoutes.html" class="extype" name="com.pagerduty.arrivals.authproxy.AuthProxyRoutes">com.pagerduty.arrivals.authproxy.AuthProxyRoutes</a>
+- <a href="aggregator/AggregatorRoutes.html" class="extype" name="com.pagerduty.arrivals.aggregator.AggregatorRoutes">com.pagerduty.arrivals.aggregator.AggregatorRoutes</a>
+</p></div><div class="toggleContainer block">
+          <span class="toggle">
+            Linear Supertypes
+          </span>
+          <div class="superTypes hiddenContent"><span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
+        </div></div>
         
 
       <div id="mbrsel">
@@ -295,10 +312,22 @@
             <ol>
               
               <li class="alpha in"><span>Alphabetic</span></li>
-              
+              <li class="inherit out"><span>By Inheritance</span></li>
             </ol>
           </div>
-          
+          <div class="ancestors">
+                  <span class="filtertype">Inherited<br />
+                  </span>
+                  <ol id="linearization">
+                    <li class="in" name="com.pagerduty.arrivals"><span>arrivals</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                  </ol>
+                </div><div class="ancestors">
+              <span class="filtertype"></span>
+              <ol>
+                <li class="hideall out"><span>Hide All</span></li>
+                <li class="showall in"><span>Show All</span></li>
+              </ol>
+            </div>
           <div id="visbl">
               <span class="filtertype">Visibility</span>
               <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
@@ -363,7 +392,11 @@
         </div>
 
         <div id="inheritedMembers">
-        
+        <div class="parent" name="scala.AnyRef">
+              <h3>Inherited from <span class="extype" name="scala.AnyRef">AnyRef</span></h3>
+            </div><div class="parent" name="scala.Any">
+              <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>
+            </div>
         
         </div>
 
