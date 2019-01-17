@@ -10,9 +10,18 @@ This open-source project provides building blocks for constructing an API Gatewa
   
 As much as possible, Arrivals follows idioms found in Akka HTTP. This means that it exposes `Route`s and `Directive`s to the library user which can be combined with other Akka HTTP-based code.  
 
-## Usage
+- [Example Application](#example-application)
+- [Usage](#usage)
+  - [Installation](#installation)
+  - [Introduction and Setup](#introduction-and-setup)
+  - [Routes](#routes)
+  - [Filters](#filters)
+- [License](#license)
+- [Contributing](#contributing)
+- [Contact](#contact)
+- [TODO](#todo)
 
-### Example Application
+## Example Application
 
 For the impatient, an example API Gateway using Arrivals is available in [arrivals-example](https://github.com/PagerDuty/arrivals/blob/master/arrivals-example/src/main/scala/com/pagerduty/arrivals/example/ExampleApp.scala). The example can be run by cloning this repository and running `sbt arrivalsExample/run`. Try the following URLs:
 
@@ -22,6 +31,8 @@ For the impatient, an example API Gateway using Arrivals is available in [arriva
 - http://localhost:8080/all?username=rex
 
 For more details on what's happening, keep reading.
+
+## Usage
 
 ### Installation
 
@@ -43,13 +54,14 @@ This is the implementation artifact on which applications should depend.
 
 #### arrivals-api
 
-Authors of custom implementations (e.g. `Filter`s, `Upstream`s, and `Aggregator`s) should depend on this artifact, which will hopefully change less frequently.
+Authors of custom implementations (e.g. `Filter`s, `Upstream`s, and `Aggregator`s) which live in a library
+ should depend on this artifact, which will hopefully change less frequently.
 
 ```
 "com.pagerduty" %% "arrivals-api" % arrivalsVersion
 ```
 
-### Setup
+### Introduction and Setup
 
 Arrivals functionality is provided via Akka HTTP `Route`s available in various `object`s or `class`es. These `Route`s 
 function like any other Akka HTTP route, meaning they can be composed with other `Route`s from Akka and served with the usual
@@ -118,7 +130,8 @@ These methods are overloaded with various combinations of parameters related to 
 #### Auth Proxy Routes
 
 The `AuthProxyRoutes` class provides routes to proxy requests to an `Upstream`, optionally adding a custom header to any request
-that is authenticated.
+that is authenticated. **Requests are proxied regardless of whether authentication or authorization succeeded!** Upstream services
+should always verify the authentication header (e.g. via cryptographic signing) for routes that require authentication.
 
 `AuthProxyRoutes` have an additional dependency on a `HeaderAuthConfig` which describes how to authenticate requests, check permissions,
 and add a custom header if the request passes authentication and authorization. This `HeaderAuthConfig` is provided as an argument to the
@@ -239,7 +252,7 @@ An arbitrary number of filters may be composed.
 
 ## License
 
-Copyright 2018, PagerDuty, Inc.
+Copyright 2019, PagerDuty, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this work except in compliance with the License.
@@ -265,6 +278,5 @@ This library is maintained by the Core team at PagerDuty. Opening a GitHub issue
 
 ## TODO
 
-- Docs and examples
 - Metadata logging is inconsistently used because it's a PITA - would be nice to do something less ugly and not include `akka-http-support` in `arrivals-api`
 - De-couple authentication and authorization
