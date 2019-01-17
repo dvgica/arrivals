@@ -68,6 +68,10 @@ jobs:
           name: Publish Artifact
           command: .circleci/release.sh
 
+      - run:
+          name: Update GH site
+          command: sbt make-site ghpagesPushSite
+
 workflows:
   version: 2
   test_and_publish:
