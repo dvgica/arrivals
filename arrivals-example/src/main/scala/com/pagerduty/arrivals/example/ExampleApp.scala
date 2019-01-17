@@ -5,9 +5,9 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.StatusCodes
 import akka.stream.ActorMaterializer
 import akka.http.scaladsl.server.Directives._
-import com.pagerduty.arrivals.impl.ArrivalsContext
-import com.pagerduty.arrivals.impl.aggregator.AggregatorRoutes
-import com.pagerduty.arrivals.impl.authproxy.AuthProxyRoutes
+import com.pagerduty.arrivals.ArrivalsContext
+import com.pagerduty.arrivals.aggregator.AggregatorRoutes
+import com.pagerduty.arrivals.authproxy.AuthProxyRoutes
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -56,7 +56,7 @@ object ExampleApp extends App {
   val authProxyDirectives = new AuthProxyRoutes(authConfig)
   val aggregatorDirectives = new AggregatorRoutes(authConfig)
 
-  import com.pagerduty.arrivals.impl.proxy.ProxyRoutes._
+  import com.pagerduty.arrivals.proxy.ProxyRoutes._
   import authProxyDirectives._
   import aggregatorDirectives._
 

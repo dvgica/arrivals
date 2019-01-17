@@ -2,7 +2,7 @@ package com.pagerduty.arrivals.example
 
 import akka.NotUsed
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
-import com.pagerduty.arrivals.impl.aggregator.OneStepAggregator
+import com.pagerduty.arrivals.aggregator.OneStepAggregator
 
 object ExampleAggregator extends OneStepAggregator[UserId, String, AddressingConfig] {
   import ExampleUpstream._

@@ -2,7 +2,7 @@ package com.pagerduty.arrivals.example
 
 import akka.http.scaladsl.model._
 import com.pagerduty.arrivals.api.filter.SyncResponseFilter
-import com.pagerduty.arrivals.impl.filter.ComposableResponseFilter
+import com.pagerduty.arrivals.filter.ComposableResponseFilter
 
 object ExampleResponseFilterOne extends SyncResponseFilter[Any] with ComposableResponseFilter[Any] {
   def applySync(request: HttpRequest, response: HttpResponse, data: Any): HttpResponse = {
