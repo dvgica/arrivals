@@ -66,5 +66,19 @@ lazy val arrivalsExample =
       )
     )
 
+lazy val root =
+  (project in file("."))
+    .settings(sharedSettings: _*)
+    .settings(
+      siteSubdirName in ScalaUnidoc := "api",
+      addMappingsToSiteDir(mappings in (ScalaUnidoc, packageDoc), siteSubdirName in ScalaUnidoc)
+    )
+    .enablePlugins(ScalaUnidocPlugin)
+    .aggregate(arrivals, arrivalsApi)
+
 scalafmtOnCompile in ThisBuild := true
 skip in publish := true
+
+enablePlugins(GhpagesPlugin)
+
+git.remoteRepo := "git@github.com:PagerDuty/arrivals.git"

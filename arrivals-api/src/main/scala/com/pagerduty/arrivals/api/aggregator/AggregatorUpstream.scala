@@ -16,7 +16,7 @@ import com.pagerduty.arrivals.api.proxy.Upstream
   */
 trait AggregatorUpstream[AddressingConfig] extends Upstream[AddressingConfig] {
 
-  /** Override this method to modify a request for proxying to an [[AggregatorUpstream]].
+  /** Override this method to modify a request for proxying to an `AggregatorUpstream`.
     *
     * @param authConfig The authentication config
     * @param request The request that will be made to the [[AggregatorUpstream]]
