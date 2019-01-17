@@ -14,7 +14,7 @@ import com.pagerduty.arrivals.filter.FilterDirectives._
 import com.pagerduty.arrivals.proxy.ProxyRoutes.proxyRoute
 
 /** Routes completed by proxying the request to an `Upstream`. If the request is authenticated, the authentication
-  * header is added. **All requests are proxied regardless of authentication**.
+  * header is added. '''All requests are proxied regardless of authentication'''.
   *
   * There are essentially two variants to the methods here:
   * - `prefixAuthProxyRoute` proxies all requests that have a path starting with the given `path`
