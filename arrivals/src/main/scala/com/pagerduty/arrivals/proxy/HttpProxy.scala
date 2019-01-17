@@ -26,6 +26,22 @@ object HttpProxy {
   ).map(_.toLowerCase)
 }
 
+/** Proxies a request to an [[com.pagerduty.arrivals.api.proxy.Upstream]].
+  *
+  * This proxy handles both regular `HttpRequest`s and requests for a WebSocket.
+  * In the case of a regular `HttpRequest`, the `Upstream` response is totally consumed into memory before it is streamed
+  * to the client. This is to prevent leaking connection slots in the underlying Akka HTTP client if the client disconnects
+  * without consuming the Upstream response. This behaviour could maybe be improved if later versions of Akka HTTP automatically
+  * release slots holding unconsumed responses (needs more research).
+  *
+  * @param addressingConfig
+  * @param httpClient
+  * @param entityConsumptionTimeout
+  * @param ec
+  * @param materializer
+  * @param metrics
+  * @tparam AddressingConfig
+  */
 class HttpProxy[AddressingConfig](
     addressingConfig: AddressingConfig,
     httpClient: HttpClient,

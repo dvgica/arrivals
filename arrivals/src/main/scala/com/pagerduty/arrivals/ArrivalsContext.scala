@@ -22,6 +22,16 @@ object ArrivalsContext {
   }
 }
 
+/** A dependency implicitly required by all Arrivals routes.
+  *
+  * @param addressingConfig Configuration used to address a request for an [[com.pagerduty.arrivals.api.proxy.Upstream]]
+  * @param entityConsumptionTimeout Maximum time to wait while consuming an upstream response
+  * @param buildHttpClient A factory function for building the HTTP client used in the proxy. Useful for unit testing.
+  * @param actorSystem An Akka Actor system.
+  * @param materializer An Akka Streams Materializer
+  * @param metrics A metrics provider
+  * @tparam AddressingConfig
+  */
 case class ArrivalsContext[AddressingConfig](
     addressingConfig: AddressingConfig,
     entityConsumptionTimeout: FiniteDuration = 20.seconds,

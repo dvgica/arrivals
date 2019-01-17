@@ -7,6 +7,17 @@ import com.pagerduty.arrivals.api.filter.{NoOpRequestFilter, NoOpResponseFilter,
 import com.pagerduty.arrivals.api.proxy.Upstream
 import com.pagerduty.arrivals.filter.FilterDirectives._
 
+/** Routes completed by proxying the request to an `Upstream`.
+  *
+  * There are essentially two variants to the methods here:
+  * - `prefixProxyRoute` proxies all requests that have a path starting with the given `path`
+  * - `proxyRoute` proxies all requests
+  *
+  * If a `RequestFilter` is provided, it is run prior to proxying. Since there is no request data available, `Unit` is passed
+  * to the filter.
+  *
+  * If a `ResponseFilter` is provided, it is run on the proxied response.
+  */
 object ProxyRoutes {
 
   def prefixProxyRoute[AddressingConfig](

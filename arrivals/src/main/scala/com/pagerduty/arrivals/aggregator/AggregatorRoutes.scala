@@ -10,6 +10,21 @@ import com.pagerduty.arrivals.auth.AuthenticationDirectives._
 import com.pagerduty.arrivals.filter.FilterDirectives.{filterRequest, filterResponse}
 import com.pagerduty.arrivals.headerauth.AuthHeaderDirectives._
 
+/** Routes completed by an [[Aggregator]]. All requests must pass authentication, otherwise they are completed with
+  * 403 Forbidden.
+  *
+  * There are essentially two variants to the methods here:
+  * - `prefixAggregatorRoute` applies the [[Aggregator]] to all requests that have a path starting with the given path`
+  * - `aggregatorRoute` applies the [[Aggregator]] to all requests
+  *
+  * If a `RequestFilter` is provided, it is run after authentication. Thus, `RequestFilter`s provided to these routes
+  * must accept `headerAuthConfig.AuthData` as its `RequestData`.
+  *
+  * If a `ResponseFilter` is provided, it is run on the [[Aggregator]] response. It has a similar restriction on `RequestData`.
+  *
+  * @param headerAuthConfig
+  * @tparam AuthConfig
+  */
 class AggregatorRoutes[AuthConfig <: HeaderAuthConfig](val headerAuthConfig: AuthConfig) {
 
   def prefixAggregatorRoute[AddressingConfig](

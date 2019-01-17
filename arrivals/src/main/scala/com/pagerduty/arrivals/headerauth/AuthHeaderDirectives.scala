@@ -6,6 +6,12 @@ import com.pagerduty.arrivals.api.headerauth.HeaderAuthConfig
 import akka.http.scaladsl.server.Directives._
 import com.pagerduty.akka.http.support.RequestMetadata
 
+/** These directives add a header to authenticated requests.
+  *
+  * This directive is useful for proving to [[com.pagerduty.arrivals.api.proxy.Upstream]]s that authentication has successfully
+  * taken place. However, since an attacker may attempt to forge this header, it should likely be cryptographically signed
+  * and verified by the `Upstream`. That implementation is out of scope for this library.
+  */
 object AuthHeaderDirectives {
 
   def addAuthHeader(

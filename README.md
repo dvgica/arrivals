@@ -69,14 +69,21 @@ call to `Http().bindAndHandle`.
 
 #### Initialize `ArrivalsContext`
 
-All Arrivals routes have an `implicit` dependency on an `ArrivalsContext`:
+All Arrivals routes have an `implicit` dependency on an `ArrivalsContext`. 
 
 ``` scala
+implicit val system = ActorSystem()
+implicit val mat = ActorMaterializer()
+
 implicit val arrivalsCtx = ArrivalsContext("localhost") // "localhost" is the hostname for all upstreams in this example
 ```
 
-At minimum, you must provide an `AddressingConfig`, which is a piece of data used by the proxy to address requests to an
-`Upstream`. In the event that you do not require this data, you can pass `Unit`.
+You must provide an `AddressingConfig`, which is a piece of data used by the proxy to address requests to an
+`Upstream`. For example, it might be the hostname of a load balancer obtained dynamically at runtime from a container scheduler.
+In the event that you do not require this data, you can pass `Unit`.
+
+Because everything in Arrivals is Akka-based, you must implicitly provide the usual Akka `ActorSystem`
+and `Materializer`. A `Metrics` provider is optional and defaults to a no-op metrics implementation.
 
 #### Declare an `Upstream`
 

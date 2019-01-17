@@ -10,6 +10,10 @@ import com.pagerduty.metrics.Metrics
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
+/** These directives authenticate the credential included on a request, extracting the associated authentication data.
+  *
+  * They can be used independently of the top-level `Route`s defined by Arrivals if more control is desired.  *
+  */
 object AuthenticationDirectives extends MetadataLogging {
   case object AuthenticationFutureFailed extends AuthFailedReason { val metricTag = "authentication_future_exception" }
   case object UnexpectedFailureWhileAuthenticating extends AuthFailedReason {
@@ -17,6 +21,14 @@ object AuthenticationDirectives extends MetadataLogging {
   }
   case object InvalidCredentialReason extends AuthFailedReason { val metricTag = "invalid_credential" }
 
+  /** Require a request to have an authenticated credential, otherwise respond with 403 Forbidden.
+    *
+    * @param authConfig
+    * @param requiredPermission
+    * @param reqMeta
+    * @param metrics
+    * @return A `Directive` extracting `AuthData`
+    */
   def requireAuthentication(
       authConfig: AuthenticationConfig
     )(requiredPermission: Option[authConfig.Permission]
@@ -29,6 +41,17 @@ object AuthenticationDirectives extends MetadataLogging {
     }
   }
 
+  /** Authenticate a request's credential, but allow it to proceed regardless.
+    *
+    * Currently, if multiple credentials are present on the request, the request is not considered to be authenticated.
+    * Also, there is a mix of authentication and authorization here which isn't great.
+    *
+    * @param authConfig
+    * @param requiredPermission
+    * @param reqMeta
+    * @param metrics
+    * @return A `Directive` extracting `Option[AuthData]`
+    */
   def authenticate(
       authConfig: AuthenticationConfig
     )(requiredPermission: Option[authConfig.Permission]
