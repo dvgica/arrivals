@@ -16,6 +16,7 @@ As much as possible, Arrivals follows idioms found in Akka HTTP. This means that
   - [Introduction and Setup](#introduction-and-setup)
   - [Routes](#routes)
   - [Filters](#filters)
+- [API Docs](#api-docs)
 - [License](#license)
 - [Contributing](#contributing)
 - [Contact](#contact)
@@ -256,6 +257,10 @@ val newFilter: ComposableRequestFilter[String] = FilterOne ~> FilterTwo
 ```
 
 An arbitrary number of filters may be composed.
+
+## API Docs
+
+See [pagerduty.github.io/arrivals/api](https://pagerduty.github.io/arrivals/api).
 
 ## License
 
