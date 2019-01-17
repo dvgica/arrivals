@@ -7,6 +7,7 @@ import akka.stream.StreamTcpException
 import com.pagerduty.akka.http.support.{MetadataLogging, RequestMetadata}
 import com.pagerduty.metrics.Metrics
 
+/** Useful error handling for wrapping an API Gateway's routes. */
 trait ErrorHandling extends MetadataLogging {
 
   def metrics: Metrics

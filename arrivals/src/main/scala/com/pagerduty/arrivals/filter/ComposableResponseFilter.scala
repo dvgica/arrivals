@@ -6,6 +6,7 @@ import com.pagerduty.arrivals.api.filter.ResponseFilter
 
 import scala.concurrent.{ExecutionContext, Future}
 
+/** Allows for a `ResponseFilter` to be composed or chained with another via the `~>` operator. */
 trait ComposableResponseFilter[-RequestData] extends api.filter.ResponseFilter[RequestData] { base =>
 
   def ~>[T <: RequestData](filter: ResponseFilter[T])(implicit ec: ExecutionContext): ComposableResponseFilter[T] = {

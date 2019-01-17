@@ -13,6 +13,21 @@ import com.pagerduty.arrivals.headerauth.AuthHeaderDirectives._
 import com.pagerduty.arrivals.filter.FilterDirectives._
 import com.pagerduty.arrivals.proxy.ProxyRoutes.proxyRoute
 
+/** Routes completed by proxying the request to an `Upstream`. If the request is authenticated, the authentication
+  * header is added. **All requests are proxied regardless of authentication**.
+  *
+  * There are essentially two variants to the methods here:
+  * - `prefixAuthProxyRoute` proxies all requests that have a path starting with the given `path`
+  * - `authProxyRoute` proxies all requests
+  *
+  * If a `RequestFilter` is provided, it is run after authentication. Thus, `RequestFilter`s provided to these routes
+  * must accept `Option[headerAuthConfig.AuthData]` as its `RequestData`.
+  *
+  * If a `ResponseFilter` is provided, it is run on the proxied response. It has a similar restriction on `RequestData`.
+  *
+  * @param headerAuthConfig
+  * @tparam AuthConfig
+  */
 class AuthProxyRoutes[AuthConfig <: HeaderAuthConfig](val headerAuthConfig: AuthConfig) {
 
   def prefixAuthProxyRoute[AddressingConfig](

@@ -8,8 +8,15 @@ import akka.http.scaladsl.server.RouteResult.Complete
 
 import scala.concurrent.Future
 
+/** These directives filter a request or a response.
+  *
+  * They accept arbitrary `RequestData` extracted in previous directives (e.g. authentication data).
+  *
+  * They can be used independently of the top-level `Route`s defined by Arrivals if more control is desired.
+  */
 object FilterDirectives {
 
+  /** Apply a `RequestFilter`, completing if the filter returns a response. */
   def filterRequest[RequestData](requestFilter: RequestFilter[RequestData], requestData: RequestData): Directive0 = {
     extractRequestFilterResult(requestFilter, requestData).flatMap {
       case Right(filteredRequest) => mapRequest(_ => filteredRequest)
@@ -30,6 +37,7 @@ object FilterDirectives {
     }
   }
 
+  /** Apply a `ResponseFilter`. */
   def filterResponse[RequestData](responseFilter: ResponseFilter[RequestData], requestData: RequestData): Directive0 = {
     Directive { inner => ctx =>
       implicit val ec = ctx.executionContext
