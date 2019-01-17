@@ -21,7 +21,7 @@ import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
   */
 trait Aggregator[AuthData, RequestKey, AccumulatedState, AddressingConfig] {
 
-  /** A Map of requests to proxy to various [[AggregatorUpstream]]s */
+  /** A Map of requests to proxy to various `AggregatorUpstream`s */
   type RequestMap =
     Map[RequestKey, (AggregatorUpstream[AddressingConfig], HttpRequest)]
 

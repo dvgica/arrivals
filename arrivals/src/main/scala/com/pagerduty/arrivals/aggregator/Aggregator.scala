@@ -9,7 +9,7 @@ import com.pagerduty.arrivals.proxy.HttpProxyLike
 
 import scala.concurrent.{ExecutionContext, Future}
 
-/** This trait contains the implementation of RunnableAggregator.
+/** This trait contains the implementation of [[RunnableAggregator]].
   *
   * It runs all user-defined handlers and takes care of executing the returned requests. It also tracks accumulated state
   * between the steps.

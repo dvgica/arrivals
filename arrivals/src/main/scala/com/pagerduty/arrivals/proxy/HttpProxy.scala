@@ -26,7 +26,7 @@ object HttpProxy {
   ).map(_.toLowerCase)
 }
 
-/** Proxies a request to an [[com.pagerduty.arrivals.api.proxy.Upstream]].
+/** Proxies a request to an `Upstream`.
   *
   * This proxy handles both regular `HttpRequest`s and requests for a WebSocket.
   * In the case of a regular `HttpRequest`, the `Upstream` response is totally consumed into memory before it is streamed
