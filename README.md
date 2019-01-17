@@ -12,20 +12,20 @@ As much as possible, Arrivals follows idioms found in Akka HTTP. This means that
 
 ## Usage
 
-Arrivals functionality is provided via Akka HTTP `Route`s available in `AuthProxyRoutes`, `ProxyRoutes`, and `AggregatorRoutes`. Other lower-level `Directive`s are also available.
+### Example Application
 
-A basic example of using Arrivals is available in [arrivals-example](https://github.com/PagerDuty/arrivals/blob/master/arrivals-example/src/main/scala/com/pagerduty/arrivals/example/ExampleApp.scala). The example can be run by cloning this repository and running `sbt arrivalsExample/run`. Try the following URLs:
+For the impatient, an example API Gateway using Arrivals is available in [arrivals-example](https://github.com/PagerDuty/arrivals/blob/master/arrivals-example/src/main/scala/com/pagerduty/arrivals/example/ExampleApp.scala). The example can be run by cloning this repository and running `sbt arrivalsExample/run`. Try the following URLs:
 
 - http://localhost:8080/cats
 - http://localhost:8080/dogs
 - http://localhost:8080/dogs?username=rex
 - http://localhost:8080/all?username=rex
 
-More docs to come.
+For more details on what's happening, keep reading.
 
-## Artifacts
+### Installation
 
-All artifacts are published with the `com.pagerduty` `groupId` and are available at the PagerDuty Bintray OSS repository.
+All artifacts are available at the PagerDuty Bintray OSS repository.
 
 Add the PD Bintray to your resolvers with the following:
 
@@ -33,19 +33,209 @@ Add the PD Bintray to your resolvers with the following:
 resolvers += "bintray-pagerduty-oss-maven" at "https://dl.bintray.com/pagerduty/oss-maven"
 ```
 
-### arrivals
+#### arrivals
 
 This is the implementation artifact on which applications should depend.
 
-_Depends On_: `arrivals-api`, `akka-http`, and PD's [`metrics-api`](https://github.com/PagerDuty/scala-metrics)\
-_Artifact ID_: `arrivals`
+```
+"com.pagerduty" %% "arrivals" % arrivalsVersion
+```
 
-### arrivals-api
+#### arrivals-api
 
-Authors of custom implementations (e.g. `Filter`s, `Upstream`s, `Aggregator`s, and `RequestResponder`s) should depend on this artifact, which will hopefully change less frequently.
+Authors of custom implementations (e.g. `Filter`s, `Upstream`s, and `Aggregator`s) should depend on this artifact, which will hopefully change less frequently.
 
-_Depends On_: `akka-http`, and PD's [`scala-akka-support`](https://github.com/PagerDuty/scala-akka-support)\
-_Artifact ID_: `arrivals-api`
+```
+"com.pagerduty" %% "arrivals-api" % arrivalsVersion
+```
+
+### Setup
+
+Arrivals functionality is provided via Akka HTTP `Route`s available in various `object`s or `class`es. These `Route`s 
+function like any other Akka HTTP route, meaning they can be composed with other `Route`s from Akka and served with the usual
+call to `Http().bindAndHandle`.
+
+#### Initialize `ArrivalsContext`
+
+All Arrivals routes have an `implicit` dependency on an `ArrivalsContext`:
+
+``` scala
+implicit val arrivalsCtx = ArrivalsContext("localhost") // "localhost" is the hostname for all upstreams in this example
+```
+
+At minimum, you must provide an `AddressingConfig`, which is a piece of data used by the proxy to address requests to an
+`Upstream`. In the event that you do not require this data, you can pass `Unit`.
+
+#### Declare an `Upstream`
+
+Arrivals requests need somewhere to be proxied. This is called an `Upstream`. Here's an example of a simple upstream
+that lives on the host provided by `AddressingConfig` at a specific port (1234 in this case):
+
+``` scala
+case object FooService extends Upstream[String] {
+  val metricsTag = "foo"
+  def addressRequest(request: HttpRequest, addressingConfig: String): HttpRequest = {
+    val newUri =
+        request.uri
+          .withAuthority(Authority(Uri.Host(addressingConfig), 1234))
+          .withScheme("http")
+    request.withUri(newUri)
+  }
+}
+```
+
+#### Declare a `Route`
+
+Then, declare a `Route`. Here we use `prefixProxyRoute` (discussed further below):
+
+``` scala
+import com.pagerduty.arrivals.impl.proxy.ProxyRoutes._
+
+val route = prefixProxyRoute("foos", FooService)
+```
+
+#### Start the Akka HTTP Server
+
+Finally, start the Akka HTTP server as you normally would:
+
+``` scala
+val binding = Http().bindAndHandle(route, "0.0.0.0", 8080)
+```
+
+Your proxy server is now running. Keep reading to see what else Arrivals can do for you.
+
+### Routes
+
+#### Proxy Routes
+
+The `ProxyRoutes` object provides routes to proxy requests to an `Upstream`. No authentication is done. These routes are:
+
+ - `prefixProxyRoute` - proxy any request matching the given path prefix
+ - `proxyRoute` - proxy all requests (this is usually nested inside other Akka HTTP directives to narrow the scope, or used as a deliberate catch-all at the end of a series of routes)
+
+These methods are overloaded with various combinations of parameters related to [`Filter`](#filters)s.
+
+#### Auth Proxy Routes
+
+The `AuthProxyRoutes` class provides routes to proxy requests to an `Upstream`, optionally adding a custom header to any request
+that is authenticated.
+
+`AuthProxyRoutes` have an additional dependency on a `HeaderAuthConfig` which describes how to authenticate requests, check permissions,
+and add a custom header if the request passes authentication and authorization. This `HeaderAuthConfig` is provided as an argument to the
+`AuthProxyRoutes` constructor. After construction, the routes can be imported in the typical Akka HTTP style:
+
+``` scala
+val headerAuthConfig = new HeaderAuthConfig { /* ... */ }
+val authProxyRoutes = new AuthProxyRoutes(headerAuthConfig)
+
+import authProxyRoutes._
+
+val route = prefixAuthProxyRoute("bar", FooService)
+```
+
+Similar to `ProxyRoutes`, both `prefixAuthProxyRoute` and `authProxyRoute` methods are provided in various permutations to allow for [`Filter`](#filters)s.
+
+#### Aggregator Routes
+
+The `AggregatorRoutes` class provides routes fulfilled by `Aggregator`s. An `Aggregator` is an entity that, based on an incoming request,
+executes multiple waves of user-defined upstream requests, and then allows the user to build a single response from the upstream responses.
+
+`AggregatorRoutes`, like `AuthProxyRoutes`, has a dependency on `HeaderAuthConfig`:
+
+``` scala
+val headerAuthConfig = new HeaderAuthConfig { /* ... */ }
+val aggregatorRoutes = new AggregatorRoutes(headerAuthConfig)
+
+case object BazAggregator extends Aggregator { /* ... */ }
+
+import aggregatorRoutes._
+
+val route = prefixAggregatorRoute("baz", BazAggregator)
+```
+
+Similar to `ProxyRoutes` and `AuthProxyRoutes`, both `prefixAggregatorRoute` and `aggregatorRoute` methods are provided in various permutations to allow for [`Filter`](#filters)s.
+
+### Filters
+
+Filters allow for user-defined changes to requests before they are proxied, or responses before they are returned to the client.
+
+All filters are provided with `RequestData`, a user-defined type, but when used with the `Routes` defined
+by Arrivals this type is set to something specific:
+
+- `ProxyRoutes`: `Unit`
+- `AuthProxyRoutes`: `Option[AuthData]`
+- `AggregatorRoutes`: `AuthData`
+
+`AuthData` is a user-defined type in `AuthenticationConfig`. Users wishing to pass arbitrary data to a `Filter` should use the lower-level `FilterDirectives`.
+
+#### Request Filters
+
+Request filters can either transform a request into a new one, or short-circuit the rest of the filter/proxy/aggregation steps and
+immediately return a response.
+
+``` scala
+object RateLimitRequestFilter extends RequestFilter[Option[UserId]] {
+  def apply(request: HttpRequest, optUserId: Option[UserId]): Future[Either[HttpResponse, HttpRequest]] = {
+    optUserId match {
+      case Some(uId) =>
+        hasUserReachedRateLimit(uId).map { reachedLimit =>
+          if (reachedLimit) {
+            Left(HttpResponse(StatusCodes.EnhanceYourCalm))
+          } else {
+            Right(request.addHeader(RawHeader("X-Rate-Limit-Checked", "true")))      
+          }
+        }
+      case None => 
+        Future.successful(Left(HttpResponse(StatusCodes.Forbidden, "This rate-limited endpoint requires auth!")))
+    }
+  }
+  
+  private def hasUserReachedRateLimit(userId: UserId): Future[Boolean] = { /* ... */ }
+}
+```
+
+#### Response Filters
+
+Response filters simply transform the outgoing response. Unlike `RequestFilter`s, they are not able to complete the request or short-circuit following filters.
+
+Any `Filter` that doesn't use its `RequestData` should specify `Any` for the type parameter.
+
+``` scala
+object AddCacheControl extends ResponseFilter[Any] {
+  def apply(request: HttpRequest, response: HttpResponse, data: Any): Future[HttpResponse] = {
+    Future.successful(response.addHeader(Cache-Control(no-store))
+  }
+}
+```
+
+#### Specialized/Simplified Filters
+
+Sometimes, as above, a simpler filter signature will suffice. Various specializations of `RequestFilter` and `ResponseFilter`
+exist in `com.pagerduty.arrivals.api.filter`, for example:
+
+``` scala
+object AddCacheControl extends SyncResponseFilter[Any] {
+  def applySync(request: HttpRequest, response: HttpResponse, data: Any): HttpResponse = {
+    response.addHeader(Cache-Control(no-store)
+  }
+}
+```
+
+#### Filter Composition/Chaining
+
+Filters can be composed such that the output of one is fed to the input of the next. This is accomplished by mixing in the
+`ComposableRequestFilter` or `ComposableResponseFitler` traits.
+
+``` scala
+object FilterOne extends SyncRequestFilter[Any] with ComposableRequestFilter[Any] { /* ... */ }
+
+object FilterTwo extends RequestFilter[String] { /* ... */ }
+
+import ExecutionContext.Implicits.global // don't just copy-paste this ExecutionContext please!
+val newFilter: ComposableRequestFilter[String] = FilterOne ~> FilterTwo
+```
+
+An arbitrary number of filters may be composed.
 
 ## License
 
