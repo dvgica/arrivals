@@ -10,21 +10,17 @@ import scala.concurrent.Future
 import scala.util.{Success, Try}
 
 class ExampleAuthConfig extends HeaderAuthConfig {
-  type Cred = String
   type AuthData = UserId
   type Permission = Nothing
 
-  def extractCredentials(request: HttpRequest)(implicit reqMeta: RequestMetadata): List[Cred] = {
-    // obviously, this is a terrible, terrible idea that you should never do
-    request.uri.query().get("username").toList
-  }
+  def authenticate(request: HttpRequest)(implicit reqMeta: RequestMetadata): Future[Try[Option[AuthData]]] = {
+    // obviously, this method is a terrible, terrible idea that you should never do
+    val username = request.uri.query().get("username")
 
-  def authenticate(credential: Cred)(implicit reqMeta: RequestMetadata): Future[Try[Option[AuthData]]] = {
-    // for demo purposes.... don't do this
-    Future.successful(Success(credential match {
-      case "mittens" => Some(1)
-      case "rex"     => Some(2)
-      case _         => None
+    Future.successful(Success(username match {
+      case Some("mittens") => Some(1)
+      case Some("rex")     => Some(2)
+      case _               => None
     }))
   }
 

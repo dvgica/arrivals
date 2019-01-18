@@ -20,19 +20,16 @@ class AggregatorRoutesSpec extends FreeSpecLike with Matchers with MockFactory w
   val testAuthData = "auth-data"
 
   class TestAuthConfig extends HeaderAuthConfig {
-    type Cred = String
     type AuthData = String
     type Permission = String
 
-    def extractCredentials(request: HttpRequest)(implicit reqMeta: RequestMetadata): List[Cred] =
+    def authenticate(request: HttpRequest)(implicit reqMeta: RequestMetadata): Future[Try[Option[AuthData]]] = {
       if (request.uri.toString.contains("failed-auth")) {
-        List()
+        Future.successful(Success(None))
       } else {
-        List("credential")
+        Future.successful(Success(Some(testAuthData)))
       }
-
-    def authenticate(credential: Cred)(implicit reqMeta: RequestMetadata): Future[Try[Option[AuthData]]] =
-      Future.successful(Success(Some(testAuthData)))
+    }
 
     def authDataGrantsPermission(
         authData: AuthData,

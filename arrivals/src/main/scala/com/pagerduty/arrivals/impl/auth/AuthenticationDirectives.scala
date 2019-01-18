@@ -46,43 +46,19 @@ object AuthenticationDirectives extends MetadataLogging {
     ): Directive1[Try[Option[authConfig.AuthData]]] =
     Directive { inner => ctx =>
       implicit val ec = ctx.executionContext
-      authenticateRequest(authConfig)(requiredPermission, ctx.request).transformWith(t => inner(Tuple1(t))(ctx))
+      attemptAuthentication(authConfig)(ctx.request, requiredPermission).transformWith(t => inner(Tuple1(t))(ctx))
     }
-
-  private def authenticateRequest(
-      authConfig: AuthenticationConfig
-    )(requiredPermission: Option[authConfig.Permission],
-      request: HttpRequest
-    )(implicit reqMeta: RequestMetadata,
-      metrics: Metrics,
-      executionContext: ExecutionContext
-    ): Future[Option[authConfig.AuthData]] = {
-    val extractedCredentials = authConfig.extractCredentials(request)
-
-    extractedCredentials match {
-      case cred :: Nil =>
-        // one credential was provided
-        attemptAuthentication(authConfig)(cred, request, requiredPermission)
-      case _ :: _ =>
-        // multiple creds were provided, we won't attempt authentication
-        Future.successful(None)
-      case _ =>
-        // no credentials were provided
-        Future.successful(None)
-    }
-  }
 
   private def attemptAuthentication(
       authConfig: AuthenticationConfig
-    )(cred: authConfig.Cred,
-      request: HttpRequest,
+    )(request: HttpRequest,
       requiredPermission: Option[authConfig.Permission]
     )(implicit reqMeta: RequestMetadata,
       metrics: Metrics,
       executionContext: ExecutionContext
     ): Future[Option[authConfig.AuthData]] = {
     authConfig
-      .authenticate(cred)
+      .authenticate(request)
       .map {
         case Success(Some(data)) =>
           authConfig.authDataGrantsPermission(data, request, requiredPermission) match {
