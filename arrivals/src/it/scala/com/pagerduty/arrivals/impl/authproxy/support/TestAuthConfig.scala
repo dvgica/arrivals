@@ -27,21 +27,19 @@ case object SchedulesPermission extends StringPermission {
 class TestAuthConfig extends HeaderAuthConfig {
   import TestAuthConfig._
 
-  type Cred = OAuth2BearerToken
   type AuthData = String
   type Permission = StringPermission
 
-  def extractCredentials(request: HttpRequest)(implicit reqMeta: RequestMetadata): List[Cred] = {
-    request.headers.flatMap {
-      case Authorization(token: OAuth2BearerToken) => List(token)
-      case _                                       => List()
-    }.toList
-  }
+  def authenticate(request: HttpRequest)(implicit reqMeta: RequestMetadata): Future[Try[Option[AuthData]]] = {
+    val token = request.header[Authorization].flatMap {
+      case Authorization(OAuth2BearerToken(t)) => Some(t)
+      case _                                   => None
+    }
 
-  def authenticate(credential: Cred)(implicit reqMeta: RequestMetadata): Future[Try[Option[AuthData]]] = {
-    credential.token match {
-      case "GOODTOKEN" => Future.successful(Success(Some(authData)))
-      case "BADTOKEN"  => Future.successful(Success(None))
+    token match {
+      case Some("GOODTOKEN") => Future.successful(Success(Some(authData)))
+      case Some("BADTOKEN")  => Future.successful(Success(None))
+      case _                 => Future.successful(Success(None))
     }
   }
 

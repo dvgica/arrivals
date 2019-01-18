@@ -24,13 +24,10 @@ class AuthProxyRoutesSpec extends FreeSpecLike with Matchers with ScalatestRoute
   val testAuthData = "auth-data"
 
   class TestAuthConfig extends HeaderAuthConfig {
-    type Cred = String
     type AuthData = String
     type Permission = String
 
-    def extractCredentials(request: HttpRequest)(implicit reqMeta: RequestMetadata): List[Cred] = List("credential")
-
-    def authenticate(credential: Cred)(implicit reqMeta: RequestMetadata): Future[Try[Option[AuthData]]] =
+    def authenticate(request: HttpRequest)(implicit reqMeta: RequestMetadata): Future[Try[Option[AuthData]]] =
       Future.successful(Success(Some(testAuthData)))
 
     def authDataGrantsPermission(

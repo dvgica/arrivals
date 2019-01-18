@@ -14,13 +14,10 @@ import scala.util.Try
 
 class AuthHeaderDirectivesSpec extends FreeSpec with Matchers with ScalatestRouteTest {
   class TestAuthConfig extends HeaderAuthConfig {
-    type Cred = String
     type AuthData = String
     type Permission = String
 
-    def extractCredentials(request: HttpRequest)(implicit reqMeta: RequestMetadata): List[Cred] = ???
-
-    def authenticate(credential: Cred)(implicit reqMeta: RequestMetadata): Future[Try[Option[AuthData]]] =
+    def authenticate(request: HttpRequest)(implicit reqMeta: RequestMetadata): Future[Try[Option[AuthData]]] =
       ???
 
     def authDataGrantsPermission(

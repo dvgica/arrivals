@@ -23,27 +23,26 @@ class AuthenticationDirectivesSpec extends FreeSpec with Matchers with Scalatest
   val badPermsAuthData = TestAuthData(2)
 
   class TestAuthConfig extends AuthenticationConfig {
-    type Cred = OAuth2BearerToken
     type AuthData = TestAuthData
     type Permission = String
 
-    def extractCredentials(request: HttpRequest)(implicit reqMeta: RequestMetadata): List[Cred] = {
-      request.headers.flatMap {
-        case Authorization(token: OAuth2BearerToken) => List(token)
-        case _                                       => List()
-      }.toList
-    }
+    def authenticate(request: HttpRequest)(implicit reqMeta: RequestMetadata): Future[Try[Option[AuthData]]] = {
+      val token = request.header[Authorization].flatMap {
+        case Authorization(OAuth2BearerToken(t)) => Some(t)
+        case _                                   => None
+      }
 
-    def authenticate(credential: Cred)(implicit reqMeta: RequestMetadata): Future[Try[Option[AuthData]]] = {
-      credential.token match {
-        case "GOODTOKEN" => Future.successful(Success(Some(authData)))
-        case "BADPERMISSIONS" =>
+      token match {
+        case Some("GOODTOKEN") => Future.successful(Success(Some(authData)))
+        case Some("BADPERMISSIONS") =>
           Future.successful(Success(Some(badPermsAuthData)))
-        case "BADTOKEN" => Future.successful(Success(None))
-        case "TRYFAILURE" =>
+        case Some("BADTOKEN") => Future.successful(Success(None))
+        case Some("TRYFAILURE") =>
           Future.successful(Failure(new Exception("simulated exception")))
-        case "FUTUREFAILURE" =>
+        case Some("FUTUREFAILURE") =>
           Future.failed(new Exception("simulated exception"))
+        case _ =>
+          Future.successful(Success(None))
       }
     }
 
