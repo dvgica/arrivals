@@ -68,7 +68,8 @@ Arrivals functionality is provided via Akka HTTP `Route`s available in various `
 function like any other Akka HTTP route, meaning they can be composed with other `Route`s from Akka and served with the usual
 call to `Http().bindAndHandle`.
 
-Read more about the [Akka Routing DSL](https://doc.akka.io/docs/akka-http/current/routing-dsl/index.html)
+Read more about the Akka Routing DSL [here](https://doc.akka.io/docs/akka-http/current/routing-dsl/index.html).
+
 #### Initialize `ArrivalsContext`
 
 All Arrivals routes have an `implicit` dependency on an `ArrivalsContext`. 
