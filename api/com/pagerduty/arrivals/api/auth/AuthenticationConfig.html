@@ -262,24 +262,8 @@ to the library user which can be combined with other Akka HTTP-based code.</p><p
         <span class="name">AuthData</span>
       </span>
       
-      <p class="shortcomment cmt">The type of authentication data expected to be returned upon the successful authentication of a <a href="#Cred" class="extmbr" name="com.pagerduty.arrivals.api.auth.AuthenticationConfig.Cred">Cred</a>.</p><div class="fullcomment"><div class="comment cmt"><p>The type of authentication data expected to be returned upon the successful authentication of a <a href="#Cred" class="extmbr" name="com.pagerduty.arrivals.api.auth.AuthenticationConfig.Cred">Cred</a>.</p><p>This type typically holds additional information about an authenticated user, such as user ID, account ID, etc.
+      <p class="shortcomment cmt">The type of authentication data expected to be returned upon the successful authentication of a request.</p><div class="fullcomment"><div class="comment cmt"><p>The type of authentication data expected to be returned upon the successful authentication of a request.</p><p>This type typically holds additional information about an authenticated user, such as user ID, account ID, etc.
 </p></div></div>
-    </li><li name="com.pagerduty.arrivals.api.auth.AuthenticationConfig.Cred" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="Cred"></a><a id="Cred:Cred"></a>
-      <span class="permalink">
-      <a href="../../../../../com/pagerduty/arrivals/api/auth/AuthenticationConfig.html#Cred" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier">abstract </span>
-        <span class="kind">type</span>
-      </span>
-      <span class="symbol">
-        <span class="name">Cred</span>
-      </span>
-      
-      <p class="shortcomment cmt">The type of credential expected to be present in incoming requests.</p>
     </li><li name="com.pagerduty.arrivals.api.auth.AuthenticationConfig.Permission" visbl="pub" class="indented0 " data-isabs="true" fullComment="yes" group="Ungrouped">
       <a id="Permission"></a><a id="Permission:Permission"></a>
       <span class="permalink">
@@ -320,9 +304,9 @@ to the library user which can be combined with other Akka HTTP-based code.</p><p
       <p class="shortcomment cmt">Defines if an authenticated user has the required permission to access a route.</p><div class="fullcomment"><div class="comment cmt"><p>Defines if an authenticated user has the required permission to access a route.</p><p>Again, this API is likely to change.
 </p></div><dl class="paramcmts block"><dt class="param">authData</dt><dd class="cmt"><p>Data associated with the authenticated user</p></dd><dt class="param">request</dt><dd class="cmt"><p>The incoming request</p></dd><dt class="param">permission</dt><dd class="cmt"><p>The required permission</p></dd><dt class="param">reqMeta</dt><dd class="cmt"><p>Request metadata, including request ID</p></dd><dt>returns</dt><dd class="cmt"><p><code>Some</code> reason the permission check failed, or <code>None</code> if it succeeded</p></dd></dl></div>
     </li><li name="com.pagerduty.arrivals.api.auth.AuthenticationConfig#authenticate" visbl="pub" class="indented0 " data-isabs="true" fullComment="yes" group="Ungrouped">
-      <a id="authenticate(credential:AuthenticationConfig.this.Cred)(implicitreqMeta:com.pagerduty.akka.http.support.RequestMetadata):scala.concurrent.Future[scala.util.Try[Option[AuthenticationConfig.this.AuthData]]]"></a><a id="authenticate(Cred)(RequestMetadata):Future[Try[Option[AuthData]]]"></a>
+      <a id="authenticate(request:akka.http.scaladsl.model.HttpRequest)(implicitreqMeta:com.pagerduty.akka.http.support.RequestMetadata):scala.concurrent.Future[scala.util.Try[Option[AuthenticationConfig.this.AuthData]]]"></a><a id="authenticate(HttpRequest)(RequestMetadata):Future[Try[Option[AuthData]]]"></a>
       <span class="permalink">
-      <a href="../../../../../com/pagerduty/arrivals/api/auth/AuthenticationConfig.html#authenticate(credential:AuthenticationConfig.this.Cred)(implicitreqMeta:com.pagerduty.akka.http.support.RequestMetadata):scala.concurrent.Future[scala.util.Try[Option[AuthenticationConfig.this.AuthData]]]" title="Permalink">
+      <a href="../../../../../com/pagerduty/arrivals/api/auth/AuthenticationConfig.html#authenticate(request:akka.http.scaladsl.model.HttpRequest)(implicitreqMeta:com.pagerduty.akka.http.support.RequestMetadata):scala.concurrent.Future[scala.util.Try[Option[AuthenticationConfig.this.AuthData]]]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -331,29 +315,11 @@ to the library user which can be combined with other Akka HTTP-based code.</p><p
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">authenticate</span><span class="params">(<span name="credential">credential: <a href="#Cred" class="extmbr" name="com.pagerduty.arrivals.api.auth.AuthenticationConfig.Cred">Cred</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="reqMeta">reqMeta: <span class="extype" name="com.pagerduty.akka.http.support.RequestMetadata">RequestMetadata</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.util.Try">Try</span>[<span class="extype" name="scala.Option">Option</span>[<a href="#AuthData" class="extmbr" name="com.pagerduty.arrivals.api.auth.AuthenticationConfig.AuthData">AuthData</a>]]]</span>
+        <span class="name">authenticate</span><span class="params">(<span name="request">request: <span class="extype" name="akka.http.scaladsl.model.HttpRequest">HttpRequest</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="reqMeta">reqMeta: <span class="extype" name="com.pagerduty.akka.http.support.RequestMetadata">RequestMetadata</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.util.Try">Try</span>[<span class="extype" name="scala.Option">Option</span>[<a href="#AuthData" class="extmbr" name="com.pagerduty.arrivals.api.auth.AuthenticationConfig.AuthData">AuthData</a>]]]</span>
       </span>
       
-      <p class="shortcomment cmt">Defines how a given <a href="#Cred" class="extmbr" name="com.pagerduty.arrivals.api.auth.AuthenticationConfig.Cred">Cred</a> is authenticated.</p><div class="fullcomment"><div class="comment cmt"><p>Defines how a given <a href="#Cred" class="extmbr" name="com.pagerduty.arrivals.api.auth.AuthenticationConfig.Cred">Cred</a> is authenticated.
-</p></div><dl class="paramcmts block"><dt class="param">credential</dt><dd class="cmt"><p>A credential to authenticate</p></dd><dt class="param">reqMeta</dt><dd class="cmt"><p>Request metadata, including request ID</p></dd><dt>returns</dt><dd class="cmt"><p>Data about the authenticated user on success, None otherwise.</p></dd></dl></div>
-    </li><li name="com.pagerduty.arrivals.api.auth.AuthenticationConfig#extractCredentials" visbl="pub" class="indented0 " data-isabs="true" fullComment="yes" group="Ungrouped">
-      <a id="extractCredentials(request:akka.http.scaladsl.model.HttpRequest)(implicitreqMeta:com.pagerduty.akka.http.support.RequestMetadata):List[AuthenticationConfig.this.Cred]"></a><a id="extractCredentials(HttpRequest)(RequestMetadata):List[Cred]"></a>
-      <span class="permalink">
-      <a href="../../../../../com/pagerduty/arrivals/api/auth/AuthenticationConfig.html#extractCredentials(request:akka.http.scaladsl.model.HttpRequest)(implicitreqMeta:com.pagerduty.akka.http.support.RequestMetadata):List[AuthenticationConfig.this.Cred]" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier">abstract </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">extractCredentials</span><span class="params">(<span name="request">request: <span class="extype" name="akka.http.scaladsl.model.HttpRequest">HttpRequest</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="reqMeta">reqMeta: <span class="extype" name="com.pagerduty.akka.http.support.RequestMetadata">RequestMetadata</span></span>)</span><span class="result">: <span class="extype" name="scala.List">List</span>[<a href="#Cred" class="extmbr" name="com.pagerduty.arrivals.api.auth.AuthenticationConfig.Cred">Cred</a>]</span>
-      </span>
-      
-      <p class="shortcomment cmt">Defines how a <a href="#Cred" class="extmbr" name="com.pagerduty.arrivals.api.auth.AuthenticationConfig.Cred">Cred</a> is extracted from an incoming <code>HttpRequest</code>.</p><div class="fullcomment"><div class="comment cmt"><p>Defines how a <a href="#Cred" class="extmbr" name="com.pagerduty.arrivals.api.auth.AuthenticationConfig.Cred">Cred</a> is extracted from an incoming <code>HttpRequest</code>.</p><p>This method may return multiple <a href="#Cred" class="extmbr" name="com.pagerduty.arrivals.api.auth.AuthenticationConfig.Cred">Cred</a>s for a request. The current hard-coded behavior is consider this request
-unauthenticated, although this is likely to change to become more flexible.
-</p></div><dl class="paramcmts block"><dt class="param">request</dt><dd class="cmt"><p>The request from which to extract credentials</p></dd><dt class="param">reqMeta</dt><dd class="cmt"><p>Request metadata, including request ID</p></dd><dt>returns</dt><dd class="cmt"><p>The extracted credentials</p></dd></dl></div>
+      <p class="shortcomment cmt">Defines how a given request is authenticated.</p><div class="fullcomment"><div class="comment cmt"><p>Defines how a given request is authenticated.
+</p></div><dl class="paramcmts block"><dt class="param">request</dt><dd class="cmt"><p>A request to authenticate</p></dd><dt class="param">reqMeta</dt><dd class="cmt"><p>Request metadata, including request ID</p></dd><dt>returns</dt><dd class="cmt"><p>Data about the authenticated user on success, None otherwise.</p></dd></dl></div>
     </li></ol>
             </div>
 

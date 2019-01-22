@@ -171,7 +171,7 @@ to the library user which can be combined with other Akka HTTP-based code.</p><p
 
       
           <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Routes completed by proxying the request to an <code>Upstream</code>. If the request is authenticated, the authentication
-header is added. **All requests are proxied regardless of authentication**.</p><p>There are essentially two variants to the methods here:
+header is added. <b>All requests are proxied regardless of authentication</b>.</p><p>There are essentially two variants to the methods here:
 - <code>prefixAuthProxyRoute</code> proxies all requests that have a path starting with the given <code>path</code>
 - <code>authProxyRoute</code> proxies all requests</p><p>If a <code>RequestFilter</code> is provided, it is run after authentication. Thus, <code>RequestFilter</code>s provided to these routes
 must accept <code>Option[headerAuthConfig.AuthData]</code> as its <code>RequestData</code>.</p><p>If a <code>ResponseFilter</code> is provided, it is run on the proxied response. It has a similar restriction on <code>RequestData</code>.
