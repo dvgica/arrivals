@@ -70,6 +70,9 @@ lazy val root =
   (project in file("."))
     .settings(sharedSettings: _*)
     .settings(
+      mappings in makeSite ++= Seq(
+        file("src/site/.circleci/config.yml") -> ".circleci/config.yml"
+      ),
       siteSubdirName in ScalaUnidoc := "api",
       addMappingsToSiteDir(mappings in (ScalaUnidoc, packageDoc), siteSubdirName in ScalaUnidoc)
     )
