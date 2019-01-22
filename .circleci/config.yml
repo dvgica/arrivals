@@ -78,9 +78,6 @@ workflows:
     jobs:
       - test:
           context: PagerDuty
-          branches:
-            ignore:
-              - gh-pages
       - publish:
           requires:
             - test
