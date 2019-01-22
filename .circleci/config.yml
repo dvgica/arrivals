@@ -80,8 +80,7 @@ workflows:
           context: PagerDuty
           filters:
             branches:
-              ignore: 
-                - "gh-pages"
+              ignore: /gh-pages.*/
       - publish:
           requires:
             - test
