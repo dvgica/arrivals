@@ -82,6 +82,8 @@ implicit val arrivalsCtx = ArrivalsContext("localhost") // "localhost" is the ho
 
 You must provide an `AddressingConfig`, which is a piece of data used by the proxy to address requests to an
 `Upstream`. For example, it might be the hostname of a load balancer obtained dynamically at runtime from a container scheduler.
+
+In the example above, the `AddressingConfig` is just the string `"localhost"`
 In the event that you do not require this data, you can pass `Unit`.
 
 Because everything in Arrivals is Akka-based, you must implicitly provide the usual Akka `ActorSystem`
