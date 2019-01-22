@@ -265,7 +265,7 @@ An arbitrary number of filters may be composed.
 
 ## API Docs
 
-See [pagerduty.github.io/arrivals/api](https://pagerduty.github.io/arrivals/api).
+See [pagerduty.github.io/arrivals/api](https://pagerduty.github.io/arrivals/).
 
 ## License
 
