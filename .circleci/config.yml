@@ -81,7 +81,7 @@ workflows:
           filters:
             branches:
               ignore: 
-                - gh-pages
+                - "gh-pages"
       - publish:
           requires:
             - test
