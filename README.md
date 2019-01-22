@@ -179,7 +179,7 @@ val route = prefixAggregatorRoute("baz", BazAggregator)
 
 Similar to `ProxyRoutes` and `AuthProxyRoutes`, both `prefixAggregatorRoute` and `aggregatorRoute` methods are provided in various permutations to allow for [`Filter`](#filters)s.
 
-For more details on how to construct an `Aggregator`, please see the [API docs](https://pagerduty.github.io/arrivals/api/com/pagerduty/arrivals/api/aggregator/Aggregator.html).
+For more details on how to construct an `Aggregator`, please see the [API docs](https://pagerduty.github.io/arrivals/api/com/pagerduty/arrivals/api/aggregator/Aggregator.html) or see the [example app aggregator](https://github.com/PagerDuty/arrivals/blob/master/arrivals-example/src/main/scala/com/pagerduty/arrivals/example/ExampleAggregator.scala).
 
 ### Filters
 
