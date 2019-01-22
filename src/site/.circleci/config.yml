@@ -1,0 +1,22 @@
+version: 2
+jobs:
+  dummy:
+    docker:
+      - image: circleci/openjdk:8-jdk
+
+    working_directory: ~/repo
+
+    steps:
+      - run:
+          name: Dummy
+          command: echo "done"
+          
+workflows:
+  version: 2
+  dummy:
+    jobs:
+      - dummy:
+          filters:
+            branches:
+              ignore:
+                - "gh-pages"
