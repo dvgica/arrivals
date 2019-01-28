@@ -51,7 +51,7 @@ lazy val arrivals =
         "ch.qos.logback" % "logback-classic" % logbackVersion % "test,it",
         "org.scalaj" %% "scalaj-http" % "2.3.0" % "it",
         "com.github.tomakehurst" % "wiremock" % "2.8.0" % "it",
-        "com.typesafe.akka" %% "akka-slf4j" % "2.4.20" % "it"
+        "com.typesafe.akka" %% "akka-slf4j" % akkaVersion % "it"
       )
     )
 
