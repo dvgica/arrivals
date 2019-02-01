@@ -41,10 +41,9 @@ object AuthenticationDirectives extends MetadataLogging {
     }
   }
 
-  /** Authenticate a request's credential, but allow it to proceed regardless.
+  /** Authenticate a request's credential, but allow it to proceed regardless of the result.
     *
-    * Currently, if multiple credentials are present on the request, the request is not considered to be authenticated.
-    * Also, there is a mix of authentication and authorization here which isn't great.
+    * Currently, there is a mix of authentication and authorization here which isn't great.
     *
     * @param authConfig
     * @param requiredPermission
