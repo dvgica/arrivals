@@ -50,7 +50,7 @@ lazy val arrivals =
         "org.scalatest" %% "scalatest" % scalaTestVersion % "test,it",
         "ch.qos.logback" % "logback-classic" % logbackVersion % "test,it",
         "org.scalaj" %% "scalaj-http" % "2.3.0" % "it",
-        "com.github.tomakehurst" % "wiremock" % "2.8.0" % "it",
+        "com.github.tomakehurst" % "wiremock" % "2.22.0" % "it",
         "com.typesafe.akka" %% "akka-slf4j" % akkaVersion % "it"
       )
     )
