@@ -69,7 +69,7 @@ class AuthProxyRoutesSpec extends FreeSpecLike with Matchers with ScalatestRoute
               request: WebSocketRequest,
               clientFlow: Flow[Message, Message, T]
             ): (Future[WebSocketUpgradeResponse], T) = ???
-      }
+        }
     )
     val c = new AuthProxyRoutes[TestAuthConfig](testAuthConfig)
     val upstream = new Upstream[Unit] {

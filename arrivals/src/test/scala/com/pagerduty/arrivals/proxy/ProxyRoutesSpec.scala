@@ -27,7 +27,7 @@ class ProxyRoutesSpec extends FreeSpecLike with Matchers with ScalatestRouteTest
               request: WebSocketRequest,
               clientFlow: Flow[Message, Message, T]
             ): (Future[WebSocketUpgradeResponse], T) = ???
-      }
+        }
     )
 
     val upstream = new Upstream[Unit] {
