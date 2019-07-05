@@ -14,3 +14,5 @@ target
 .ensime
 .DS_Store
 .bundle
+.metals/
+.bloop
