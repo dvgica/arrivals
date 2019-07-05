@@ -45,7 +45,7 @@ commands:
           key: v3-dependencies-{{ checksum "build.sbt" }}-{{ checksum "project/plugins.sbt" }}-{{ checksum ".circleci/config.yml" }}
       - run:
           name: Run unit and integration tests
-          command: sbt ++$SCALA_VERSION test
+          command: sbt ++$SCALA_VERSION test it:test
 
   publish:
     description: "publish"
