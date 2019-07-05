@@ -1,33 +1,39 @@
-version: 2
-jobs:
-  test:
+version: 2.1
+
+executors:
+  scala_212: &scala_212
     docker:
       - image: circleci/openjdk:8-jdk
-
     working_directory: ~/repo
-
     environment:
       JVM_OPTS: -Xmx3200m
       TERM: dumb
+      SCALA_VERSION: 2.12.8
 
+  scala_213: &scala_213
+    docker:
+      - image: circleci/openjdk:8-jdk
+    working_directory: ~/repo
+    environment:
+      JVM_OPTS: -Xmx3200m
+      TERM: dumb
+      SCALA_VERSION: 2.13.0
+
+commands:
+  build_and_test:
+    description: "build and test"
     steps:
       - checkout
-
-      # Download and cache dependencies
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "build.sbt" }}-{{ checksum "project/plugins.sbt" }}-{{ checksum ".circleci/config.yml" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
-
+          - v3-dependencies-{{ checksum "build.sbt" }}-{{ checksum "project/plugins.sbt" }}-{{ checksum ".circleci/config.yml" }}
+          - v3-dependencies-
       - run:
           name: Check formatting with Scalafmt
-          command: cat /dev/null | sbt scalafmt::test test:scalafmt::test it:scalafmt::test
-
+          command: cat /dev/null | sbt scalafmtCheckAll
       - run:
           name: Compile
-          command: cat /dev/null | sbt test:compile
-
+          command: sbt ++$SCALA_VERSION compile
       - save_cache:
           paths:
             - ~/.m2
@@ -36,53 +42,56 @@ jobs:
             - target/streams
             - project/target/resolution-cache
             - project/target/streams
-          key: v1-dependencies-{{ checksum "build.sbt" }}-{{ checksum "project/plugins.sbt" }}-{{ checksum ".circleci/config.yml" }}
-
+          key: v3-dependencies-{{ checksum "build.sbt" }}-{{ checksum "project/plugins.sbt" }}-{{ checksum ".circleci/config.yml" }}
       - run:
           name: Run unit and integration tests
-          command: cat /dev/null | sbt test it:test
+          command: sbt ++$SCALA_VERSION test
+
+  publish:
+    description: "publish"
+    steps:
+      - checkout
+      - run: ssh-add -D && echo "${GITHUB_SSH_KEY}" | base64 --decode | ssh-add -
+      - restore_cache:
+          keys:
+          - v3-dependencies-{{ checksum "build.sbt" }}-{{ checksum "project/plugins.sbt" }}-{{ checksum ".circleci/config.yml" }}
+          - v3-dependencies-
+      - run:
+          name: Publish
+          command: .circleci/release.sh
+
+
+jobs:
+  build_212:
+    executor: scala_212
+    steps:
+      - build_and_test
+
+  build_213:
+    executor: scala_213
+    steps:
+      - build_and_test
 
   publish:
     docker:
       - image: circleci/openjdk:8-jdk
-
     working_directory: ~/repo
-
-    environment:
-      JVM_OPTS: -Xmx3200m
-      TERM: dumb
-
     steps:
-      - checkout
-
-      - run: ssh-add -D && echo "${GITHUB_SSH_KEY}" | base64 --decode | ssh-add -
-
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "build.sbt" }}-{{ checksum "project/plugins.sbt" }}-{{ checksum ".circleci/config.yml" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
-
-      - run:
-          name: Publish Artifact
-          command: .circleci/release.sh
-
-      - run:
-          name: Update GH site
-          command: sbt make-site ghpagesPushSite
+      - publish
 
 workflows:
-  version: 2
+  version: 2.1
   test_and_publish:
     jobs:
-      - test:
+      - build_212:
+          context: PagerDuty
+      - build_213:
           context: PagerDuty
       - publish:
           requires:
-            - test
+            - build_212
+            - build_213
           context: PagerDuty
           filters:
             branches:
               only: master
-

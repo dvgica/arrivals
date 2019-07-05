@@ -25,7 +25,7 @@ GIT_TAG=v$RELEASE_VER
 
 echo "Conditionally publishing release and cutting git tag..."
 if ! git ls-remote --exit-code origin refs/tags/$GIT_TAG; then
-  sbt publish &&
+  sbt +publish &&
   git tag -a $GIT_TAG -m "Release version $RELEASE_VER" &&
   git push origin $GIT_TAG
 fi
