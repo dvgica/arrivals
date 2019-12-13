@@ -7,8 +7,8 @@ This open-source project provides building blocks for constructing an API Gatewa
  - Adding a header to prove authentication to upstream services
  - Filtering and transforming requests and responses
  - Turning a single request into multiple upstream requests, and aggregating the responses into a single response
-  
-As much as possible, Arrivals follows idioms found in Akka HTTP. This means that it exposes `Route`s and `Directive`s to the library user which can be combined with other Akka HTTP-based code.  
+
+As much as possible, Arrivals follows idioms found in Akka HTTP. This means that it exposes `Route`s and `Directive`s to the library user which can be combined with other Akka HTTP-based code.
 
 - [Example Application](#example-application)
 - [Usage](#usage)
@@ -45,6 +45,10 @@ Add the PD Bintray to your resolvers with the following:
 resolvers += "bintray-pagerduty-oss-maven" at "https://dl.bintray.com/pagerduty/oss-maven"
 ```
 
+### Configuration
+
+Config is done via standard Akka HTTP config. An [example `application.conf`](https://github.com/PagerDuty/arrivals/blob/master/arrivals-example/src/main/resources/application.conf) can be found in the example app, with some explanation of what config values are important for an API Gateway.
+
 #### arrivals
 
 This is the implementation artifact on which applications should depend.
@@ -64,7 +68,7 @@ Authors of custom implementations (e.g. `Filter`s, `Upstream`s, and `Aggregator`
 
 ### Introduction and Setup
 
-Arrivals functionality is provided via Akka HTTP `Route`s available in various `object`s or `class`es. These `Route`s 
+Arrivals functionality is provided via Akka HTTP `Route`s available in various `object`s or `class`es. These `Route`s
 function like any other Akka HTTP route, meaning they can be composed with other `Route`s from Akka and served with the usual
 call to `Http().bindAndHandle`.
 
@@ -72,7 +76,7 @@ Read more about the Akka Routing DSL [here](https://doc.akka.io/docs/akka-http/c
 
 #### Initialize `ArrivalsContext`
 
-All Arrivals routes have an `implicit` dependency on an `ArrivalsContext`. 
+All Arrivals routes have an `implicit` dependency on an `ArrivalsContext`.
 
 ``` scala
 implicit val system = ActorSystem()
@@ -208,14 +212,14 @@ object RateLimitRequestFilter extends RequestFilter[Option[UserId]] {
           if (reachedLimit) {
             Left(HttpResponse(StatusCodes.EnhanceYourCalm))
           } else {
-            Right(request.addHeader(RawHeader("X-Rate-Limit-Checked", "true")))      
+            Right(request.addHeader(RawHeader("X-Rate-Limit-Checked", "true")))
           }
         }
-      case None => 
+      case None =>
         Future.successful(Left(HttpResponse(StatusCodes.Forbidden, "This rate-limited endpoint requires auth!")))
     }
   }
-  
+
   private def hasUserReachedRateLimit(userId: UserId): Future[Boolean] = { /* ... */ }
 }
 ```
