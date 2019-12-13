@@ -86,9 +86,7 @@ class HttpProxy[AddressingConfig](
   private def proxyHttpRequest(request: HttpRequest, upstream: Upstream[AddressingConfig]): Future[HttpResponse] = {
     val response = httpClient.executeRequest(request)
     response.flatMap { r =>
-      r.entity.withoutSizeLimit().toStrict(entityConsumptionTimeout).flatMap { e =>
-        upstream.responseFilter(request, r.withEntity(e), ())
-      }
+      upstream.responseFilter(request, r, ())
     }
   }
 
