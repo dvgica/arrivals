@@ -44,8 +44,7 @@ object HttpProxy {
   */
 class HttpProxy[AddressingConfig](
     addressingConfig: AddressingConfig,
-    httpClient: HttpClient,
-    entityConsumptionTimeout: FiniteDuration = 20.seconds
+    httpClient: HttpClient
   )(implicit ec: ExecutionContext,
     materializer: Materializer,
     metrics: Metrics)
@@ -86,9 +85,7 @@ class HttpProxy[AddressingConfig](
   private def proxyHttpRequest(request: HttpRequest, upstream: Upstream[AddressingConfig]): Future[HttpResponse] = {
     val response = httpClient.executeRequest(request)
     response.flatMap { r =>
-      r.entity.withoutSizeLimit().toStrict(entityConsumptionTimeout).flatMap { e =>
-        upstream.responseFilter(request, r.withEntity(e), ())
-      }
+      upstream.responseFilter(request, r, ())
     }
   }
 
