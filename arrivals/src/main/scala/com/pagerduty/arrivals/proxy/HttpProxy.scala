@@ -44,8 +44,7 @@ object HttpProxy {
   */
 class HttpProxy[AddressingConfig](
     addressingConfig: AddressingConfig,
-    httpClient: HttpClient,
-    entityConsumptionTimeout: FiniteDuration = 20.seconds
+    httpClient: HttpClient
   )(implicit ec: ExecutionContext,
     materializer: Materializer,
     metrics: Metrics)

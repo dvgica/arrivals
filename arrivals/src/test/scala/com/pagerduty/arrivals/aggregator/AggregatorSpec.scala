@@ -118,7 +118,7 @@ class AggregatorSpec
 
     "short-circuits if the initial handler returns a response" in {
       implicit val stubProxy =
-        new HttpProxy[String](null, null, null)(null, null, null)
+        new HttpProxy[String](null, null)(null, null, null)
 
       val request = HttpRequest(HttpMethods.POST)
 
