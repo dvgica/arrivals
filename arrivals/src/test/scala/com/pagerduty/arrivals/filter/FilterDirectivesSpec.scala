@@ -5,11 +5,12 @@ import akka.http.scaladsl.server.{AuthorizationFailedRejection, Route}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import com.pagerduty.arrivals.api.filter.{RequestFilter, ResponseFilter}
 import akka.http.scaladsl.server.Directives._
-import org.scalatest.{FreeSpec, Matchers}
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 
 import scala.concurrent.Future
 
-class FilterDirectivesSpec extends FreeSpec with Matchers with ScalatestRouteTest {
+class FilterDirectivesSpec extends AnyFreeSpec with Matchers with ScalatestRouteTest {
   "filterRequest" - {
     "filters the request when the filter returns a new request" in {
       val filter = new RequestFilter[String] {

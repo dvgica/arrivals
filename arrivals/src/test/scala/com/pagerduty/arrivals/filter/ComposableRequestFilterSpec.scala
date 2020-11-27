@@ -3,12 +3,13 @@ package com.pagerduty.arrivals.filter
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.RawHeader
 import com.pagerduty.arrivals.api.filter.RequestFilter
-import org.scalatest.{AsyncFreeSpecLike, FreeSpecLike, Matchers}
+import org.scalatest.freespec.AnyFreeSpecLike
+import org.scalatest.matchers.should.Matchers
 
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
 
-class ComposableRequestFilterSpec extends FreeSpecLike with Matchers {
+class ComposableRequestFilterSpec extends AnyFreeSpecLike with Matchers {
 
   implicit val ec = ExecutionContext.global
 

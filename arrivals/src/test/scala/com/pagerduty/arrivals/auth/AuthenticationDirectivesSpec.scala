@@ -7,12 +7,13 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import com.pagerduty.akka.http.support.RequestMetadata
 import com.pagerduty.arrivals.api.auth.{AuthFailedReason, AuthenticationConfig}
 import com.pagerduty.metrics.NullMetrics
-import org.scalatest.{FreeSpec, Matchers}
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 
-class AuthenticationDirectivesSpec extends FreeSpec with Matchers with ScalatestRouteTest {
+class AuthenticationDirectivesSpec extends AnyFreeSpec with Matchers with ScalatestRouteTest {
   implicit val metrics = NullMetrics
   implicit val reqMeta = RequestMetadata.fromRequest(HttpRequest())
 

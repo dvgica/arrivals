@@ -1,17 +1,17 @@
-lazy val scala213 = "2.13.0"
+lazy val scala213 = "2.13.4"
 lazy val scala212 = "2.12.8"
 lazy val supportedScalaVersions = List(scala213, scala212)
 
 ThisBuild / organization := "com.pagerduty"
 ThisBuild / scalaVersion := scala213
 
-lazy val akkaVersion = "2.5.23"
-lazy val akkaHttpVersion = "10.1.8"
+lazy val akkaVersion = "2.6.10"
+lazy val akkaHttpVersion = "10.2.1"
 lazy val scalaMetricsVersion = "2.1.4"
-lazy val scalaTestVersion = "3.0.8"
-lazy val scalaMockVersion = "4.3.0"
+lazy val scalaTestVersion = "3.2.3"
+lazy val scalaMockVersion = "5.0.0"
 lazy val akkaSupportHttpVersion = "0.7.2"
-lazy val logbackVersion = "1.2+"
+lazy val logbackVersion = "1.3+"
 
 lazy val sharedSettings = Seq(
   crossScalaVersions := supportedScalaVersions,
@@ -48,7 +48,7 @@ lazy val arrivals =
     .settings(
       name := "arrivals",
       libraryDependencies ++= Seq(
-        "com.lihaoyi" %% "ujson" % "0.7.5",
+        "com.lihaoyi" %% "ujson" % "1.2.2",
         "com.pagerduty" %% "metrics-api" % scalaMetricsVersion,
         "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion % "test",
         "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion % "test",
@@ -56,7 +56,7 @@ lazy val arrivals =
         "org.scalatest" %% "scalatest" % scalaTestVersion % "test,it",
         "ch.qos.logback" % "logback-classic" % logbackVersion % "test,it",
         "org.scalaj" %% "scalaj-http" % "2.4.2" % "it",
-        "com.github.tomakehurst" % "wiremock" % "2.22.0" % "it",
+        "com.github.tomakehurst" % "wiremock" % "2.27.2" % "it",
         "com.typesafe.akka" %% "akka-slf4j" % akkaVersion % "it"
       )
     )

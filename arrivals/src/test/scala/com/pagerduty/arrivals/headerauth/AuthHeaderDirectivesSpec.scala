@@ -6,13 +6,14 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import com.pagerduty.akka.http.support.RequestMetadata
 import com.pagerduty.arrivals.api.auth.AuthFailedReason
 import com.pagerduty.arrivals.api.headerauth.HeaderAuthConfig
-import org.scalatest.{FreeSpec, Matchers}
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 import akka.http.scaladsl.server.Directives._
 
 import scala.concurrent.Future
 import scala.util.Try
 
-class AuthHeaderDirectivesSpec extends FreeSpec with Matchers with ScalatestRouteTest {
+class AuthHeaderDirectivesSpec extends AnyFreeSpec with Matchers with ScalatestRouteTest {
   class TestAuthConfig extends HeaderAuthConfig {
     type AuthData = String
     type Permission = String

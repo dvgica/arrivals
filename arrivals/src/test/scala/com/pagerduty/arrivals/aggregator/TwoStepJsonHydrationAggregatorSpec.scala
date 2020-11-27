@@ -9,7 +9,9 @@ import com.pagerduty.arrivals.api.aggregator.AggregatorUpstream
 import com.pagerduty.arrivals.api.proxy.Upstream
 import com.pagerduty.arrivals.proxy.HttpProxyLike
 import org.scalamock.scalatest.MockFactory
-import org.scalatest.{BeforeAndAfterAll, FreeSpecLike, Matchers}
+import org.scalatest.freespec.AnyFreeSpecLike
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.BeforeAndAfterAll
 import ujson.Js
 
 import scala.concurrent.duration._
@@ -17,7 +19,7 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 
 class TwoStepJsonHydrationAggregatorSpec
     extends TestKit(ActorSystem("TwoStepJsonHydrationAggregatorSpec"))
-    with FreeSpecLike
+    with AnyFreeSpecLike
     with Matchers
     with MockFactory
     with BeforeAndAfterAll {

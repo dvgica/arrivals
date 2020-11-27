@@ -12,11 +12,12 @@ import com.pagerduty.arrivals.api.filter.{SyncRequestFilter, SyncResponseFilter}
 import com.pagerduty.arrivals.api.proxy.Upstream
 import com.pagerduty.metrics.NullMetrics
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{FreeSpecLike, Matchers}
+import org.scalatest.freespec.AnyFreeSpecLike
+import org.scalatest.matchers.should.Matchers
 
 import scala.concurrent.Future
 
-class HttpProxySpec extends FreeSpecLike with Matchers with ScalaFutures {
+class HttpProxySpec extends AnyFreeSpecLike with Matchers with ScalaFutures {
   def buildHttpClient(requestExecutor: HttpRequest => Future[HttpResponse]): HttpClient = {
     new HttpClient {
       def executeRequest(req: HttpRequest): Future[HttpResponse] =
