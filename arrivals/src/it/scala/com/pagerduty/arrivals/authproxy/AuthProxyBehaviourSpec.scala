@@ -1,8 +1,8 @@
 package com.pagerduty.arrivals.authproxy
 
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.ws.{Message, TextMessage, UpgradeToWebSocket, WebSocketRequest}
-import akka.http.scaladsl.model.{HttpMethods, HttpRequest, HttpResponse, Uri}
+import akka.http.scaladsl.model.ws.{Message, TextMessage, WebSocketRequest}
+import akka.http.scaladsl.model.{HttpMethods, HttpRequest, HttpResponse, Uri, AttributeKeys}
 import akka.stream.scaladsl.{Flow, Keep, Sink, Source}
 import com.github.tomakehurst.wiremock.http.Fault
 import com.pagerduty.arrivals.authproxy.support.{IntegrationSpec, TestAuthConfig}
@@ -234,7 +234,7 @@ class AuthProxyBehaviourSpec extends IntegrationSpec {
 
       val requestHandler: HttpRequest => HttpResponse = {
         case req @ HttpRequest(HttpMethods.GET, Uri.Path("/ws"), _, _, _) =>
-          req.header[UpgradeToWebSocket] match {
+          req.attribute(AttributeKeys.webSocketUpgrade) match {
             case Some(upgrade) =>
               upgrade.handleMessages(stubWebSocketService)
             case None =>

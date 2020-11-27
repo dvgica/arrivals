@@ -1,7 +1,7 @@
 package com.pagerduty.arrivals.proxy
 
 import akka.http.scaladsl.model.ws._
-import akka.http.scaladsl.model.{HttpHeader, HttpRequest, HttpResponse}
+import akka.http.scaladsl.model.{HttpHeader, HttpRequest, HttpResponse, AttributeKeys}
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Flow, Keep, Sink, Source}
 import com.pagerduty.akka.http.support.{MetadataLogging, RequestMetadata}
@@ -68,7 +68,7 @@ class HttpProxy[AddressingConfig](
       case Right(filteredRequest) =>
         val stopwatch = Stopwatch.start()
 
-        val response = filteredRequest.header[UpgradeToWebSocket] match {
+        val response = filteredRequest.attribute(AttributeKeys.webSocketUpgrade) match {
           case Some(upgrade) =>
             proxyWebSocketRequest(filteredRequest, upgrade, upstream)
           case None =>
@@ -94,7 +94,7 @@ class HttpProxy[AddressingConfig](
 
   private def proxyWebSocketRequest(
       request: HttpRequest,
-      upgrade: UpgradeToWebSocket,
+      upgrade: WebSocketUpgrade,
       upstream: Upstream[AddressingConfig]
     )(implicit reqMeta: RequestMetadata
     ): Future[HttpResponse] = {
