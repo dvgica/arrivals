@@ -3,7 +3,6 @@ package com.pagerduty.arrivals.example
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.StatusCodes
-import akka.stream.ActorMaterializer
 import akka.http.scaladsl.server.Directives._
 import com.pagerduty.arrivals.ArrivalsContext
 import com.pagerduty.arrivals.aggregator.AggregatorRoutes
@@ -16,7 +15,6 @@ import scala.io.StdIn
 object ExampleApp extends App {
   implicit val system = ActorSystem()
   implicit val ec = system.dispatcher
-  implicit val mat = ActorMaterializer()
 
   import ExampleUpstream._
 

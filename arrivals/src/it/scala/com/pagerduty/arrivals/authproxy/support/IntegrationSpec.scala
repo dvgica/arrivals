@@ -3,7 +3,6 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.model.HttpRequest
 import akka.http.scaladsl.model.ws.{Message, WebSocketRequest}
 import akka.http.scaladsl.{Http, HttpExt}
-import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Flow
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
@@ -26,7 +25,6 @@ trait IntegrationSpec extends FreeSpecLike with Matchers with BeforeAndAfterAll 
   val servicePort = 3456
 
   implicit var as: ActorSystem = _
-  implicit var m: ActorMaterializer = _
   implicit var ec: ExecutionContext = _
   var http: HttpExt = _
   var s: HttpServer = _
@@ -36,7 +34,6 @@ trait IntegrationSpec extends FreeSpecLike with Matchers with BeforeAndAfterAll 
   override def beforeAll(): Unit = {
     as = ActorSystem("bff-public-api-test")
     ec = as.dispatcher
-    m = ActorMaterializer()
     implicit val metrics = NullMetrics
     http = Http()
 
@@ -74,7 +71,6 @@ trait IntegrationSpec extends FreeSpecLike with Matchers with BeforeAndAfterAll 
     s.stop()
     mockService.stop()
     mockAs.stop()
-    m.shutdown()
     Await.ready(as.terminate(), Duration.Inf)
     ()
   }

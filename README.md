@@ -80,8 +80,6 @@ All Arrivals routes have an `implicit` dependency on an `ArrivalsContext`.
 
 ``` scala
 implicit val system = ActorSystem()
-implicit val mat = ActorMaterializer()
-
 implicit val arrivalsCtx = ArrivalsContext("localhost") // "localhost" is the hostname for all upstreams in this example
 ```
 
@@ -90,8 +88,8 @@ You must provide an `AddressingConfig`, which is a piece of data used by the pro
 
 In the event that you do not require this data, you can pass `Unit`.
 
-Because everything in Arrivals is Akka-based, you must implicitly provide the usual Akka `ActorSystem`
-and `Materializer`. A `Metrics` provider is optional and defaults to a no-op metrics implementation.
+Because everything in Arrivals is Akka-based, you must implicitly provide the usual Akka `ActorSystem`.
+A `Metrics` provider is optional and defaults to a no-op metrics implementation.
 
 #### Declare an `Upstream`
 

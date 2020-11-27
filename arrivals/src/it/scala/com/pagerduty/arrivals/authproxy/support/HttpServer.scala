@@ -5,7 +5,6 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.Uri.Authority
 import akka.http.scaladsl.model.{HttpRequest, Uri}
 import akka.http.scaladsl.server.Directives.{handleExceptions, _}
-import akka.stream.ActorMaterializer
 import com.pagerduty.arrivals.ArrivalsContext
 import com.pagerduty.arrivals.api.proxy.Upstream
 import com.pagerduty.arrivals.authproxy.AuthProxyRoutes
@@ -24,7 +23,6 @@ class HttpServer(
     val wsPort: Int,
     val httpProxy: HttpProxyLike[String]
   )(implicit actorSystem: ActorSystem,
-    materializer: ActorMaterializer,
     val metrics: Metrics)
     extends ErrorHandling { outer =>
 
@@ -67,7 +65,7 @@ class HttpServer(
 
   log.info(s"Akka-HTTP binding to port: $port and interface: $httpInterface...")
   private val bindingFuture =
-    Http(actorSystem).bindAndHandle(httpRoutes, httpInterface, port)(materializer)
+    Http(actorSystem).newServerAt(httpInterface, port).bindFlow(httpRoutes)
 
   // for simplicity, block until the HTTP server is actually started
   private val tryBinding = Try(Await.result(bindingFuture, 10.seconds))
