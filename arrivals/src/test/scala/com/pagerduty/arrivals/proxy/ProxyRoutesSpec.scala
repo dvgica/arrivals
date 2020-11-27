@@ -8,11 +8,12 @@ import com.pagerduty.arrivals.ArrivalsContext
 import com.pagerduty.arrivals.api.filter.{RequestFilter, ResponseFilter}
 import com.pagerduty.arrivals.api.proxy.Upstream
 import org.scalamock.scalatest.MockFactory
-import org.scalatest.{FreeSpecLike, Matchers}
+import org.scalatest.freespec.AnyFreeSpecLike
+import org.scalatest.matchers.should.Matchers
 
 import scala.concurrent.Future
 
-class ProxyRoutesSpec extends FreeSpecLike with Matchers with ScalatestRouteTest with MockFactory { outer =>
+class ProxyRoutesSpec extends AnyFreeSpecLike with Matchers with ScalatestRouteTest with MockFactory { outer =>
 
   "ProxyRoutes" - {
     val expectedResponse = HttpResponse(201)

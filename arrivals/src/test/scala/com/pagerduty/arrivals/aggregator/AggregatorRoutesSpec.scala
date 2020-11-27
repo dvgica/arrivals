@@ -10,12 +10,13 @@ import com.pagerduty.arrivals.api.filter.{RequestFilter, ResponseFilter}
 import com.pagerduty.arrivals.api.headerauth.HeaderAuthConfig
 import com.pagerduty.arrivals.proxy.HttpProxyLike
 import org.scalamock.scalatest.MockFactory
-import org.scalatest.{FreeSpecLike, Matchers}
+import org.scalatest.freespec.AnyFreeSpecLike
+import org.scalatest.matchers.should.Matchers
 
 import scala.concurrent.Future
 import scala.util.{Success, Try}
 
-class AggregatorRoutesSpec extends FreeSpecLike with Matchers with MockFactory with ScalatestRouteTest {
+class AggregatorRoutesSpec extends AnyFreeSpecLike with Matchers with MockFactory with ScalatestRouteTest {
 
   val testAuthData = "auth-data"
 

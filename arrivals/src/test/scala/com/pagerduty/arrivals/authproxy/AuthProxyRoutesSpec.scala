@@ -14,12 +14,13 @@ import com.pagerduty.arrivals.api.headerauth.HeaderAuthConfig
 import com.pagerduty.arrivals.api.proxy.Upstream
 import com.pagerduty.arrivals.proxy.HttpClient
 import org.scalamock.scalatest.MockFactory
-import org.scalatest.{FreeSpecLike, Matchers}
+import org.scalatest.freespec.AnyFreeSpecLike
+import org.scalatest.matchers.should.Matchers
 
 import scala.concurrent.Future
 import scala.util.{Success, Try}
 
-class AuthProxyRoutesSpec extends FreeSpecLike with Matchers with ScalatestRouteTest with MockFactory { outer =>
+class AuthProxyRoutesSpec extends AnyFreeSpecLike with Matchers with ScalatestRouteTest with MockFactory { outer =>
   implicit val reqMeta = RequestMetadata(None)
 
   val testAuthData = "auth-data"
