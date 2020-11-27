@@ -245,8 +245,7 @@ class AuthProxyBehaviourSpec extends IntegrationSpec {
           HttpResponse(404, entity = "Unknown resource!")
       }
 
-      val bindingFuture =
-        Http().bindAndHandleSync(requestHandler, interface = "localhost", port = 10100)
+      val bindingFuture = Http().newServerAt("localhost", 10100).bindSync(requestHandler)
 
       // a simple WebSocket client
       val sink = Sink.head[Message]
