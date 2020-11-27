@@ -2,7 +2,7 @@ package com.pagerduty.arrivals.aggregator
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.{HttpMethods, HttpRequest, HttpResponse, StatusCodes}
-import akka.stream.ActorMaterializer
+import akka.stream.Materializer
 import akka.testkit.TestKit
 import com.pagerduty.arrivals.aggregator.support.{TestAuthConfig, TestUpstream}
 import com.pagerduty.arrivals.api.proxy.Upstream
@@ -22,12 +22,13 @@ class AggregatorSpec
     with MockFactory
     with BeforeAndAfterAll {
 
-  override def afterAll {
+  override def afterAll(): Unit = {
     TestKit.shutdownActorSystem(system)
   }
 
   implicit val executionContext = ExecutionContext.global
-  implicit val materializer = ActorMaterializer()
+  implicit val actorSystem = ActorSystem()
+  implicit val materializer = Materializer.matFromSystem(actorSystem)
 
   val ac = new TestAuthConfig
 

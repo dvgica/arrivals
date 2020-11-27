@@ -5,7 +5,6 @@ import akka.http.scaladsl.model.Uri.Authority
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.model.ws.{Message, WebSocketRequest, WebSocketUpgradeResponse}
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse, Uri}
-import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Flow
 import com.pagerduty.akka.http.support.RequestMetadata
 import com.pagerduty.arrivals.api.filter.{SyncRequestFilter, SyncResponseFilter}
@@ -60,7 +59,6 @@ class HttpProxySpec extends AnyFreeSpecLike with Matchers with ScalaFutures {
 
     import scala.concurrent.ExecutionContext.Implicits.global
     implicit val system = ActorSystem()
-    implicit val materializer = ActorMaterializer()
     implicit val metrics = NullMetrics
     val response = HttpResponse()
 
